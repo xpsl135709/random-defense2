@@ -164,7 +164,7 @@ const SPRITE_BASE=["불","물","땅","바람","전기","얼음","빛","어둠","
 const loadSprite=(el)=>{
   if(SPRITE_CACHE[el])return SPRITE_CACHE[el];
   const img=new Image();
-  img.src=`/sprites/${el}.png`;
+  img.src=`/${el}.png`;
   img.onload=()=>{SPRITE_CACHE[el]=img;};
   SPRITE_CACHE[el]=img;
   return img;
