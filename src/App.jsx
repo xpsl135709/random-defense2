@@ -4,9 +4,9 @@ const CS=48,COLS=9,ROWS=14;
 const TRACK=(()=>{const p=[];for(let c=1;c<=7;c++)p.push([c,1]);for(let r=2;r<=12;r++)p.push([7,r]);for(let c=6;c>=1;c--)p.push([c,12]);for(let r=11;r>=2;r--)p.push([1,r]);return p;})();
 const TS=new Set(TRACK.map(([c,r])=>`${c},${r}`));
 const CX=4,CY=7;
-const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무"];
-const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",독:"#4a0",나무:"#2d8",무속성:"#ccc",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",진흙:"#8a4",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",플라즈마:"#f4f",안개:"#abc",눈보라:"#cef",성음:"#feb",암흑파동:"#80c",동토:"#68a",증기:"#ddf",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",어둠번개:"#c4f",성스러운얼음:"#aff",빛의해일:"#afe",허리케인:"#0fc",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",천지개벽:"#f8f",용신:"#f60",신성폭풍:"#fda",혼돈:"#628",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#eef",암흑신화:"#404",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff"};
-const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",독:"🐍",나무:"🌿",무속성:"⭐",
+const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리"];
+const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",진흙:"#8a4",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",플라즈마:"#f4f",안개:"#abc",눈보라:"#cef",성음:"#feb",암흑파동:"#80c",동토:"#68a",증기:"#ddf",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",어둠번개:"#c4f",성스러운얼음:"#aff",빛의해일:"#afe",허리케인:"#0fc",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",천지개벽:"#f8f",용신:"#f60",신성폭풍:"#fda",혼돈:"#628",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#eef",암흑신화:"#404",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff"};
+const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",
   용암:"👺",폭풍화염:"💣",플라즈마:"🦎",증기:"👻",빙하:"🧊",진흙:"🟤",안개:"🌫️",번개폭풍:"🦅",
   공허:"🧛",공명:"🦇",눈보라:"🌨️",성음:"🔮",암흑파동:"😈",동토:"🦖",돌풍:"💨",화염폭풍:"😈",해일:"🧟",
   번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",
@@ -15,7 +15,7 @@ const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"�
   폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫"};
 const EN={
   불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",
-  얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",독:"독정령",나무:"나무정령",무속성:"무속성",
+  얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",
   용암:"고블린",폭풍화염:"화염폭탄병",플라즈마:"번개도마뱀",증기:"안개유령",
   빙하:"빙하유령",진흙:"진흙골렘",안개:"안개유령",번개폭풍:"폭풍매",
   공허:"뱀파이어",공명:"음파박쥐",눈보라:"눈보라요정",성음:"신성슬라임",
@@ -34,23 +34,14 @@ const EN={
   폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",
   광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",
   용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",
-  독늪:"독늪",독안개:"독안개",맹독:"맹독",덩굴:"덩굴",고목:"고목",숲:"숲",
-  독림:"독림",저주독:"저주독",성스러운숲:"성스러운숲",독왕:"독왕",세계수:"세계수",
-  독신화:"독의신",나무신화:"나무신",독불멸:"독불멸",나무불멸:"나무불멸",
 };
+const hr=(hex,a)=>{const h=hex.replace('#','');const l=h.length===3?h[0]+h[0]+h[1]+h[1]+h[2]+h[2]:h;return `rgba(${parseInt(l.slice(0,2),16)},${parseInt(l.slice(2,4),16)},${parseInt(l.slice(4,6),16)},${a})`;};
 const GC={노말:"#aaa",고급:"#4af",영웅:"#a4f",전설:"#fa0",신화:"#f44",불멸:"#f8f"};
 const ATK_MAP={노말:10,고급:25,영웅:45,전설:70,신화:100,불멸:150};
 const SELL_PRICE={노말:5,고급:10,영웅:20,전설:35,신화:50,불멸:75};
 const GRADE_BY_COUNT={2:"노말",3:"고급",4:"고급",5:"영웅",6:"영웅",7:"전설",8:"전설",9:"전설",10:"전설"};
 
 const COMBO=[
-  // 독/나무 조합
-  {a:"독",b:"물",r:"독늪",g:"고급"},{a:"독",b:"땅",r:"독안개",g:"고급"},{a:"독",b:"독",r:"맹독",g:"고급"},
-  {a:"나무",b:"물",r:"덩굴",g:"고급"},{a:"나무",b:"땅",r:"고목",g:"고급"},{a:"나무",b:"나무",r:"숲",g:"고급"},
-  {a:"독",b:"나무",r:"독림",g:"영웅"},{a:"독",b:"어둠",r:"저주독",g:"영웅"},{a:"나무",b:"빛",r:"성스러운숲",g:"영웅"},
-  {a:"맹독",b:"독림",r:"독왕",g:"전설"},{a:"숲",b:"성스러운숲",r:"세계수",g:"전설"},
-  {a:"독왕",b:"무속성",r:"독신화",g:"신화"},{a:"세계수",b:"무속성",r:"나무신화",g:"신화"},
-  {a:"독신화",b:"무속성",r:"독불멸",g:"불멸"},{a:"나무신화",b:"무속성",r:"나무불멸",g:"불멸"},
   {a:"불",b:"땅",r:"용암",g:"고급"},{a:"불",b:"바람",r:"폭풍화염",g:"고급"},{a:"불",b:"전기",r:"플라즈마",g:"고급"},{a:"불",b:"물",r:"증기",g:"고급"},
   {a:"물",b:"얼음",r:"빙하",g:"고급"},{a:"물",b:"땅",r:"진흙",g:"고급"},{a:"물",b:"바람",r:"안개",g:"고급"},
   {a:"전기",b:"바람",r:"번개폭풍",g:"고급"},{a:"빛",b:"어둠",r:"공허",g:"고급"},{a:"소리",b:"전기",r:"공명",g:"고급"},
@@ -157,41 +148,20 @@ const GAMBLE_COIN=[
 ];
 
 let hid=1,eid=1;
-
-// 유닛 이미지 캐시
-const SPRITE_CACHE={};
-const SPRITE_BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","무속성"];
-const loadSprite=(el)=>{
-  if(SPRITE_CACHE[el])return SPRITE_CACHE[el];
-  const img=new Image();
-  img.src=`/${el}.png`;
-  img.onload=()=>{SPRITE_CACHE[el]=img;};
-  SPRITE_CACHE[el]=img;
-  return img;
-};
-// 앱 시작 시 미리 로드
-SPRITE_BASE.forEach(el=>loadSprite(el));
-
-// hex to rgba 헬퍼
-const hr=(hex,a)=>{const h=hex.replace('#','');const l=h.length===3?h[0]+h[0]+h[1]+h[1]+h[2]+h[2]:h;return `rgba(${parseInt(l.slice(0,2),16)},${parseInt(l.slice(2,4),16)},${parseInt(l.slice(4,6),16)},${a})`;};
-
-// 공격 타입
-const ATYPE={single:{label:"단일",color:"#aaa"},splash:{label:"범위",color:"#f80"},pierce:{label:"관통",color:"#4af"},chain:{label:"체인",color:"#f4f"},dot:{label:"독",color:"#4f4"},slow:{label:"슬로우",color:"#88f"},multi:{label:"연사",color:"#ff4"}};
-const ETYPE={불:"single",물:"slow",땅:"splash",바람:"pierce",전기:"chain",얼음:"slow",빛:"multi",어둠:"dot",소리:"splash",독:"dot",나무:"slow",무속성:"single",용암:"splash",폭풍화염:"splash",플라즈마:"chain",증기:"slow",빙하:"slow",진흙:"slow",안개:"slow",번개폭풍:"chain",공허:"dot",공명:"splash",눈보라:"slow",성음:"multi",암흑파동:"dot",동토:"slow",돌풍:"pierce",화염폭풍:"splash",해일:"slow",번개신:"chain",절대영도:"slow",신성광:"multi",심연:"dot",용암폭풍:"splash",냉기폭풍:"slow",어둠번개:"chain",성스러운얼음:"slow",빛의해일:"splash",태풍:"pierce",뇌신:"chain",빙하신:"slow",빛의신:"multi",어둠신:"dot",천지개벽:"splash",용신:"pierce",신성폭풍:"splash",혼돈:"dot",허리케인:"pierce",폭풍신화:"pierce",번개신화:"chain",빙하신화:"slow",광명신화:"multi",암흑신화:"dot",창조신화:"splash",용왕신화:"splash",신성신화:"multi",혼돈신화:"dot",폭풍불멸:"pierce",번개불멸:"chain",빙하불멸:"slow",광명불멸:"multi",암흑불멸:"dot",창조불멸:"splash",용왕불멸:"splash",신성불멸:"multi",혼돈불멸:"dot",궁극불멸:"splash"};
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
   const bonus=lv>0?{atk:(["노말","고급","영웅","전설","신화","불멸"].includes(g)?[5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]:5)*lv,spd:0.05*lv}:{atk:0,spd:0};
-  return{id:hid++,element:el,grade:g,atk:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:3.5,col:null,row:null,lastShot:0,enhLv:0,atkType:ETYPE[el]||"single",slowTimer:0,dotDmg:0,dotTimer:0};
+  return{id:hid++,element:el,grade:g,atk:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:3.5,col:null,row:null,lastShot:0,enhLv:0};
 };
 const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
-  const base=isBoss?6000+fl*1600+rnd*400:isMid?2000+fl*600+rnd*200:(120+fl*60)+rnd*30;
+  const base=isBoss?3000+fl*800+rnd*200:isMid?1000+fl*300+rnd*100:(60+fl*30)+rnd*15;
   const hp=Math.floor(type==="은신"?base*0.8:type==="공중"?base*1.2:base);
   return{id:eid++,type,hp,maxHp:hp,pathIdx:0,laps:0,
     x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,
     speed:isBoss?0.6:isMid?0.8:type==="공중"?1.4:1.0,
     dmg:isBoss?5:isMid?3:1,remove:false,rewarded:false,
     isBoss,isMid,maxLaps:isBoss||isMid?5:3,
-    reward:isBoss?50:isMid?10:1,slowTimer:0,dotDmg:0,dotTimer:0,baseSpeed:isBoss?0.6:isMid?0.8:0};
+    reward:isBoss?50:isMid?10:1};
 };
 const autoPlace=(heroes)=>{
   const used=new Set(heroes.filter(x=>x.col!==null).map(x=>`${x.col},${x.row}`));
@@ -268,171 +238,56 @@ export default function App(){
     const c=cvs.current;if(!c)return;
     const ctx=c.getContext("2d"),g=G.current;
     ctx.clearRect(0,0,COLS*CS,ROWS*CS);
-
-    // ── 배경: 판타지 돌바닥 느낌
-    const bgGrad=ctx.createLinearGradient(0,0,COLS*CS,ROWS*CS);
-    bgGrad.addColorStop(0,"#0d1117");bgGrad.addColorStop(1,"#1a0a2e");
-    ctx.fillStyle=bgGrad;ctx.fillRect(0,0,COLS*CS,ROWS*CS);
-
+    ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
     for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
       const isT=TS.has(`${col},${r}`),isC=col===CX&&r===CY;
-      if(isT){
-        // 경로: 초록 잔디 느낌 + 그라디언트
-        const tg=ctx.createLinearGradient(col*CS,r*CS,col*CS+CS,r*CS+CS);
-        tg.addColorStop(0,"#1a3a1a");tg.addColorStop(1,"#0f2a0f");
-        ctx.fillStyle=tg;ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="#0a1a0a";ctx.strokeRect(col*CS,r*CS,CS,CS);
-      }else if(isC){
-        // 히든영웅 칸: 보라빛 마법진
-        const cg=ctx.createRadialGradient(col*CS+CS/2,r*CS+CS/2,2,col*CS+CS/2,r*CS+CS/2,CS/2);
-        cg.addColorStop(0,"#3a2060");cg.addColorStop(1,"#1a1040");
-        ctx.fillStyle=cg;ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="#6040c0";ctx.lineWidth=1;ctx.strokeRect(col*CS,r*CS,CS,CS);ctx.lineWidth=1;
-      }else{
-        // 빈 칸: 돌바닥
-        const dg=ctx.createLinearGradient(col*CS,r*CS,col*CS,r*CS+CS);
-        dg.addColorStop(0,"#1a1a2e");dg.addColorStop(1,"#12121f");
-        ctx.fillStyle=dg;ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="#0d0d1a";ctx.strokeRect(col*CS,r*CS,CS,CS);
-      }
+      ctx.fillStyle=isC?"#2d2d60":isT?"#1e3a1e":"#16213e";
+      ctx.fillRect(col*CS,r*CS,CS,CS);ctx.strokeStyle="#0d1b2a";ctx.strokeRect(col*CS,r*CS,CS,CS);
     }
-    // 경로 방향 점
-    for(let i=0;i<TRACK.length;i+=4){const[col,r]=TRACK[i];ctx.fillStyle="rgba(80,160,80,0.4)";ctx.beginPath();ctx.arc(col*CS+CS/2,r*CS+CS/2,2,0,Math.PI*2);ctx.fill();}
-
-    // 이동 가이드
+    for(let i=0;i<TRACK.length;i+=3){const[col,r]=TRACK[i];ctx.fillStyle="#2a4a2a";ctx.fillRect(col*CS+22,r*CS+22,4,4);}
     if(dragR.current||selHero){
       for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
         if(TS.has(`${col},${r}`)||(col===CX&&r===CY))continue;
-        ctx.fillStyle="rgba(255,255,255,0.06)";ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="rgba(255,255,255,0.15)";ctx.strokeRect(col*CS,r*CS,CS,CS);
+        ctx.fillStyle="rgba(255,255,255,0.04)";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.strokeRect(col*CS,r*CS,CS,CS);
       }
     }
-
-    // ── 히든영웅 칸 (입체 마법진)
-    const cx2=CX*CS+CS/2,cy2=CY*CS+CS/2;
     if(g.hiddenHero){
       const hd=HH.find(h=>h.id===g.hiddenHero.id);
-      const hc=hd?.color||"#888";
-      // 글로우 링
-      ctx.save();
-      ctx.shadowColor=hc;ctx.shadowBlur=18;
-      ctx.strokeStyle=hc;ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(cx2,cy2,CS/2-3,0,Math.PI*2);ctx.stroke();
-      ctx.restore();
-      // 입체 원
-      const hg=ctx.createRadialGradient(cx2-6,cy2-6,2,cx2,cy2,CS/2-4);
-      hg.addColorStop(0,hc);hg.addColorStop(0.5,hr(hc,0.53));hg.addColorStop(1,hr(hc,0.13));
-      ctx.fillStyle=hg;ctx.beginPath();ctx.arc(cx2,cy2,CS/2-4,0,Math.PI*2);ctx.fill();
-      // 이모지
-      ctx.font="20px serif";ctx.fillText(hd?.emoji||"?",CX*CS+12,CY*CS+29);
-      ctx.fillStyle="#aaffaa";ctx.font="bold 6px sans-serif";ctx.fillText("BUFF",CX*CS+13,CY*CS+44);
+      ctx.fillStyle=(hd?.color||"#888")+"55";ctx.fillRect(CX*CS,CY*CS,CS,CS);
+      ctx.font="24px serif";ctx.fillText(hd?.emoji||"?",CX*CS+11,CY*CS+30);
+      ctx.fillStyle="#aaffaa";ctx.font="bold 7px sans-serif";ctx.fillText("BUFF",CX*CS+14,CY*CS+44);
     }else{
-      // 비어있는 마법진 - 회전하는 룬 느낌
-      ctx.save();ctx.globalAlpha=0.5;
-      ctx.strokeStyle="#6040c0";ctx.lineWidth=1.5;
-      ctx.setLineDash([3,3]);
-      ctx.beginPath();ctx.arc(cx2,cy2,CS/2-4,0,Math.PI*2);ctx.stroke();
-      ctx.setLineDash([]);ctx.restore();
-      ctx.fillStyle="rgba(150,100,255,0.4)";ctx.font="10px sans-serif";ctx.fillText("히든",CX*CS+9,CY*CS+28);
+      ctx.fillStyle="rgba(255,255,255,0.07)";ctx.fillRect(CX*CS,CY*CS,CS,CS);
+      ctx.fillStyle="rgba(255,255,255,0.3)";ctx.font="11px sans-serif";ctx.fillText("히든",CX*CS+9,CY*CS+28);
     }
-
-    // ── 유닛 입체 그리기
     for(const h of g.heroes){
       if(h.col===null)continue;
       const sel=h.id===dragR.current||h.id===selHero;
-      const ux=h.col*CS+CS/2,uy=h.row*CS+CS/2;
-      const uc=EC[h.element]||"#888";
-      const gr=GC[h.grade]||"#aaa";
-      const rad=CS/2-3;
-
-      // 등급별 글로우
-      ctx.save();
-      const glowSize=h.grade==="불멸"?20:h.grade==="신화"?15:h.grade==="전설"?10:h.grade==="영웅"?7:h.grade==="고급"?4:0;
-      if(glowSize>0||sel){
-        ctx.shadowColor=sel?"#ffd700":gr;
-        ctx.shadowBlur=sel?20:glowSize;
-      }
-      // 배경 원 (그림자)
-      ctx.fillStyle="rgba(0,0,0,0.4)";
-      ctx.beginPath();ctx.arc(ux+2,uy+2,rad,0,Math.PI*2);ctx.fill();
-      ctx.restore();
-
-      // 입체 구 효과 (radial gradient)
-      ctx.save();
-      if(sel){ctx.shadowColor="#ffd700";ctx.shadowBlur=16;}
-      const ug=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.3,rad*0.1,ux,uy,rad);
-      ug.addColorStop(0,uc);
-      ug.addColorStop(0.4,hr(uc,0.67));
-      ug.addColorStop(0.8,hr(uc,0.33));
-      ug.addColorStop(1,hr(uc,0.07));
-      ctx.fillStyle=ug;
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.fill();
-
-      // 등급별 테두리
-      ctx.strokeStyle=sel?"#ffd700":gr;
-      ctx.lineWidth=sel?2.5:h.grade==="불멸"?2:h.grade==="신화"?1.5:1;
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.stroke();
-      ctx.restore();
-
-      // 하이라이트 (빛 반사)
-      const hl=ctx.createRadialGradient(ux-rad*0.35,uy-rad*0.35,0,ux-rad*0.2,uy-rad*0.2,rad*0.5);
-      hl.addColorStop(0,"rgba(255,255,255,0.45)");
-      hl.addColorStop(1,"rgba(255,255,255,0)");
-      ctx.fillStyle=hl;
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.fill();
-
-      // 유닛 이미지 or 이모지 fallback
-      const spr=SPRITE_CACHE[h.element];
-      if(spr&&spr.complete&&spr.naturalWidth>0){
-        ctx.drawImage(spr,h.col*CS+4,h.row*CS+2,CS-8,CS-8);
-      }else{
-        ctx.font="18px serif";ctx.fillText(EE[h.element]||"?",h.col*CS+CS/2-9,h.row*CS+CS/2+6);
-      }
-      // 등급 텍스트
-      ctx.fillStyle=gr;ctx.font=`bold 7px sans-serif`;
-      ctx.fillText(h.grade,h.col*CS+2,h.row*CS+CS-3);
+      ctx.fillStyle=(EC[h.element]||"#888")+(sel?"aa":"55");
+      ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+      if(sel){ctx.strokeStyle="#ffd700";ctx.lineWidth=2;ctx.strokeRect(h.col*CS+1,h.row*CS+1,CS-2,CS-2);ctx.lineWidth=1;}
+      ctx.font="20px serif";ctx.fillText(EE[h.element]||"?",h.col*CS+10,h.row*CS+28);
+      ctx.fillStyle=GC[h.grade]||"#fff";ctx.font="bold 7px sans-serif";ctx.fillText(h.grade,h.col*CS+2,h.row*CS+40);
+      if(h.enhLv>0){ctx.fillStyle="#fd0";ctx.font="bold 8px sans-serif";ctx.fillText(`+${h.enhLv}`,h.col*CS+32,h.row*CS+14);}
     }
-
-    // ── 적 그리기
     for(const e of g.enemies){
       if(e.remove)continue;
-      if(e.type==="은신")ctx.globalAlpha=0.4;
-      if(e.slowTimer>0){ctx.fillStyle="rgba(80,80,255,0.2)";ctx.fillRect(e.x,e.y,CS,CS);}
-      if(e.dotTimer>0){ctx.fillStyle="rgba(0,255,80,0.15)";ctx.fillRect(e.x,e.y,CS,CS);}
+      if(e.type==="은신")ctx.globalAlpha=0.35;
       const hR=e.hp/e.maxHp;
       const bw=e.isBoss?CS*1.3:e.isMid?CS*1.1:CS-4;
-      // HP바
-      ctx.fillStyle="#222";ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw,5);
-      const hpCol=e.isBoss?"#f44":e.isMid?"#fa0":hR>0.5?"#4f4":hR>0.25?"#fa0":"#f44";
-      ctx.fillStyle=hpCol;ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw*hR,5);
-      // 적 구체 (입체)
-      const erad=e.isBoss?CS/2:e.isMid?CS/2-2:CS/2-5;
-      const ex=e.x+CS/2,ey=e.y+CS/2;
-      const baseCol=e.isBoss?"#c00":e.isMid?"#a60":e.type==="은신"?"#446":"#a22";
-      // 그림자
-      ctx.fillStyle="rgba(0,0,0,0.35)";ctx.beginPath();ctx.arc(ex+2,ey+2,erad,0,Math.PI*2);ctx.fill();
-      // 입체
-      const eg=ctx.createRadialGradient(ex-erad*0.3,ey-erad*0.3,erad*0.1,ex,ey,erad);
-      eg.addColorStop(0,baseCol);eg.addColorStop(0.5,hr(baseCol,0.67));eg.addColorStop(1,"rgba(0,0,0,0.8)");
-      if(e.isBoss){ctx.save();ctx.shadowColor="#f00";ctx.shadowBlur=15;}
-      else if(e.isMid){ctx.save();ctx.shadowColor="#f80";ctx.shadowBlur=8;}
-      ctx.fillStyle=eg;ctx.beginPath();ctx.arc(ex,ey,erad,0,Math.PI*2);ctx.fill();
-      if(e.isBoss||e.isMid)ctx.restore();
-      // 하이라이트
-      const ehl=ctx.createRadialGradient(ex-erad*0.35,ey-erad*0.35,0,ex-erad*0.2,ey-erad*0.2,erad*0.45);
-      ehl.addColorStop(0,"rgba(255,255,255,0.35)");ehl.addColorStop(1,"rgba(255,255,255,0)");
-      ctx.fillStyle=ehl;ctx.beginPath();ctx.arc(ex,ey,erad,0,Math.PI*2);ctx.fill();
-      if(e.isBoss){ctx.fillStyle="#faa";ctx.font="bold 8px sans-serif";ctx.fillText("BOSS",e.x+8,ey+3);}
-      else if(e.isMid){ctx.fillStyle="#fda";ctx.font="bold 7px sans-serif";ctx.fillText("MID",e.x+11,ey+3);}
-      else{ctx.font="14px serif";ctx.fillText(e.type==="일반"?"👾":e.type==="은신"?"🥷":"🦅",e.x+10,e.y+29);}
+      ctx.fillStyle="#333";ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw,5);
+      ctx.fillStyle=e.isBoss?"#f44":e.isMid?"#fa0":hR>0.5?"#4f4":hR>0.25?"#fa0":"#f44";
+      ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw*hR,5);
+      const rad=e.isBoss?CS/2:e.isMid?CS/2-2:CS/2-4;
+      ctx.fillStyle=e.isBoss?"#800":e.isMid?"#850":e.type==="일반"?"#c44":e.type==="은신"?"#646":"#44c";
+      ctx.beginPath();ctx.arc(e.x+CS/2,e.y+CS/2,rad,0,Math.PI*2);ctx.fill();
+      if(e.isBoss){ctx.fillStyle="#faa";ctx.font="bold 8px sans-serif";ctx.fillText("BOSS",e.x+8,e.y+CS/2+3);}
+      else if(e.isMid){ctx.fillStyle="#fda";ctx.font="bold 7px sans-serif";ctx.fillText("MID",e.x+11,e.y+CS/2+3);}
+      else{ctx.font="15px serif";ctx.fillText(e.type==="일반"?"👾":e.type==="은신"?"🥷":"🦅",e.x+10,e.y+29);}
       ctx.globalAlpha=1;
     }
-    // 투사체
-    for(const p of g.projs){
-      ctx.save();ctx.shadowColor=p.color||"#ff0";ctx.shadowBlur=6;
-      ctx.fillStyle=p.color||"#ff0";ctx.beginPath();ctx.arc(p.x,p.y,p.size||4,0,Math.PI*2);ctx.fill();
-      ctx.restore();
-    }
+    for(const p of g.projs){ctx.fillStyle=p.color||"#ff0";ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();}
   },[selHero]);
 
   const gameLoop=useCallback((t)=>{
@@ -453,9 +308,6 @@ export default function App(){
     }
     for(const e of g.enemies){
       if(e.remove)continue;
-      if(!e.baseSpeed)e.baseSpeed=e.speed;
-      if(e.slowTimer>0){e.slowTimer-=dt;if(e.slowTimer<=0){e.speed=e.baseSpeed;e.slowTimer=0;}}
-      if(e.dotTimer>0){e.dotTimer-=dt;e.hp-=(e.dotDmg||0)*dt;if(e.dotTimer<=0){e.dotDmg=0;e.dotTimer=0;}}
       const[tc,tr]=TRACK[e.pathIdx];
       const tx=tc*CS,ty=tr*CS,dx=tx-e.x,dy=ty-e.y;
       const dist=Math.sqrt(dx*dx+dy*dy),mv=CS*e.speed*dt*1.5;
@@ -488,31 +340,7 @@ export default function App(){
         h.lastShot=g.gameTime;
         const baseAtk=((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk;
         const dmg=Math.floor(baseAtk*(1+buff.magic));
-        const col=EC[h.element]||"#ff0";
-        const at=h.atkType||"single";
-        const hx2=h.col*CS+CS/2,hy2=h.row*CS+CS/2;
-        if(at==="single"){
-          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:320,color:col,size:4});
-        }else if(at==="splash"){
-          const sr=2.2*CS;
-          for(const e2 of g.enemies){if(e2.remove)continue;const d2=Math.sqrt((e2.x+CS/2-near.x-CS/2)**2+(e2.y+CS/2-near.y-CS/2)**2);if(d2<sr)g.projs.push({x:hx2,y:hy2,tx:e2.x+CS/2,ty:e2.y+CS/2,tid:e2.id,dmg:d2<CS?dmg:Math.floor(dmg*0.5),spd:260,color:col,size:5});}
-        }else if(at==="pierce"){
-          const dx2=near.x+CS/2-hx2,dy2=near.y+CS/2-hy2,len=Math.sqrt(dx2*dx2+dy2*dy2)||1,nx=dx2/len,ny=dy2/len;
-          for(const e2 of g.enemies){if(e2.remove)continue;const ex=e2.x+CS/2,ey=e2.y+CS/2;const cross=Math.abs((ex-hx2)*ny-(ey-hy2)*nx);const dot=(ex-hx2)*nx+(ey-hy2)*ny;if(cross<CS*0.8&&dot>0)g.projs.push({x:hx2,y:hy2,tx:ex,ty:ey,tid:e2.id,dmg,spd:400,color:col,size:3});}
-        }else if(at==="chain"){
-          const ct=[near];const cr=2.5*CS;
-          for(const e2 of g.enemies){if(e2.remove||e2.id===near.id)continue;const d2=Math.sqrt((e2.x+CS/2-near.x-CS/2)**2+(e2.y+CS/2-near.y-CS/2)**2);if(d2<cr&&ct.length<4)ct.push(e2);}
-          ct.forEach((e2,i)=>{const prev=i===0?{x:hx2,y:hy2}:{x:ct[i-1].x+CS/2,y:ct[i-1].y+CS/2};g.projs.push({x:prev.x,y:prev.y,tx:e2.x+CS/2,ty:e2.y+CS/2,tid:e2.id,dmg:Math.floor(dmg*(1-i*0.15)),spd:350,color:col,size:4});});
-        }else if(at==="dot"){
-          near.dotDmg=(near.dotDmg||0)+dmg*0.25;near.dotTimer=4;
-          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:Math.floor(dmg*0.4),spd:250,color:"#4f4",size:4});
-        }else if(at==="slow"){
-          if(!near.baseSpeed)near.baseSpeed=near.speed;
-          near.slowTimer=2.5;near.speed=near.baseSpeed*0.45;
-          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:Math.floor(dmg*0.7),spd:290,color:"#88f",size:4});
-        }else if(at==="multi"){
-          for(let mi=0;mi<3;mi++){const sp=(mi-1)*0.12;const dx3=near.x+CS/2-hx2,dy3=near.y+CS/2-hy2,l3=Math.sqrt(dx3*dx3+dy3*dy3)||1;g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2+(dy3/l3)*sp*CS,ty:near.y+CS/2-(dx3/l3)*sp*CS,tid:near.id,dmg:Math.floor(dmg*0.45),spd:440,color:col,size:3});}
-        }
+        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0"});
       }
     }
     for(const p of g.projs){
@@ -650,8 +478,7 @@ export default function App(){
 
   // 등급별 강화 레벨 (전체 공유)
   // g.gradeEnhLv = {노말:0, 고급:0, ...}
-  
-const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
+  const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
   const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
 
   const getGradeEnhLv=(grade)=>(G.current.gradeEnhLv||{})[grade]||0;
@@ -891,7 +718,7 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {HH.map(h=>(
               <button key={h.id} onClick={()=>pickHidden(h)}
-                style={{background:h.color+"22",border:`1px solid ${h.color}`,borderRadius:8,padding:"6px 10px",cursor:"pointer",color:"#eee",fontSize:12,textAlign:"left"}}>
+                style={{background:hr(h.color,0.13),border:`1px solid ${h.color}`,borderRadius:8,padding:"6px 10px",cursor:"pointer",color:"#eee",fontSize:12,textAlign:"left"}}>
                 <div>{h.emoji} <b>{h.name}</b></div>
                 <div style={{fontSize:10,color:"#aaa",marginTop:2}}>{h.desc}</div>
               </button>
@@ -922,12 +749,13 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
             <div>
               <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{EN[selHeroObj.element]||selHeroObj.element} [{selHeroObj.grade}]</span>
               {selHeroObj.enhLv>0&&<span style={{color:"#fd0",marginLeft:6}}>+{selHeroObj.enhLv}</span>}
-              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor((selHeroObj.atk*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}% | <span style={{color:ATYPE[selHeroObj.atkType||"single"]?.color}}>{ATYPE[selHeroObj.atkType||"single"]?.label}</span></div>
+              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</div>
             </div>
             <button onClick={()=>setSelHero(null)} style={{marginLeft:"auto",background:"#333",border:"none",color:"#aaa",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>✕</button>
           </div>
           <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>
             <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>📍 이동</button>
+            <button onClick={()=>doEnhance(selHeroObj.id)} style={{background:"#553300",border:"1px solid #fd0",color:"#fd0",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>⬆️ 강화 ({enhCost(selHeroObj)}G)</button>
             <button onClick={()=>doSell(selHeroObj.id)} style={{background:"#3a1010",border:"1px solid #f66",color:"#f88",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>💰 판매 (+{SELL_PRICE[selHeroObj.grade]||5}G)</button>
           </div>
           {combOpts.length>0&&(
@@ -935,7 +763,7 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
               {combOpts.map((r,i)=>(
                 <button key={i} onClick={()=>doCombine(selHero,r)}
-                  style={{background:GC[r.g]+"22",border:`1px solid ${GC[r.g]}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#eee",fontSize:11}}>
+                  style={{background:hr(GC[r.g]||"#888",0.13),border:`1px solid ${GC[r.g]||"#888"}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#eee",fontSize:11}}>
                   {EE[r.r]||""} {EN[r.r]||r.r} <span style={{color:GC[r.g],fontSize:10}}>[{r.g}]</span>
                 </button>
               ))}
@@ -956,15 +784,15 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
                 boxShadow:isSel?"0 0 10px rgba(255,170,0,0.4)":"none"}}>
               <div style={{fontSize:17}}>{EE[h.element]||"?"}</div>
               <div style={{fontSize:7,color:"#888",lineHeight:1.1}}>{EN[h.element]||h.element}</div>
-              <div style={{fontSize:8,color:ATYPE[h.atkType||"single"]?.color||"#aaa"}}>{ATYPE[h.atkType||"single"]?.label||""}</div>
               <div style={{fontSize:9,color:GC[h.grade]}}>{h.grade}</div>
+              {h.enhLv>0&&<div style={{fontSize:8,color:"#fd0"}}>+{h.enhLv}</div>}
             </div>
           );
         })}
       </div>
       {/* 히든영웅 버프 */}
       {hd&&(
-        <div style={{width:"100%",maxWidth:440,background:hd.color+"18",border:`1px solid ${hd.color}44`,borderRadius:10,padding:"7px 12px",marginTop:4,fontSize:12}}>
+        <div style={{width:"100%",maxWidth:440,background:hr(hd.color,0.09),border:`1px solid ${hd.color}`,borderRadius:10,padding:"7px 12px",marginTop:4,fontSize:12}}>
           <span style={{color:hd.color,fontWeight:"bold"}}>{hd.emoji} {hd.name}</span>
           <span style={{color:"#aaffaa",marginLeft:8}}>🟢 {hd.desc}</span>
         </div>
@@ -1048,7 +876,7 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
               <div style={{fontSize:12,color:"#4f8",marginBottom:6}}>📦 보관함</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {stackEntries.map(([el,cnt])=>(
-                  <div key={el} style={{background:(EC[el]||"#888")+"22",border:`1px solid ${EC[el]||"#888"}`,borderRadius:10,padding:"6px 10px",textAlign:"center",minWidth:68}}>
+                  <div key={el} style={{background:hr(EC[el]||"#888",0.13),border:`1px solid ${EC[el]||"#888"}`,borderRadius:10,padding:"6px 10px",textAlign:"center",minWidth:68}}>
                     <div style={{fontSize:20}}>{EE[el]||"?"}</div>
                     <div style={{fontSize:11,color:"#eee"}}>{el}</div>
                     <div style={{fontSize:13,color:"#fd0",fontWeight:"bold",margin:"2px 0"}}>×{cnt}</div>
@@ -1073,7 +901,7 @@ const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불�
                   <span style={{fontSize:13}}>{EE[el]||""} {el} <b style={{color:"#aaa"}}>×{arr.length}</b></span>
                   <div style={{display:"flex",gap:4}}>
                     <button onClick={()=>doStack(el,1)}
-                      style={{background:"#4f8",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
+                      style={{background:"#4f844",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
                       넣기
                     </button>
                     <button onClick={()=>doStack(el,arr.length)}
