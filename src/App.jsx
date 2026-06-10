@@ -13,6 +13,28 @@ const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"�
   용암폭풍:"🪓",냉기폭풍:"🥶",어둠번개:"⚔️",성스러운얼음:"🧙",빛의해일:"🐲",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",천지개벽:"💥",용신:"🐉",신성폭풍:"🪽",혼돈:"🌀",허리케인:"🌊",
   폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",
   폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫"};
+const EN={
+  불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",
+  얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",
+  용암:"고블린",폭풍화염:"화염폭탄병",플라즈마:"번개도마뱀",증기:"안개유령",
+  빙하:"빙하유령",진흙:"진흙골렘",안개:"안개유령",번개폭풍:"폭풍매",
+  공허:"뱀파이어",공명:"음파박쥐",눈보라:"눈보라요정",성음:"신성슬라임",
+  암흑파동:"어둠임프",동토:"코볼트",돌풍:"돌풍조",화염폭풍:"임프",해일:"구울",
+  번개신:"스켈레톤",절대영도:"코볼트",신성광:"하피",심연:"좀비",
+  용암폭풍:"오크전사",냉기폭풍:"냉기마법사",어둠번개:"어둠기사",
+  성스러운얼음:"네크로맨서",빛의해일:"와이번",태풍:"폭풍독수리",
+  뇌신:"뇌신전사",빙하신:"빙하신수",빛의신:"신성폭격수",
+  어둠신:"드레드로드",천지개벽:"천지개벽",용신:"용신기사",
+  신성폭풍:"타락천사",혼돈:"혼돈술사",허리케인:"타락천사",
+  오크킹:"오크킹",리치킹:"리치킹",공허군주:"공허군주",타락신:"타락신",
+  어둠의군주:"어둠의군주",
+  폭풍신화:"폭풍의신",번개신화:"번개의신",빙하신화:"빙하의신",
+  광명신화:"광명의신",암흑신화:"암흑의신",창조신화:"창조신",
+  용왕신화:"용왕",신성신화:"신성군주",혼돈신화:"혼돈신",
+  폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",
+  광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",
+  용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",
+};
 const GC={노말:"#aaa",고급:"#4af",영웅:"#a4f",전설:"#fa0",신화:"#f44",불멸:"#f8f"};
 const ATK_MAP={노말:10,고급:25,영웅:45,전설:70,신화:100,불멸:150};
 const SELL_PRICE={노말:5,고급:10,영웅:20,전설:35,신화:50,불멸:75};
@@ -724,7 +746,7 @@ export default function App(){
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
             <span style={{fontSize:22}}>{EE[selHeroObj.element]||"?"}</span>
             <div>
-              <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{selHeroObj.element} [{selHeroObj.grade}]</span>
+              <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{EN[selHeroObj.element]||selHeroObj.element} [{selHeroObj.grade}]</span>
               {selHeroObj.enhLv>0&&<span style={{color:"#fd0",marginLeft:6}}>+{selHeroObj.enhLv}</span>}
               <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</div>
             </div>
@@ -741,7 +763,7 @@ export default function App(){
               {combOpts.map((r,i)=>(
                 <button key={i} onClick={()=>doCombine(selHero,r)}
                   style={{background:GC[r.g]+"22",border:`1px solid ${GC[r.g]}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#eee",fontSize:11}}>
-                  {EE[r.r]||""} {r.r} <span style={{color:GC[r.g],fontSize:10}}>[{r.g}]</span>
+                  {EE[r.r]||""} {EN[r.r]||r.r} <span style={{color:GC[r.g],fontSize:10}}>[{r.g}]</span>
                 </button>
               ))}
             </div></>
@@ -760,6 +782,7 @@ export default function App(){
                 borderRadius:8,padding:"5px 7px",cursor:"pointer",fontSize:13,minWidth:52,textAlign:"center",
                 boxShadow:isSel?"0 0 10px rgba(255,170,0,0.4)":"none"}}>
               <div style={{fontSize:17}}>{EE[h.element]||"?"}</div>
+              <div style={{fontSize:7,color:"#888",lineHeight:1.1}}>{EN[h.element]||h.element}</div>
               <div style={{fontSize:9,color:GC[h.grade]}}>{h.grade}</div>
               {h.enhLv>0&&<div style={{fontSize:8,color:"#fd0"}}>+{h.enhLv}</div>}
             </div>
@@ -1084,9 +1107,9 @@ export default function App(){
                   const can=myEls.has(r.a)&&myEls.has(r.b);
                   return(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:3,marginBottom:3,fontSize:11,opacity:can?1:0.3,filter:can?"none":"grayscale(100%)"}}>
-                      <span>{EE[r.a]||""}{r.a}</span><span style={{color:"#555"}}>+</span>
-                      <span>{EE[r.b]||""}{r.b}</span><span style={{color:"#555"}}>→</span>
-                      <span style={{color:can?GC[r.g]:"#555",fontWeight:"bold"}}>{EE[r.r]||""}{r.r}</span>
+                      <span>{EE[r.a]||""}{EN[r.a]||r.a}</span><span style={{color:"#555"}}>+</span>
+                      <span>{EE[r.b]||""}{EN[r.b]||r.b}</span><span style={{color:"#555"}}>→</span>
+                      <span style={{color:can?GC[r.g]:"#555",fontWeight:"bold"}}>{EE[r.r]||""}{EN[r.r]||r.r}</span>
                       {can&&<span style={{color:"#4f8",fontSize:9}}>✓</span>}
                     </div>
                   );
