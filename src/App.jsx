@@ -147,6 +147,10 @@ const GAMBLE_COIN=[
 ];
 
 let hid=1,eid=1;
+
+// 공격 타입
+const ATYPE={single:{label:"단일",color:"#aaa"},splash:{label:"범위",color:"#f80"},pierce:{label:"관통",color:"#4af"},chain:{label:"체인",color:"#f4f"},dot:{label:"독",color:"#4f4"},slow:{label:"슬로우",color:"#88f"},multi:{label:"연사",color:"#ff4"}};
+const ETYPE={불:"single",물:"slow",땅:"splash",바람:"pierce",전기:"chain",얼음:"slow",빛:"multi",어둠:"dot",소리:"splash",무속성:"single",용암:"splash",폭풍화염:"splash",플라즈마:"chain",증기:"slow",빙하:"slow",진흙:"slow",안개:"slow",번개폭풍:"chain",공허:"dot",공명:"splash",눈보라:"slow",성음:"multi",암흑파동:"dot",동토:"slow",돌풍:"pierce",화염폭풍:"splash",해일:"slow",번개신:"chain",절대영도:"slow",신성광:"multi",심연:"dot",용암폭풍:"splash",냉기폭풍:"slow",어둠번개:"chain",성스러운얼음:"slow",빛의해일:"splash",태풍:"pierce",뇌신:"chain",빙하신:"slow",빛의신:"multi",어둠신:"dot",천지개벽:"splash",용신:"pierce",신성폭풍:"splash",혼돈:"dot",허리케인:"pierce",폭풍신화:"pierce",번개신화:"chain",빙하신화:"slow",광명신화:"multi",암흑신화:"dot",창조신화:"splash",용왕신화:"splash",신성신화:"multi",혼돈신화:"dot",폭풍불멸:"pierce",번개불멸:"chain",빙하불멸:"slow",광명불멸:"multi",암흑불멸:"dot",창조불멸:"splash",용왕불멸:"splash",신성불멸:"multi",혼돈불멸:"dot",궁극불멸:"splash"};
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
   const bonus=lv>0?{atk:(["노말","고급","영웅","전설","신화","불멸"].includes(g)?[5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]:5)*lv,spd:0.05*lv}:{atk:0,spd:0};
@@ -507,35 +511,6 @@ export default function App(){
   // 등급별 강화 레벨 (전체 공유)
   // g.gradeEnhLv = {노말:0, 고급:0, ...}
   
-// 공격 타입 정의
-const ATYPE={
-  single:{label:"단일",color:"#aaa"},    // 가장 가까운 적 1개
-  splash:{label:"범위",color:"#f80"},    // 주변 범위 데미지
-  pierce:{label:"관통",color:"#4af"},    // 직선 관통
-  chain:{label:"체인",color:"#f4f"},     // 적에서 적으로 튕김
-  dot:{label:"독",color:"#4f4"},         // 지속 피해
-  slow:{label:"슬로우",color:"#88f"},    // 이동속도 감소
-  multi:{label:"연사",color:"#ff4"},     // 다발 공격
-};
-// 속성별 공격 타입
-const ETYPE={
-  불:"single",물:"slow",땅:"splash",바람:"pierce",전기:"chain",
-  얼음:"slow",빛:"multi",어둠:"dot",소리:"splash",무속성:"single",
-  용암:"splash",폭풍화염:"splash",플라즈마:"chain",증기:"slow",
-  빙하:"slow",진흙:"slow",안개:"slow",번개폭풍:"chain",
-  공허:"dot",공명:"splash",눈보라:"slow",성음:"multi",
-  암흑파동:"dot",동토:"slow",돌풍:"pierce",화염폭풍:"splash",해일:"slow",
-  번개신:"chain",절대영도:"slow",신성광:"multi",심연:"dot",
-  용암폭풍:"splash",냉기폭풍:"slow",어둠번개:"chain",
-  성스러운얼음:"slow",빛의해일:"splash",태풍:"pierce",
-  뇌신:"chain",빙하신:"slow",빛의신:"multi",어둠신:"dot",
-  천지개벽:"splash",용신:"pierce",신성폭풍:"splash",혼돈:"dot",허리케인:"pierce",
-  폭풍신화:"pierce",번개신화:"chain",빙하신화:"slow",광명신화:"multi",
-  암흑신화:"dot",창조신화:"splash",용왕신화:"splash",신성신화:"multi",혼돈신화:"dot",
-  폭풍불멸:"pierce",번개불멸:"chain",빙하불멸:"slow",광명불멸:"multi",
-  암흑불멸:"dot",창조불멸:"splash",용왕불멸:"splash",신성불멸:"multi",혼돈불멸:"dot",
-  궁극불멸:"splash",
-};
 const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
   const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
 
