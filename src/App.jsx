@@ -150,17 +150,17 @@ let hid=1,eid=1;
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
   const bonus=lv>0?{atk:(["노말","고급","영웅","전설","신화","불멸"].includes(g)?[5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]:5)*lv,spd:0.05*lv}:{atk:0,spd:0};
-  return{id:hid++,element:el,grade:g,atk:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:3.5,col:null,row:null,lastShot:0,enhLv:0};
+  return{id:hid++,element:el,grade:g,atk:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:3.5,col:null,row:null,lastShot:0,enhLv:0,atkType:ETYPE[el]||"single",slowTimer:0,dotDmg:0,dotTimer:0};
 };
 const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
-  const base=isBoss?3000+fl*800+rnd*200:isMid?1000+fl*300+rnd*100:(60+fl*30)+rnd*15;
+  const base=isBoss?6000+fl*1600+rnd*400:isMid?2000+fl*600+rnd*200:(120+fl*60)+rnd*30;
   const hp=Math.floor(type==="은신"?base*0.8:type==="공중"?base*1.2:base);
   return{id:eid++,type,hp,maxHp:hp,pathIdx:0,laps:0,
     x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,
     speed:isBoss?0.6:isMid?0.8:type==="공중"?1.4:1.0,
     dmg:isBoss?5:isMid?3:1,remove:false,rewarded:false,
     isBoss,isMid,maxLaps:isBoss||isMid?5:3,
-    reward:isBoss?50:isMid?10:1};
+    reward:isBoss?50:isMid?10:1,slowTimer:0,dotDmg:0,dotTimer:0,baseSpeed:isBoss?0.6:isMid?0.8:0};
 };
 const autoPlace=(heroes)=>{
   const used=new Set(heroes.filter(x=>x.col!==null).map(x=>`${x.col},${x.row}`));
@@ -273,6 +273,8 @@ export default function App(){
     for(const e of g.enemies){
       if(e.remove)continue;
       if(e.type==="은신")ctx.globalAlpha=0.35;
+      if(e.slowTimer>0){ctx.fillStyle="rgba(80,80,255,0.25)";ctx.fillRect(e.x,e.y,CS,CS);}
+      if(e.dotTimer>0){ctx.fillStyle="rgba(0,255,80,0.2)";ctx.fillRect(e.x,e.y,CS,CS);}
       const hR=e.hp/e.maxHp;
       const bw=e.isBoss?CS*1.3:e.isMid?CS*1.1:CS-4;
       ctx.fillStyle="#333";ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw,5);
@@ -286,7 +288,7 @@ export default function App(){
       else{ctx.font="15px serif";ctx.fillText(e.type==="일반"?"👾":e.type==="은신"?"🥷":"🦅",e.x+10,e.y+29);}
       ctx.globalAlpha=1;
     }
-    for(const p of g.projs){ctx.fillStyle=p.color||"#ff0";ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();}
+    for(const p of g.projs){ctx.fillStyle=p.color||"#ff0";ctx.beginPath();ctx.arc(p.x,p.y,p.size||4,0,Math.PI*2);ctx.fill();}
   },[selHero]);
 
   const gameLoop=useCallback((t)=>{
@@ -307,6 +309,9 @@ export default function App(){
     }
     for(const e of g.enemies){
       if(e.remove)continue;
+      if(!e.baseSpeed)e.baseSpeed=e.speed;
+      if(e.slowTimer>0){e.slowTimer-=dt;if(e.slowTimer<=0){e.speed=e.baseSpeed;e.slowTimer=0;}}
+      if(e.dotTimer>0){e.dotTimer-=dt;e.hp-=(e.dotDmg||0)*dt;if(e.dotTimer<=0){e.dotDmg=0;e.dotTimer=0;}}
       const[tc,tr]=TRACK[e.pathIdx];
       const tx=tc*CS,ty=tr*CS,dx=tx-e.x,dy=ty-e.y;
       const dist=Math.sqrt(dx*dx+dy*dy),mv=CS*e.speed*dt*1.5;
@@ -339,7 +344,31 @@ export default function App(){
         h.lastShot=g.gameTime;
         const baseAtk=((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk;
         const dmg=Math.floor(baseAtk*(1+buff.magic));
-        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0"});
+        const col=EC[h.element]||"#ff0";
+        const at=h.atkType||"single";
+        const hx2=h.col*CS+CS/2,hy2=h.row*CS+CS/2;
+        if(at==="single"){
+          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:320,color:col,size:4});
+        }else if(at==="splash"){
+          const sr=2.2*CS;
+          for(const e2 of g.enemies){if(e2.remove)continue;const d2=Math.sqrt((e2.x+CS/2-near.x-CS/2)**2+(e2.y+CS/2-near.y-CS/2)**2);if(d2<sr)g.projs.push({x:hx2,y:hy2,tx:e2.x+CS/2,ty:e2.y+CS/2,tid:e2.id,dmg:d2<CS?dmg:Math.floor(dmg*0.5),spd:260,color:col,size:5});}
+        }else if(at==="pierce"){
+          const dx2=near.x+CS/2-hx2,dy2=near.y+CS/2-hy2,len=Math.sqrt(dx2*dx2+dy2*dy2)||1,nx=dx2/len,ny=dy2/len;
+          for(const e2 of g.enemies){if(e2.remove)continue;const ex=e2.x+CS/2,ey=e2.y+CS/2;const cross=Math.abs((ex-hx2)*ny-(ey-hy2)*nx);const dot=(ex-hx2)*nx+(ey-hy2)*ny;if(cross<CS*0.8&&dot>0)g.projs.push({x:hx2,y:hy2,tx:ex,ty:ey,tid:e2.id,dmg,spd:400,color:col,size:3});}
+        }else if(at==="chain"){
+          const ct=[near];const cr=2.5*CS;
+          for(const e2 of g.enemies){if(e2.remove||e2.id===near.id)continue;const d2=Math.sqrt((e2.x+CS/2-near.x-CS/2)**2+(e2.y+CS/2-near.y-CS/2)**2);if(d2<cr&&ct.length<4)ct.push(e2);}
+          ct.forEach((e2,i)=>{const prev=i===0?{x:hx2,y:hy2}:{x:ct[i-1].x+CS/2,y:ct[i-1].y+CS/2};g.projs.push({x:prev.x,y:prev.y,tx:e2.x+CS/2,ty:e2.y+CS/2,tid:e2.id,dmg:Math.floor(dmg*(1-i*0.15)),spd:350,color:col,size:4});});
+        }else if(at==="dot"){
+          near.dotDmg=(near.dotDmg||0)+dmg*0.25;near.dotTimer=4;
+          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:Math.floor(dmg*0.4),spd:250,color:"#4f4",size:4});
+        }else if(at==="slow"){
+          if(!near.baseSpeed)near.baseSpeed=near.speed;
+          near.slowTimer=2.5;near.speed=near.baseSpeed*0.45;
+          g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:Math.floor(dmg*0.7),spd:290,color:"#88f",size:4});
+        }else if(at==="multi"){
+          for(let mi=0;mi<3;mi++){const sp=(mi-1)*0.12;const dx3=near.x+CS/2-hx2,dy3=near.y+CS/2-hy2,l3=Math.sqrt(dx3*dx3+dy3*dy3)||1;g.projs.push({x:hx2,y:hy2,tx:near.x+CS/2+(dy3/l3)*sp*CS,ty:near.y+CS/2-(dx3/l3)*sp*CS,tid:near.id,dmg:Math.floor(dmg*0.45),spd:440,color:col,size:3});}
+        }
       }
     }
     for(const p of g.projs){
@@ -477,7 +506,37 @@ export default function App(){
 
   // 등급별 강화 레벨 (전체 공유)
   // g.gradeEnhLv = {노말:0, 고급:0, ...}
-  const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
+  
+// 공격 타입 정의
+const ATYPE={
+  single:{label:"단일",color:"#aaa"},    // 가장 가까운 적 1개
+  splash:{label:"범위",color:"#f80"},    // 주변 범위 데미지
+  pierce:{label:"관통",color:"#4af"},    // 직선 관통
+  chain:{label:"체인",color:"#f4f"},     // 적에서 적으로 튕김
+  dot:{label:"독",color:"#4f4"},         // 지속 피해
+  slow:{label:"슬로우",color:"#88f"},    // 이동속도 감소
+  multi:{label:"연사",color:"#ff4"},     // 다발 공격
+};
+// 속성별 공격 타입
+const ETYPE={
+  불:"single",물:"slow",땅:"splash",바람:"pierce",전기:"chain",
+  얼음:"slow",빛:"multi",어둠:"dot",소리:"splash",무속성:"single",
+  용암:"splash",폭풍화염:"splash",플라즈마:"chain",증기:"slow",
+  빙하:"slow",진흙:"slow",안개:"slow",번개폭풍:"chain",
+  공허:"dot",공명:"splash",눈보라:"slow",성음:"multi",
+  암흑파동:"dot",동토:"slow",돌풍:"pierce",화염폭풍:"splash",해일:"slow",
+  번개신:"chain",절대영도:"slow",신성광:"multi",심연:"dot",
+  용암폭풍:"splash",냉기폭풍:"slow",어둠번개:"chain",
+  성스러운얼음:"slow",빛의해일:"splash",태풍:"pierce",
+  뇌신:"chain",빙하신:"slow",빛의신:"multi",어둠신:"dot",
+  천지개벽:"splash",용신:"pierce",신성폭풍:"splash",혼돈:"dot",허리케인:"pierce",
+  폭풍신화:"pierce",번개신화:"chain",빙하신화:"slow",광명신화:"multi",
+  암흑신화:"dot",창조신화:"splash",용왕신화:"splash",신성신화:"multi",혼돈신화:"dot",
+  폭풍불멸:"pierce",번개불멸:"chain",빙하불멸:"slow",광명불멸:"multi",
+  암흑불멸:"dot",창조불멸:"splash",용왕불멸:"splash",신성불멸:"multi",혼돈불멸:"dot",
+  궁극불멸:"splash",
+};
+const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
   const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
 
   const getGradeEnhLv=(grade)=>(G.current.gradeEnhLv||{})[grade]||0;
@@ -748,13 +807,12 @@ export default function App(){
             <div>
               <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{EN[selHeroObj.element]||selHeroObj.element} [{selHeroObj.grade}]</span>
               {selHeroObj.enhLv>0&&<span style={{color:"#fd0",marginLeft:6}}>+{selHeroObj.enhLv}</span>}
-              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</div>
+              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor((selHeroObj.atk*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}% | <span style={{color:ATYPE[selHeroObj.atkType||"single"]?.color}}>{ATYPE[selHeroObj.atkType||"single"]?.label}</span></div>
             </div>
             <button onClick={()=>setSelHero(null)} style={{marginLeft:"auto",background:"#333",border:"none",color:"#aaa",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>✕</button>
           </div>
           <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>
             <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>📍 이동</button>
-            <button onClick={()=>doEnhance(selHeroObj.id)} style={{background:"#553300",border:"1px solid #fd0",color:"#fd0",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>⬆️ 강화 ({enhCost(selHeroObj)}G)</button>
             <button onClick={()=>doSell(selHeroObj.id)} style={{background:"#3a1010",border:"1px solid #f66",color:"#f88",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>💰 판매 (+{SELL_PRICE[selHeroObj.grade]||5}G)</button>
           </div>
           {combOpts.length>0&&(
@@ -783,8 +841,8 @@ export default function App(){
                 boxShadow:isSel?"0 0 10px rgba(255,170,0,0.4)":"none"}}>
               <div style={{fontSize:17}}>{EE[h.element]||"?"}</div>
               <div style={{fontSize:7,color:"#888",lineHeight:1.1}}>{EN[h.element]||h.element}</div>
+              <div style={{fontSize:8,color:ATYPE[h.atkType||"single"]?.color||"#aaa"}}>{ATYPE[h.atkType||"single"]?.label||""}</div>
               <div style={{fontSize:9,color:GC[h.grade]}}>{h.grade}</div>
-              {h.enhLv>0&&<div style={{fontSize:8,color:"#fd0"}}>+{h.enhLv}</div>}
             </div>
           );
         })}
