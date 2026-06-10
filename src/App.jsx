@@ -254,7 +254,7 @@ export default function App(){
     }
     if(g.hiddenHero){
       const hd=HH.find(h=>h.id===g.hiddenHero.id);
-      ctx.fillStyle=(hd?.color||"#888")+"55";ctx.fillRect(CX*CS,CY*CS,CS,CS);
+      ctx.fillStyle=hr(hd?.color||"#888888",0.33);ctx.fillRect(CX*CS,CY*CS,CS,CS);
       ctx.font="24px serif";ctx.fillText(hd?.emoji||"?",CX*CS+11,CY*CS+30);
       ctx.fillStyle="#aaffaa";ctx.font="bold 7px sans-serif";ctx.fillText("BUFF",CX*CS+14,CY*CS+44);
     }else{
@@ -454,6 +454,13 @@ export default function App(){
   const pickHidden=(h)=>{
     const g=G.current;
     g.hiddenHero={...h,id:h.id};
+    // 미배치 유닛들 자동 배치
+    for(const hero of g.heroes){
+      if(hero.col===null){
+        const pos=autoPlace(g.heroes);
+        if(pos){hero.col=pos[0];hero.row=pos[1];}
+      }
+    }
     setSelH(h.id);draw();
     setCountdown(3);let cd=3;
     const iv=setInterval(()=>{cd--;setCountdown(cd);if(cd<=0){clearInterval(iv);if(!G.current.over)autoStart(G.current);}},1000);
