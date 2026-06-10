@@ -264,10 +264,60 @@ export default function App(){
     for(const h of g.heroes){
       if(h.col===null)continue;
       const sel=h.id===dragR.current||h.id===selHero;
-      ctx.fillStyle=(EC[h.element]||"#888")+(sel?"aa":"55");
-      ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
-      if(sel){ctx.strokeStyle="#ffd700";ctx.lineWidth=2;ctx.strokeRect(h.col*CS+1,h.row*CS+1,CS-2,CS-2);ctx.lineWidth=1;}
-      ctx.font="20px serif";ctx.fillText(EE[h.element]||"?",h.col*CS+10,h.row*CS+28);
+      const ux=h.col*CS+CS/2,uy=h.row*CS+CS/2,rad=CS/2-2;
+      const uc=EC[h.element]||"#888",gr=GC[h.grade]||"#aaa";
+
+      // 그림자
+      ctx.save();
+      ctx.shadowColor="rgba(0,0,0,0.6)";ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+      ctx.fillStyle="rgba(0,0,0,0.3)";
+      ctx.beginPath();ctx.arc(ux+2,uy+2,rad,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+
+      // 등급별 글로우
+      if(sel||["불멸","신화","전설"].includes(h.grade)){
+        ctx.save();
+        ctx.shadowColor=sel?"#ffd700":gr;
+        ctx.shadowBlur=sel?20:h.grade==="불멸"?15:h.grade==="신화"?10:5;
+        ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(ux,uy,rad+1,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
+
+      // 원형 클리핑 + 이미지
+      ctx.save();
+      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.clip();
+
+      // 배경 그라디언트
+      const bg=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.3,0,ux,uy,rad);
+      bg.addColorStop(0,uc);bg.addColorStop(1,"#111");
+      ctx.fillStyle=bg;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+
+      // 유닛 이미지
+      const spr=SPRITE_CACHE[h.element];
+      if(spr&&spr.complete&&spr.naturalWidth>0){
+        ctx.drawImage(spr,h.col*CS,h.row*CS,CS,CS);
+      }else{
+        ctx.font="20px serif";ctx.fillText(EE[h.element]||"?",h.col*CS+10,h.row*CS+28);
+      }
+      ctx.restore();
+
+      // 하이라이트 (빛 반사)
+      ctx.save();
+      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.clip();
+      const hl=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.4,0,ux,uy,rad);
+      hl.addColorStop(0,"rgba(255,255,255,0.35)");hl.addColorStop(0.5,"rgba(255,255,255,0)");
+      ctx.fillStyle=hl;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+      ctx.restore();
+
+      // 원형 테두리
+      ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=sel?2:1;
+      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=1;
+
+      // 등급 텍스트
+      ctx.fillStyle=gr;ctx.font="bold 7px sans-serif";
+      ctx.fillText(h.grade,h.col*CS+2,h.row*CS+CS-3);
       ctx.fillStyle=GC[h.grade]||"#fff";ctx.font="bold 7px sans-serif";ctx.fillText(h.grade,h.col*CS+2,h.row*CS+40);
       if(h.enhLv>0){ctx.fillStyle="#fd0";ctx.font="bold 8px sans-serif";ctx.fillText(`+${h.enhLv}`,h.col*CS+32,h.row*CS+14);}
     }
