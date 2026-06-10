@@ -268,52 +268,52 @@ export default function App(){
       const uc=EC[h.element]||"#888",gr=GC[h.grade]||"#aaa";
 
       // 그림자
-      ctx.save();
-      ctx.shadowColor="rgba(0,0,0,0.6)";ctx.shadowBlur=8;ctx.shadowOffsetY=3;
-      ctx.fillStyle="rgba(0,0,0,0.3)";
-      ctx.beginPath();ctx.arc(ux+2,uy+2,rad,0,Math.PI*2);ctx.fill();
-      ctx.restore();
+      ctx.beginPath();ctx.arc(ux+2,uy+3,rad,0,Math.PI*2);
+      ctx.fillStyle="rgba(0,0,0,0.4)";ctx.fill();
 
-      // 등급별 글로우
-      if(sel||["불멸","신화","전설"].includes(h.grade)){
-        ctx.save();
-        ctx.shadowColor=sel?"#ffd700":gr;
-        ctx.shadowBlur=sel?20:h.grade==="불멸"?15:h.grade==="신화"?10:5;
-        ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=2;
-        ctx.beginPath();ctx.arc(ux,uy,rad+1,0,Math.PI*2);ctx.stroke();
-        ctx.restore();
-      }
-
-      // 원형 클리핑 + 이미지
+      // 원형 클리핑 영역
       ctx.save();
       ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.clip();
 
-      // 배경 그라디언트
-      const bg=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.3,0,ux,uy,rad);
-      bg.addColorStop(0,uc);bg.addColorStop(1,"#111");
-      ctx.fillStyle=bg;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+      // 배경
+      const bg=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.3,1,ux,uy,rad);
+      bg.addColorStop(0,uc);bg.addColorStop(1,"rgba(0,0,0,0.8)");
+      ctx.fillStyle=bg;ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.fill();
 
       // 유닛 이미지
       const spr=SPRITE_CACHE[h.element];
       if(spr&&spr.complete&&spr.naturalWidth>0){
         ctx.drawImage(spr,h.col*CS,h.row*CS,CS,CS);
       }else{
-        ctx.font="20px serif";ctx.fillText(EE[h.element]||"?",h.col*CS+10,h.row*CS+28);
+        ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText(EE[h.element]||"?",ux,uy);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";
       }
-      ctx.restore();
 
-      // 하이라이트 (빛 반사)
-      ctx.save();
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.clip();
-      const hl=ctx.createRadialGradient(ux-rad*0.3,uy-rad*0.4,0,ux,uy,rad);
-      hl.addColorStop(0,"rgba(255,255,255,0.35)");hl.addColorStop(0.5,"rgba(255,255,255,0)");
+      // 하이라이트
+      const hl=ctx.createRadialGradient(ux-rad*0.35,uy-rad*0.4,0,ux,uy,rad);
+      hl.addColorStop(0,"rgba(255,255,255,0.4)");hl.addColorStop(0.6,"rgba(255,255,255,0)");
       ctx.fillStyle=hl;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+
       ctx.restore();
 
-      // 원형 테두리
-      ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=sel?2:1;
+      // 테두리
+      ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=sel?2.5:1.5;
       ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.stroke();
       ctx.lineWidth=1;
+
+      // 선택 글로우
+      if(sel){
+        ctx.save();ctx.shadowColor="#ffd700";ctx.shadowBlur=15;
+        ctx.strokeStyle="#ffd700";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(ux,uy,rad+2,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }else if(["불멸","신화","전설"].includes(h.grade)){
+        ctx.save();ctx.shadowColor=gr;ctx.shadowBlur=8;
+        ctx.strokeStyle=gr;ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
 
       // 등급 텍스트
       ctx.fillStyle=gr;ctx.font="bold 7px sans-serif";
