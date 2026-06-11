@@ -198,7 +198,7 @@ const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):null;
 return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:isIce?iceCfg.range:3.5,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
 };
 const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
-  const base=isBoss?3000+fl*800+rnd*200:isMid?1000+fl*300+rnd*100:(60+fl*30)+rnd*15;
+  const base=isBoss?4000+fl*1000+rnd*200:isMid?1500+fl*400+rnd*150:(150+fl*80)+rnd*40;
   const hp=Math.floor(type==="은신"?base*0.8:type==="공중"?base*1.2:base);
   return{id:eid++,type,hp,maxHp:hp,pathIdx:0,laps:0,
     x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,
@@ -222,7 +222,7 @@ const initGame=()=>({
   total:0,running:false,spawnT:0,spawnC:0,maxSpawn:15,
   cleared:false,floorDone:false,over:false,
   bossSpawned:false,midSpawned:false,
-  stacks:{},gameTime:0,gradeEnhLv:{}, // {element: count} 뭉쳐진 유닛 보관함
+  stacks:{},gameTime:0,gradeEnhLv:{},
 });
 
 function Overlay({children}){
@@ -386,7 +386,7 @@ export default function App(){
     g.enemies=g.enemies.filter(e=>!e.remove&&e.hp>0);
     g.total=g.enemies.length;
     if(g.total>=30){g.over=true;g.running=false;sync();draw();return;}
-    g.gameTime=(g.gameTime||0)+dt; // 배속 반영된 게임시간 누적
+    g.gameTime=(g.gameTime||0)+dt;
     const buff=getBuff();
     const allH=g.heroes.filter(h=>h.col!==null);
     for(const h of allH){
