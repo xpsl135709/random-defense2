@@ -314,13 +314,10 @@ export default function App(){
       // 선택 배경
       if(sel){ctx.fillStyle="rgba(255,215,0,0.15)";ctx.fillRect(hx,hy,CS,CS);}
 
-      // 스프라이트 이미지 - 가운데 정렬
+      // 스프라이트 이미지 - 칸에 꽉 차게
       const spr=SPRITE_CACHE[h.element];
       if(spr&&spr.complete&&spr.naturalWidth>0){
-        const iw=spr.naturalWidth,ih=spr.naturalHeight;
-        const scale=Math.min(CS/iw,CS/ih);
-        const dw=iw*scale,dh=ih*scale;
-        ctx.drawImage(spr,hx+(CS-dw)/2,hy+(CS-dh)/2,dw,dh);
+        ctx.drawImage(spr,hx,hy,CS,CS);
       }else{
         ctx.fillStyle=gr+"33";ctx.fillRect(hx,hy,CS,CS);
         ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";
@@ -446,7 +443,7 @@ export default function App(){
     if(spawnDone&&g.enemies.length===0&&!g.cleared){
       g.running=false;g.cleared=true;
       if(isMidRound||isBossRound)g.coins+=1;
-      const clearGold=isBossRound?100:isMidRound?50:10;
+      const clearGold=isBossRound?100:isMidRound?50:30;
       g.gold+=clearGold;
       if(g.round===10){
         g.floorDone=true;
