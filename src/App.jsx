@@ -298,9 +298,18 @@ export default function App(){
         ctx.textAlign="left";ctx.textBaseline="alphabetic";
       }
 
-      // 하이라이트
-      ctx.fillStyle="rgba(255,255,255,0.25)";
-      ctx.fillRect(h.col*CS,h.row*CS,CS,CS*0.45);
+      // 하이라이트 (위에 올려서 3D 효과)
+      // 엣지 어둠 (구체 가장자리 그림자)
+      const edge=ctx.createRadialGradient(ux,uy,rad*0.5,ux,uy,rad);
+      edge.addColorStop(0,"rgba(0,0,0,0)");
+      edge.addColorStop(1,"rgba(0,0,0,0.55)");
+      ctx.fillStyle=edge;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
+      // 빛 반사 (왼쪽 위)
+      const hl2=ctx.createRadialGradient(ux-rad*0.35,uy-rad*0.4,0,ux-rad*0.1,uy-rad*0.1,rad*0.75);
+      hl2.addColorStop(0,"rgba(255,255,255,0.55)");
+      hl2.addColorStop(0.4,"rgba(255,255,255,0.15)");
+      hl2.addColorStop(1,"rgba(255,255,255,0)");
+      ctx.fillStyle=hl2;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
 
       ctx.restore();
 
