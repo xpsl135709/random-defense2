@@ -308,61 +308,32 @@ export default function App(){
     for(const h of g.heroes){
       if(h.col===null)continue;
       const sel=h.id===dragR.current||h.id===selHero;
-      const ux=h.col*CS+CS/2,uy=h.row*CS+CS/2,rad=CS/2-3;
-      const uc=EC[h.element]||"#888888",gr=GC[h.grade]||"#aaaaaa";
+      const hx=h.col*CS,hy=h.row*CS;
+      const gr=GC[h.grade]||"#aaaaaa";
 
-      ctx.save();
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.clip();
+      // 선택 배경
+      if(sel){ctx.fillStyle="rgba(255,215,0,0.15)";ctx.fillRect(hx,hy,CS,CS);}
 
-      // 배경
-      try{
-        const bg=ctx.createRadialGradient(ux-4,uy-4,2,ux,uy,rad);
-        bg.addColorStop(0,uc);bg.addColorStop(1,"#111111");
-        ctx.fillStyle=bg;
-      }catch(e){ctx.fillStyle=uc;}
-      ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
-
-      // 스프라이트 - 원 중앙에 꽉 차게
+      // 스프라이트 이미지
       const spr=SPRITE_CACHE[h.element];
       if(spr&&spr.complete&&spr.naturalWidth>0){
-        // 이미지 비율 유지하면서 원에 꽉 차게
-        const iw=spr.naturalWidth,ih=spr.naturalHeight;
-        const scale=Math.max(rad*2/iw,rad*2/ih)*1.1;
-        const dw=iw*scale,dh=ih*scale;
-        ctx.drawImage(spr,ux-dw/2,uy-dh/2,dw,dh);
+        ctx.drawImage(spr,hx,hy,CS,CS);
       }else{
-        ctx.fillStyle="#fff";ctx.font="18px serif";
-        ctx.textAlign="center";ctx.textBaseline="middle";
-        ctx.fillText(EE[h.element]||"?",ux,uy);
+        ctx.fillStyle=gr+"33";ctx.fillRect(hx,hy,CS,CS);
+        ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillStyle="#fff";ctx.fillText(EE[h.element]||"?",hx+CS/2,hy+CS/2);
         ctx.textAlign="left";ctx.textBaseline="alphabetic";
+        loadSprite(h.element);
       }
 
-      // 하이라이트 (위에 올려서 3D 효과)
-      // 엣지 어둠 (구체 가장자리 그림자)
-      const edge=ctx.createRadialGradient(ux,uy,rad*0.5,ux,uy,rad);
-      edge.addColorStop(0,"rgba(0,0,0,0)");
-      edge.addColorStop(1,"rgba(0,0,0,0.55)");
-      ctx.fillStyle=edge;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
-      // 빛 반사 (왼쪽 위)
-      const hl2=ctx.createRadialGradient(ux-rad*0.35,uy-rad*0.4,0,ux-rad*0.1,uy-rad*0.1,rad*0.75);
-      hl2.addColorStop(0,"rgba(255,255,255,0.55)");
-      hl2.addColorStop(0.4,"rgba(255,255,255,0.15)");
-      hl2.addColorStop(1,"rgba(255,255,255,0)");
-      ctx.fillStyle=hl2;ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
-
-      ctx.restore();
-
       // 테두리
-      ctx.strokeStyle=sel?"#ffd700":gr;
-      ctx.lineWidth=sel?2.5:1.5;
-      ctx.beginPath();ctx.arc(ux,uy,rad,0,Math.PI*2);ctx.stroke();
-      ctx.lineWidth=1;
+      ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=sel?2.5:1;
+      ctx.strokeRect(hx,hy,CS,CS);ctx.lineWidth=1;
 
       // 등급 텍스트
       ctx.fillStyle=gr;ctx.font="bold 7px sans-serif";
-      ctx.fillText(h.grade,h.col*CS+2,h.row*CS+CS-3);
-      ctx.fillStyle=GC[h.grade]||"#fff";ctx.font="bold 7px sans-serif";ctx.fillText(h.grade,h.col*CS+2,h.row*CS+40);
-      if(h.enhLv>0){ctx.fillStyle="#fd0";ctx.font="bold 8px sans-serif";ctx.fillText(`+${h.enhLv}`,h.col*CS+32,h.row*CS+14);}
+      ctx.fillText(h.grade,hx+2,hy+CS-3);
+      if(h.enhLv>0){ctx.fillStyle="#fd0";ctx.font="bold 8px sans-serif";ctx.fillText(`+${h.enhLv}`,hx+32,hy+14);}
     }
     for(const e of g.enemies){
       if(e.remove)continue;
