@@ -322,10 +322,14 @@ export default function App(){
       }catch(e){ctx.fillStyle=uc;}
       ctx.fillRect(h.col*CS,h.row*CS,CS,CS);
 
-      // 스프라이트
+      // 스프라이트 - 원 중앙에 꽉 차게
       const spr=SPRITE_CACHE[h.element];
       if(spr&&spr.complete&&spr.naturalWidth>0){
-        ctx.drawImage(spr,h.col*CS,h.row*CS,CS,CS);
+        // 이미지 비율 유지하면서 원에 꽉 차게
+        const iw=spr.naturalWidth,ih=spr.naturalHeight;
+        const scale=Math.max(rad*2/iw,rad*2/ih)*1.1;
+        const dw=iw*scale,dh=ih*scale;
+        ctx.drawImage(spr,ux-dw/2,uy-dh/2,dw,dh);
       }else{
         ctx.fillStyle="#fff";ctx.font="18px serif";
         ctx.textAlign="center";ctx.textBaseline="middle";
