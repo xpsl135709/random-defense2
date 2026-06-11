@@ -5,7 +5,7 @@ const TRACK=(()=>{const p=[];for(let c=1;c<=7;c++)p.push([c,1]);for(let r=2;r<=1
 const TS=new Set(TRACK.map(([c,r])=>`${c},${r}`));
 const CX=4,CY=7;
 const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리"];
-const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",진흙:"#8a4",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",플라즈마:"#f4f",안개:"#abc",눈보라:"#cef",성음:"#feb",암흑파동:"#80c",동토:"#68a",증기:"#ddf",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",어둠번개:"#c4f",성스러운얼음:"#aff",빛의해일:"#afe",허리케인:"#0fc",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",천지개벽:"#f8f",용신:"#f60",신성폭풍:"#fda",혼돈:"#628",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#eef",암흑신화:"#404",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff"};
+const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",진흙:"#8a4",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",플라즈마:"#f4f",안개:"#abc",눈보라:"#cef",성음:"#feb",암흑파동:"#80c",동토:"#68a",증기:"#ddf",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",어둠번개:"#c4f",성스러운얼음:"#aff",빛의해일:"#afe",허리케인:"#0fc",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",천지개벽:"#f8f",용신:"#f60",신성폭풍:"#fda",혼돈:"#628",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#eef",암흑신화:"#404",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0a0",번개신화:"#cc0",빙하신화:"#09f",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#0ff",빙하불멸:"#aff",광명불멸:"#ffd",화염불멸:"#f80",궁극불멸:"#fff",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef"};
 const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",
   용암:"👺",폭풍화염:"💣",플라즈마:"🦎",증기:"👻",빙하:"🧊",진흙:"🟤",안개:"🌫️",번개폭풍:"🦅",
   공허:"🧛",공명:"🦇",눈보라:"🌨️",성음:"🔮",암흑파동:"😈",동토:"🦖",돌풍:"💨",화염폭풍:"😈",해일:"🧟",
@@ -74,35 +74,38 @@ const COMBO=[
   {a:"신성광",b:"태풍",r:"신성폭풍",g:"영웅"},
 ];
 
-// 레시피 조합 - 전설(10)/신화(8)/불멸(5)
-// parts: [{g:등급, n:개수}]
+// 레시피 조합 - 특정 유닛 지정 방식
+// parts: [{u:유닛이름(element), n:개수}]
+// 노말유닛은 element key (불,물,땅...), 조합유닛은 결과이름 사용
 const RECIPES=[
-  // 전설 10종
-  {r:"천지개벽",g:"전설",parts:[{g:"영웅",n:2},{g:"고급",n:1}]},
-  {r:"허리케인",g:"전설",parts:[{g:"영웅",n:3}]},
-  {r:"천둥왕",g:"전설",parts:[{g:"영웅",n:2},{g:"고급",n:1}]},
-  {r:"빙하왕",g:"전설",parts:[{g:"영웅",n:2},{g:"고급",n:1}]},
-  {r:"광명왕",g:"전설",parts:[{g:"영웅",n:2},{g:"고급",n:1}]},
-  {r:"암흑왕",g:"전설",parts:[{g:"영웅",n:1},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"혼돈왕",g:"전설",parts:[{g:"영웅",n:1},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"용신",g:"전설",parts:[{g:"영웅",n:1},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"폭풍왕",g:"전설",parts:[{g:"영웅",n:3}]},
-  {r:"성스러운왕",g:"전설",parts:[{g:"영웅",n:2},{g:"고급",n:1}]},
-  // 신화 8종
-  {r:"폭풍신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"번개신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"빙하신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"광명신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"암흑신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"창조신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"용왕신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  {r:"혼돈신화",g:"신화",parts:[{g:"전설",n:1},{g:"영웅",n:2},{g:"고급",n:3},{g:"노말",n:1}]},
-  // 불멸 5종
-  {r:"폭풍불멸",g:"불멸",parts:[{g:"신화",n:2},{g:"전설",n:2},{g:"영웅",n:2},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"빙하불멸",g:"불멸",parts:[{g:"신화",n:2},{g:"전설",n:2},{g:"영웅",n:2},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"광명불멸",g:"불멸",parts:[{g:"신화",n:2},{g:"전설",n:2},{g:"영웅",n:2},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"암흑불멸",g:"불멸",parts:[{g:"신화",n:2},{g:"전설",n:2},{g:"영웅",n:2},{g:"고급",n:2},{g:"노말",n:1}]},
-  {r:"궁극불멸",g:"불멸",parts:[{g:"신화",n:2},{g:"전설",n:2},{g:"영웅",n:2},{g:"고급",n:2},{g:"노말",n:1}]},
+  // ══ 전설 10종 ══ (영웅2~3개 or 영웅1+고급2+노말1)
+  {r:"화염제왕",g:"전설",parts:[{u:"용암폭풍",n:1},{u:"불의왕",n:1},{u:"화염폭풍",n:1}]},
+  {r:"파도왕",g:"전설",parts:[{u:"냉기폭풍",n:1},{u:"음파폭풍",n:1},{u:"해일",n:1}]},
+  {r:"대지왕",g:"전설",parts:[{u:"용암지진",n:1},{u:"지진",n:1},{u:"용암",n:1},{u:"땅",n:1}]},
+  {r:"폭풍왕",g:"전설",parts:[{u:"태풍",n:1},{u:"뇌신",n:1},{u:"돌풍",n:1}]},
+  {r:"번개왕",g:"전설",parts:[{u:"뇌신",n:1},{u:"성음",n:1},{u:"번개신",n:1}]},
+  {r:"빙하왕",g:"전설",parts:[{u:"빙하신",n:1},{u:"빙설신",n:1},{u:"절대영도",n:1}]},
+  {r:"광명왕",g:"전설",parts:[{u:"빛의신",n:1},{u:"신성폭풍",n:1},{u:"신성광",n:1}]},
+  {r:"암흑왕",g:"전설",parts:[{u:"어둠신",n:1},{u:"심연",n:1},{u:"공허",n:1},{u:"어둠",n:1}]},
+  {r:"음파왕",g:"전설",parts:[{u:"성음",n:1},{u:"음파폭풍",n:1},{u:"공명",n:1}]},
+  {r:"혼돈왕",g:"전설",parts:[{u:"빛의신",n:1},{u:"어둠신",n:1},{u:"공허",n:2}]},
+
+  // ══ 신화 8종 ══ (전설1+영웅2+고급3+노말1)
+  {r:"화염신화",g:"신화",parts:[{u:"화염제왕",n:1},{u:"용암폭풍",n:1},{u:"불의왕",n:1},{u:"화염폭풍",n:2},{u:"용암",n:1},{u:"불",n:1}]},
+  {r:"파도신화",g:"신화",parts:[{u:"파도왕",n:1},{u:"냉기폭풍",n:1},{u:"음파폭풍",n:1},{u:"해일",n:2},{u:"빙하",n:1},{u:"물",n:1}]},
+  {r:"폭풍신화",g:"신화",parts:[{u:"폭풍왕",n:1},{u:"태풍",n:1},{u:"뇌신",n:1},{u:"돌풍",n:2},{u:"번개폭풍",n:1},{u:"바람",n:1}]},
+  {r:"번개신화",g:"신화",parts:[{u:"번개왕",n:1},{u:"뇌신",n:1},{u:"성음",n:1},{u:"번개신",n:2},{u:"번개폭풍",n:1},{u:"전기",n:1}]},
+  {r:"빙하신화",g:"신화",parts:[{u:"빙하왕",n:1},{u:"빙하신",n:1},{u:"빙설신",n:1},{u:"절대영도",n:2},{u:"빙하",n:1},{u:"얼음",n:1}]},
+  {r:"광명신화",g:"신화",parts:[{u:"광명왕",n:1},{u:"빛의신",n:1},{u:"신성폭풍",n:1},{u:"신성광",n:2},{u:"공허",n:1},{u:"빛",n:1}]},
+  {r:"암흑신화",g:"신화",parts:[{u:"암흑왕",n:1},{u:"어둠신",n:1},{u:"심연",n:2},{u:"공허",n:2},{u:"어둠",n:1}]},
+  {r:"음파신화",g:"신화",parts:[{u:"음파왕",n:1},{u:"성음",n:1},{u:"음파폭풍",n:1},{u:"공명",n:2},{u:"음파해일",n:1},{u:"소리",n:1}]},
+
+  // ══ 불멸 5종 ══ (신화2+전설2+영웅2+고급2+노말1)
+  {r:"폭풍불멸",g:"불멸",parts:[{u:"폭풍신화",n:1},{u:"번개신화",n:1},{u:"폭풍왕",n:1},{u:"번개왕",n:1},{u:"태풍",n:1},{u:"뇌신",n:1},{u:"돌풍",n:1},{u:"번개폭풍",n:1},{u:"바람",n:1}]},
+  {r:"빙하불멸",g:"불멸",parts:[{u:"빙하신화",n:1},{u:"파도신화",n:1},{u:"빙하왕",n:1},{u:"파도왕",n:1},{u:"빙설신",n:1},{u:"냉기폭풍",n:1},{u:"절대영도",n:1},{u:"빙하",n:1},{u:"얼음",n:1}]},
+  {r:"광명불멸",g:"불멸",parts:[{u:"광명신화",n:1},{u:"암흑신화",n:1},{u:"광명왕",n:1},{u:"암흑왕",n:1},{u:"빛의신",n:1},{u:"어둠신",n:1},{u:"신성광",n:1},{u:"심연",n:1},{u:"빛",n:1}]},
+  {r:"화염불멸",g:"불멸",parts:[{u:"화염신화",n:1},{u:"음파신화",n:1},{u:"화염제왕",n:1},{u:"음파왕",n:1},{u:"용암폭풍",n:1},{u:"성음",n:1},{u:"화염폭풍",n:1},{u:"공명",n:1},{u:"불",n:1}]},
+  {r:"궁극불멸",g:"불멸",parts:[{u:"폭풍신화",n:1},{u:"빙하신화",n:1},{u:"광명신화",n:1},{u:"화염신화",n:1},{u:"혼돈왕",n:1},{u:"대지왕",n:1},{u:"음파왕",n:1},{u:"파도왕",n:1},{u:"무속성",n:1}]},
 ];
 
 const ITEMS=["무기","보조무기","목걸이","반지1","반지2","갑옷","모자","신발","장갑"];
@@ -176,6 +179,9 @@ const GAMBLE_COIN=[
 
 let hid=1,eid=1;
 
+const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸"]);
+const ICE_SLOW={"노말":{cd:5,dur:2,range:1.5,slow:0.45},"고급":{cd:4,dur:3,range:2.0,slow:0.40},"영웅":{cd:3,dur:4,range:2.5,slow:0.35},"전설":{cd:2,dur:5,range:3.0,slow:0.30},"신화":{cd:1.5,dur:6,range:3.5,slow:0.25},"불멸":{cd:1,dur:8,range:4.0,slow:0.20}};
+
 const SPRITE_CACHE={};
 const loadSprite=(el)=>{
   if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;
@@ -187,7 +193,9 @@ const loadSprite=(el)=>{
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
   const bonus=lv>0?{atk:(["노말","고급","영웅","전설","신화","불멸"].includes(g)?[5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]:5)*lv,spd:0.05*lv}:{atk:0,spd:0};
-  return{id:hid++,element:el,grade:g,atk:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:3.5,col:null,row:null,lastShot:0,enhLv:0};
+  const isIce=ICE_UNITS.has(el);
+const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):null;
+return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:isIce?iceCfg.range:3.5,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
 };
 const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
   const base=isBoss?3000+fl*800+rnd*200:isMid?1000+fl*300+rnd*100:(60+fl*30)+rnd*15;
@@ -197,7 +205,7 @@ const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
     speed:isBoss?0.6:isMid?0.8:type==="공중"?1.4:1.0,
     dmg:isBoss?5:isMid?3:1,remove:false,rewarded:false,
     isBoss,isMid,maxLaps:isBoss||isMid?5:3,
-    reward:isBoss?50:isMid?10:1};
+    reward:isBoss?100:isMid?20:0};
 };
 const autoPlace=(heroes)=>{
   const used=new Set(heroes.filter(x=>x.col!==null).map(x=>`${x.col},${x.row}`));
@@ -411,6 +419,23 @@ export default function App(){
       const baseSpd=(h.spd||1)*(1+buff.spd);
       if(g.gameTime-(h.lastShot||0)<1/baseSpd)continue;
       const rng=(h.range||3.5)*CS;
+      // 얼음 유닛: 슬로우 전용
+      if(h.isIce&&h.iceCfg){
+        const cfg=h.iceCfg;
+        if(g.gameTime-h.lastShot>=cfg.cd){
+          h.lastShot=g.gameTime;
+          for(const e of g.enemies){
+            if(e.remove)continue;
+            const d=Math.sqrt((e.x+CS/2-hx)**2+(e.y+CS/2-hy)**2);
+            if(d<=cfg.range*CS){
+              if(!e.baseSpeed)e.baseSpeed=e.speed;
+              e.slowTimer=cfg.dur;e.speed=e.baseSpeed*cfg.slow;
+              g.projs.push({x:hx,y:hy,tx:e.x+CS/2,ty:e.y+CS/2,tid:e.id,dmg:0,spd:400,color:"#aef",size:3});
+            }
+          }
+        }
+        continue;
+      }
       let near=null,nd=Infinity;
       for(const e of g.enemies){
         if(e.remove)continue;
@@ -429,11 +454,11 @@ export default function App(){
       if(dist<mv){
         p.hit=true;
         const t2=g.enemies.find(e=>e.id===p.tid&&!e.remove&&e.hp>0);
-        if(t2){
+        if(t2&&p.dmg>0){
           t2.hp-=p.dmg;
           if(t2.hp<=0&&!t2.rewarded){
-            t2.rewarded=true;g.gold+=t2.reward||1;
-            setUi(prev=>({...prev,gold:g.gold}));
+            t2.rewarded=true;
+            if(t2.reward>0){g.gold+=t2.reward;setUi(prev=>({...prev,gold:g.gold}));}
           }
         }
       }else{p.x+=dx/dist*mv;p.y+=dy/dist*mv;}
@@ -667,12 +692,12 @@ export default function App(){
     sync();draw();
   };
 
-  // 레시피 조합 가능 여부 체크
+  // 레시피 조합 가능 여부 체크 (특정 유닛 이름 기반)
   const canRecipe=(recipe)=>{
     const g=G.current;
     const cnt={};
-    for(const h of g.heroes) cnt[h.grade]=(cnt[h.grade]||0)+1;
-    return recipe.parts.every(p=>(cnt[p.g]||0)>=p.n);
+    for(const h of g.heroes) cnt[h.element]=(cnt[h.element]||0)+1;
+    return recipe.parts.every(p=>(cnt[p.u]||0)>=p.n);
   };
 
   // 레시피 조합 실행
@@ -683,12 +708,10 @@ export default function App(){
     for(const part of recipe.parts){
       let removed=0;
       for(let i=remaining.length-1;i>=0&&removed<part.n;i--){
-        if(remaining[i].grade===part.g){remaining.splice(i,1);removed++;}
+        if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}
       }
     }
-    const el=BASE[Math.floor(Math.random()*BASE.length)];
-    const h=mkH(el,recipe.g,g.gradeEnhLv||{});
-    h.recipeName=recipe.r;
+    const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});
     const pos=autoPlace(remaining);
     if(pos){h.col=pos[0];h.row=pos[1];}
     g.heroes=[...remaining,h];
@@ -1036,8 +1059,8 @@ export default function App(){
             {RECIPES.map(recipe=>{
               const can=canRecipe(recipe);
               const gc=GC[recipe.g]||"#aaa";
-              const gradeCnt={};
-              for(const h of heroes) gradeCnt[h.grade]=(gradeCnt[h.grade]||0)+1;
+              const unitCnt={};
+              for(const h of heroes) unitCnt[h.element]=(unitCnt[h.element]||0)+1;
               return(
                 <div key={recipe.r} style={{background:can?"rgba(80,200,80,0.08)":"#161b22",border:`1px solid ${can?gc:"#30363d"}`,borderRadius:8,padding:"7px 10px",marginBottom:5}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -1051,11 +1074,11 @@ export default function App(){
                       {can?"조합!":"재료부족"}
                     </button>
                   </div>
-                  <div style={{fontSize:10,color:"#888",marginTop:3}}>
+                  <div style={{fontSize:9,color:"#888",marginTop:3,lineHeight:1.6}}>
                     {recipe.parts.map(p=>{
-                      const have=gradeCnt[p.g]||0;
+                      const have=(unitCnt[p.u]||0);
                       const ok=have>=p.n;
-                      return <span key={p.g} style={{color:ok?"#4f8":"#f44",marginRight:6}}>{p.g}×{p.n}({have}보유)</span>;
+                      return <span key={p.u} style={{color:ok?"#4f8":"#f66",marginRight:4,background:ok?"rgba(0,80,0,0.3)":"rgba(80,0,0,0.3)",borderRadius:3,padding:"0 3px"}}>{EN[p.u]||p.u}×{p.n}({have})</span>;
                     })}
                   </div>
                 </div>
