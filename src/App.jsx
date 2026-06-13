@@ -750,7 +750,7 @@ export default function App(){
 
   // 등급별 강화 레벨 (전체 공유)
   // g.gradeEnhLv = {노말:0, 고급:0, ...}
-  const GRADE_ENH_COST={노말:20,고급:50,영웅:100,전설:200,신화:400,불멸:800};
+  const GRADE_ENH_COST={노말:10,고급:15,영웅:25,전설:30,신화:40,불멸:50};
   const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
 
   const getGradeEnhLv=(grade)=>(G.current.gradeEnhLv||{})[grade]||0;
