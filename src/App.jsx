@@ -114,19 +114,19 @@ const IGR={노말:{atk:2,color:"#aaa"},고급:{atk:5,color:"#4af"},영웅:{atk:1
 const IGRO=["노말","고급","영웅"];
 
 const HH=[
-  {id:"warrior",name:"전사",emoji:"⚔️",color:"#c33",desc:"ATK×2.5, SPD+30%",buff:{atkMul:2.5,atk:0,spd:0.30,magic:0}},
-  {id:"mage",name:"마법사",emoji:"🧙",color:"#63c",desc:"ATK×2.0, 마법데미지+80%",buff:{atkMul:2.0,atk:0,spd:0,magic:0.80}},
-  {id:"rogue",name:"도적",emoji:"🗡️",color:"#363",desc:"ATK×2.0, SPD+60%",buff:{atkMul:2.0,atk:0,spd:0.60,magic:0}},
-  {id:"archer",name:"궁수",emoji:"🏹",color:"#c83",desc:"ATK×2.2, SPD+40%",buff:{atkMul:2.2,atk:0,spd:0.40,magic:0}},
-  {id:"healer",name:"힐러",emoji:"💚",color:"#3c6",desc:"ATK×1.8, SPD+50%, 마법+50%",buff:{atkMul:1.8,atk:0,spd:0.50,magic:0.50}},
+  {id:"warrior",name:"전사",emoji:"⚔️",color:"#c33",desc:"ATK×1.75, SPD+15%",buff:{atkMul:1.75,atk:0,spd:0.15,magic:0}},
+  {id:"mage",name:"마법사",emoji:"🧙",color:"#63c",desc:"ATK×1.5, 마법데미지+40%",buff:{atkMul:1.5,atk:0,spd:0,magic:0.40}},
+  {id:"rogue",name:"도적",emoji:"🗡️",color:"#363",desc:"ATK×1.5, SPD+30%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0}},
+  {id:"archer",name:"궁수",emoji:"🏹",color:"#c83",desc:"ATK×1.6, SPD+20%",buff:{atkMul:1.6,atk:0,spd:0.20,magic:0}},
+  {id:"healer",name:"힐러",emoji:"💚",color:"#3c6",desc:"ATK×1.4, SPD+25%, 마법+25%",buff:{atkMul:1.4,atk:0,spd:0.25,magic:0.25}},
 ];
 
 // unlockFloor: 해당 층 이상에서만 구매 가능
 const SHOP_ITEMS=[
-  {id:"advanced",label:"고급 유닛 선택",cost:1,grade:"고급",color:"#4af",unlockFloor:1},
-  {id:"hero",label:"영웅 유닛 선택",cost:2,grade:"영웅",color:"#a4f",unlockFloor:1},
-  {id:"legend",label:"전설 유닛 선택",cost:3,grade:"전설",color:"#fa0",unlockFloor:1},
-  {id:"neutral",label:"무속성 유닛",cost:10,grade:"노말",element:"무속성",color:"#ccc",unlockFloor:50},
+  {id:"advanced",label:"고급 유닛 선택",cost:1,grade:"고급",color:"#4af",unlockRound:1},
+  {id:"hero",label:"영웅 유닛 선택",cost:2,grade:"영웅",color:"#a4f",unlockRound:1},
+  {id:"legend",label:"전설 유닛 선택",cost:3,grade:"전설",color:"#fa0",unlockRound:1},
+  {id:"neutral",label:"무속성 유닛",cost:10,grade:"노말",element:"무속성",color:"#ccc",unlockRound:20},
 ];
 
 // 도박 테이블
@@ -179,6 +179,19 @@ const GAMBLE_COIN=[
 
 let hid=1,eid=1;
 
+const EL_BASE={
+  "불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성",
+  "화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리",
+  "용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물",
+  "용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람",
+  "용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛",
+  "화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛",
+  "화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리",
+  "폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람",
+};
+const elBase=(el)=>EL_BASE[el]||el;
+const GRADE_FX={노말:{glow:0,trail:0},고급:{glow:4,trail:0},영웅:{glow:6,trail:3},전설:{glow:10,trail:5},신화:{glow:14,trail:8},불멸:{glow:20,trail:12}};
+
 const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸"]);
 const ICE_SLOW={"노말":{cd:5,dur:2,range:1.5,slow:0.45},"고급":{cd:4,dur:3,range:2.0,slow:0.40},"영웅":{cd:3,dur:4,range:2.5,slow:0.35},"전설":{cd:2,dur:5,range:3.0,slow:0.30},"신화":{cd:1.5,dur:6,range:3.5,slow:0.25},"불멸":{cd:1,dur:8,range:4.0,slow:0.20}};
 
@@ -197,8 +210,8 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
 const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):null;
 return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:isIce?iceCfg.range:3.5,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
 };
-const mkE=(type,fl=1,rnd=1,isBoss=false,isMid=false)=>{
-  const base=isBoss?4000+fl*1000+rnd*200:isMid?1500+fl*400+rnd*150:(150+fl*80)+rnd*40;
+const mkE=(type,rnd=1,isBoss=false,isMid=false)=>{
+  const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*22;
   const hp=Math.floor(type==="은신"?base*0.8:type==="공중"?base*1.2:base);
   return{id:eid++,type,hp,maxHp:hp,pathIdx:0,laps:0,
     x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,
@@ -218,9 +231,9 @@ const autoPlace=(heroes)=>{
 };
 const initGame=()=>({
   heroes:[],hiddenHero:null,enemies:[],projs:[],
-  life:20,gold:50,coins:0,floor:1,round:1,
+  life:20,gold:50,coins:0,round:1,
   total:0,running:false,spawnT:0,spawnC:0,maxSpawn:15,
-  cleared:false,floorDone:false,over:false,
+  cleared:false,over:false,
   bossSpawned:false,midSpawned:false,
   stacks:{},gameTime:0,gradeEnhLv:{},
 });
@@ -251,7 +264,7 @@ export default function App(){
   const gameLoopRef=useRef(null);
   const randomPicksRef=useRef([]);
 
-  const [ui,setUi]=useState({life:20,gold:50,coins:0,floor:1,round:1,total:0,over:false,victory:false});
+  const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
   const [drag,setDrag]=useState(null);
@@ -266,7 +279,7 @@ export default function App(){
 
   const sync=useCallback(()=>{
     const g=G.current;
-    setUi({life:g.life,gold:g.gold,coins:g.coins,floor:g.floor,round:g.round,total:g.total,over:g.over,victory:g.victory||false});
+    setUi({life:g.life,gold:g.gold,coins:g.coins,round:g.round,total:g.total,over:g.over,victory:g.victory||false});
     setHeroes([...g.heroes]);
     setStacks({...g.stacks});
   },[]);
@@ -351,7 +364,173 @@ export default function App(){
       else{ctx.font="15px serif";ctx.fillText(e.type==="일반"?"👾":e.type==="은신"?"🥷":"🦅",e.x+10,e.y+29);}
       ctx.globalAlpha=1;
     }
-    for(const p of g.projs){ctx.fillStyle=p.color||"#ff0";ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();}
+    for(const p of g.projs){
+      const c=p.color||"#ff0";
+      const eb=p.elBase||"무속성";
+      const fx=GRADE_FX[p.grade]||GRADE_FX.노말;
+      ctx.save();
+      if(fx.glow>0){ctx.shadowColor=c;ctx.shadowBlur=fx.glow;}
+
+      switch(eb){
+        case "불": // 화염구 - 흔들리는 불꽃
+          ctx.fillStyle=c;
+          ctx.beginPath();ctx.arc(p.x,p.y,4+Math.sin(p.age*20)*1,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle="#ff0";ctx.globalAlpha=0.6;
+          ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fill();
+          break;
+        case "물": // 물방울
+          ctx.fillStyle=c;ctx.globalAlpha=0.85;
+          ctx.beginPath();ctx.ellipse(p.x,p.y,4,5,Math.atan2(p.ty-p.sy,p.tx-p.sx),0,Math.PI*2);ctx.fill();
+          break;
+        case "땅": // 회전 암석
+          ctx.fillStyle=c;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*6);
+          ctx.fillRect(-4,-4,8,8);
+          ctx.restore();
+          break;
+        case "바람": // 회전 바람 칼날
+          ctx.strokeStyle=c;ctx.lineWidth=2;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*10);
+          ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*1.3);ctx.stroke();
+          ctx.restore();
+          break;
+        case "전기": // 지그재그 번개
+          ctx.strokeStyle=c;ctx.lineWidth=2;
+          ctx.beginPath();
+          ctx.moveTo(p.x-5,p.y-5);ctx.lineTo(p.x+2,p.y);ctx.lineTo(p.x-3,p.y+2);ctx.lineTo(p.x+5,p.y+5);
+          ctx.stroke();
+          ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fill();
+          break;
+        case "얼음": // 얼음 결정
+          ctx.strokeStyle=c;ctx.lineWidth=1.5;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*3);
+          for(let i=0;i<3;i++){
+            ctx.save();ctx.rotate(i*Math.PI/3);
+            ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(0,5);ctx.stroke();
+            ctx.restore();
+          }
+          ctx.restore();
+          break;
+        case "빛": // 레이저 빔
+          ctx.strokeStyle=c;ctx.lineWidth=2;ctx.globalAlpha=0.8;
+          ctx.beginPath();ctx.moveTo(p.sx,p.sy);ctx.lineTo(p.x,p.y);ctx.stroke();
+          ctx.fillStyle="#fff";ctx.globalAlpha=1;
+          ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
+          break;
+        case "어둠": // 검은 구체 + 보라 잔상
+          ctx.fillStyle="#222";ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.globalAlpha=0.7;
+          ctx.beginPath();ctx.arc(p.x,p.y,5.5,0,Math.PI*2);ctx.stroke();
+          break;
+        case "소리": // 동심원 파동
+          ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.globalAlpha=0.7;
+          for(let i=0;i<2;i++){
+            ctx.beginPath();ctx.arc(p.x,p.y,3+i*3+Math.sin(p.age*15)*1,0,Math.PI*2);ctx.stroke();
+          }
+          break;
+        default: // 무속성/기타
+          ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle="#fff";ctx.globalAlpha=0.7;
+          ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.fill();
+      }
+
+      // 등급별 트레일 (이동방향 반대로 잔상)
+      if(fx.trail>0){
+        const mdx=p.tx-p.sx,mdy=p.ty-p.sy,mlen=Math.sqrt(mdx*mdx+mdy*mdy)||1;
+        const ux2=mdx/mlen,uy2=mdy/mlen;
+        ctx.globalAlpha=0.25;ctx.strokeStyle=c;ctx.lineWidth=Math.max(1,fx.trail/3);
+        ctx.beginPath();ctx.moveTo(p.x,p.y);
+        ctx.lineTo(p.x-ux2*fx.trail*2,p.y-uy2*fx.trail*2);
+        ctx.stroke();
+      }
+      // 불멸급 추가 파티클
+      if(p.grade==="불멸"){
+        ctx.globalAlpha=0.5;
+        for(let i=0;i<3;i++){
+          const ang=p.age*8+i*(Math.PI*2/3);
+          ctx.fillStyle=c;
+          ctx.beginPath();ctx.arc(p.x+Math.cos(ang)*6,p.y+Math.sin(ang)*6,1.5,0,Math.PI*2);ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+    // 임팩트 이펙트
+    if(g.impacts){
+      for(const im of g.impacts){
+        const prog=im.t/im.maxT;
+        const c=im.color||"#ff0";
+        const eb=im.elBase||"무속성";
+        const big=im.grade==="전설"||im.grade==="신화"||im.grade==="불멸";
+        const baseR=big?6:4,growR=big?20:14;
+        ctx.save();
+        ctx.globalAlpha=1-prog;
+        switch(eb){
+          case "불": // 폭발 + 불꽃 파편
+            ctx.fillStyle=c;
+            for(let i=0;i<5;i++){
+              const ang=i*(Math.PI*2/5);
+              ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.7,im.y+Math.sin(ang)*prog*growR*0.7,2,0,Math.PI*2);ctx.fill();
+            }
+            ctx.strokeStyle="#ff0";ctx.lineWidth=2;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.6,0,Math.PI*2);ctx.stroke();
+            break;
+          case "물": // 물방울 튀김
+            ctx.strokeStyle=c;ctx.lineWidth=2;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();
+            break;
+          case "땅": // 흙먼지
+            ctx.fillStyle=c;
+            for(let i=0;i<4;i++){
+              const ang=i*(Math.PI/2)+prog*2;
+              ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.6,im.y+Math.sin(ang)*prog*growR*0.6-prog*5,2,0,Math.PI*2);ctx.fill();
+            }
+            break;
+          case "바람": // 회전 소용돌이
+            ctx.strokeStyle=c;ctx.lineWidth=2;
+            ctx.save();ctx.translate(im.x,im.y);ctx.rotate(prog*8);
+            ctx.beginPath();ctx.arc(0,0,baseR+prog*growR,0,Math.PI*1.5);ctx.stroke();
+            ctx.restore();
+            break;
+          case "전기": // 번개 스파크
+            ctx.strokeStyle=c;ctx.lineWidth=2;
+            for(let i=0;i<4;i++){
+              const ang=i*(Math.PI/2)+Math.random();
+              ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR),im.y+Math.sin(ang)*(baseR+prog*growR));ctx.stroke();
+            }
+            break;
+          case "얼음": // 결정 파편
+            ctx.strokeStyle=c;ctx.lineWidth=1.5;
+            for(let i=0;i<6;i++){
+              const ang=i*(Math.PI/3);
+              ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR*0.8),im.y+Math.sin(ang)*(baseR+prog*growR*0.8));ctx.stroke();
+            }
+            break;
+          case "빛": // 빛 폭발
+            ctx.fillStyle="#fff";ctx.globalAlpha=(1-prog)*0.8;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.5,0,Math.PI*2);ctx.fill();
+            ctx.strokeStyle=c;ctx.lineWidth=2;ctx.globalAlpha=1-prog;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();
+            break;
+          case "어둠": // 어둠 흡수
+            ctx.strokeStyle=c;ctx.lineWidth=2;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+(1-prog)*growR*0.5,0,Math.PI*2);ctx.stroke();
+            break;
+          case "소리": // 파동
+            ctx.strokeStyle=c;ctx.lineWidth=1.5;
+            for(let i=0;i<2;i++)ctx.beginPath(),ctx.arc(im.x,im.y,baseR+prog*growR*(0.6+i*0.4),0,Math.PI*2),ctx.stroke();
+            break;
+          default:
+            ctx.strokeStyle=c;ctx.lineWidth=2;
+            ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();
+        }
+        // 신화/불멸 추가 광채
+        if(im.grade==="신화"||im.grade==="불멸"){
+          ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.globalAlpha=(1-prog)*0.6;
+          ctx.beginPath();ctx.arc(im.x,im.y,(baseR+prog*growR)*1.3,0,Math.PI*2);ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
   },[selHero]);
 
   const gameLoop=useCallback((t)=>{
@@ -359,15 +538,15 @@ export default function App(){
     const dt=raw*spR.current;lt.current=t;
     const g=G.current;
     if(g.over||!g.running){draw();return;}
-    const isMidRound=g.round===5,isBossRound=g.round===10;
+    const isMidRound=g.round%5===0&&g.round%10!==0,isBossRound=g.round%10===0;
     g.spawnT+=dt;
     if(g.spawnT>1.2&&g.spawnC<g.maxSpawn){
       g.spawnT=0;g.spawnC++;
-      if(isBossRound&&!g.bossSpawned){g.enemies.push(mkE("일반",g.floor,g.round,true,false));g.bossSpawned=true;}
-      else if(isMidRound&&!g.midSpawned){g.enemies.push(mkE("일반",g.floor,g.round,false,true));g.midSpawned=true;}
+      if(isBossRound&&!g.bossSpawned){g.enemies.push(mkE("일반",g.round,true,false));g.bossSpawned=true;}
+      else if(isMidRound&&!g.midSpawned){g.enemies.push(mkE("일반",g.round,false,true));g.midSpawned=true;}
       else if(!isBossRound&&!isMidRound){
         const types=["일반","일반","은신","공중"];
-        g.enemies.push(mkE(types[Math.floor(Math.random()*types.length)],g.floor,g.round));
+        g.enemies.push(mkE(types[Math.floor(Math.random()*types.length)],g.round));
       }
     }
     for(const e of g.enemies){
@@ -421,13 +600,16 @@ export default function App(){
         h.lastShot=g.gameTime;
         const baseAtk=((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk;
         const dmg=Math.floor(baseAtk*(1+buff.magic));
-        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0"});
+        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0",elBase:elBase(h.element),grade:h.grade,sx:hx,sy:hy,age:0});
       }
     }
     for(const p of g.projs){
+      p.age=(p.age||0)+dt;
       const dx=p.tx-p.x,dy=p.ty-p.y,dist=Math.sqrt(dx*dx+dy*dy),mv=p.spd*dt;
       if(dist<mv){
         p.hit=true;
+        if(!g.impacts)g.impacts=[];
+        g.impacts.push({x:p.tx,y:p.ty,t:0,maxT:0.25,color:p.color,elBase:p.elBase,grade:p.grade});
         const t2=g.enemies.find(e=>e.id===p.tid&&!e.remove&&e.hp>0);
         if(t2&&p.dmg>0){
           t2.hp-=p.dmg;
@@ -439,28 +621,30 @@ export default function App(){
       }else{p.x+=dx/dist*mv;p.y+=dy/dist*mv;}
     }
     g.projs=g.projs.filter(p=>!p.hit);
+    if(g.impacts){
+      for(const im of g.impacts)im.t+=dt;
+      g.impacts=g.impacts.filter(im=>im.t<im.maxT);
+    }
     const spawnDone=(isBossRound&&g.bossSpawned)||(isMidRound&&g.midSpawned)||(!isBossRound&&!isMidRound&&g.spawnC>=g.maxSpawn);
     if(spawnDone&&g.enemies.length===0&&!g.cleared){
       g.running=false;g.cleared=true;
       if(isMidRound||isBossRound)g.coins+=1;
-      const clearGold=isBossRound?100:isMidRound?50:30;
+      const clearGold=isBossRound?80:isMidRound?50:20;
       g.gold+=clearGold;
-      if(g.round===10){
-        g.floorDone=true;
-        if(g.floor===1||(g.floor%10===0)){
-          const nu=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
-          if(pos){nu.col=pos[0];nu.row=pos[1];}g.heroes.push(nu);
-        }
-        // 100층 클리어 = 게임 클리어
-        if(g.floor===100){
-          g.victory=true;g.running=false;sync();draw();return;
-        }
+      // 20라운드마다 무속성 유닛 지급
+      if(g.round%20===0){
+        const nu=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
+        if(pos){nu.col=pos[0];nu.row=pos[1];}g.heroes.push(nu);
       }
-      if(g.round<10)g.round++;else{g.round=1;g.floor++;}
-      g.cleared=false;g.floorDone=false;g.total=0;
+      // 100라운드 클리어 = 게임 클리어
+      if(g.round===100){
+        g.victory=true;g.running=false;sync();draw();return;
+      }
+      g.round++;
+      g.cleared=false;g.total=0;
       g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
-      const nb=g.round===10,nm=g.round===5;
-      g.maxSpawn=nb?1:nm?1:15+g.floor*2+g.round;
+      const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
+      g.maxSpawn=nb?1:nm?1:15+g.round;
       sync();setCountdown(3);let cd=3;
       const iv=setInterval(()=>{
         cd--;setCountdown(cd);
@@ -476,8 +660,8 @@ export default function App(){
   useEffect(()=>{draw();},[selHero,drag]);
 
   const autoStart=(g)=>{
-    const nb=g.round===10,nm=g.round===5;
-    g.maxSpawn=nb?1:nm?1:15+g.floor*2+g.round;
+    const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
+    g.maxSpawn=nb?1:nm?1:15+g.round;
     g.running=true;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
     sync();lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
   };
@@ -540,8 +724,8 @@ export default function App(){
     const myEls=g.heroes.filter(x=>x.id!==heroId).map(x=>x.element);
     return COMBO.filter(r=>{
       if((r.a===h.element&&myEls.includes(r.b))||(r.b===h.element&&myEls.includes(r.a))){
-        if(r.g==="신화"&&g.floor<20)return false;
-        if(r.g==="불멸"&&g.floor<50)return false;
+        if(r.g==="신화"&&g.round<20)return false;
+        if(r.g==="불멸"&&g.round<50)return false;
         return true;
       }
       return false;
@@ -550,8 +734,8 @@ export default function App(){
 
   const doCombine=(heroId,recipe)=>{
     const g=G.current,h1=g.heroes.find(x=>x.id===heroId);
-    if(recipe.g==="신화"&&g.floor<20){alert("신화 조합은 20층 이후 가능합니다!");return;}
-    if(recipe.g==="불멸"&&g.floor<50){alert("불멸 조합은 50층 이후 가능합니다!");return;}
+    if(recipe.g==="신화"&&g.round<20){alert("신화 조합은 20라운드 이후 가능합니다!");return;}
+    if(recipe.g==="불멸"&&g.round<50){alert("불멸 조합은 50라운드 이후 가능합니다!");return;}
     const needEl=recipe.a===h1.element?recipe.b:recipe.a;
     const h2=g.heroes.find(x=>x.id!==heroId&&x.element===needEl);
     if(!h1||!h2)return;
@@ -799,7 +983,7 @@ export default function App(){
         <span>❤️<b style={{color:"#f66"}}>{ui.life}</b></span>
         <span>💰<b style={{color:"#fd0"}}>{ui.gold}G</b></span>
         <span style={{color:"#a78bfa",fontWeight:"bold",cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
-        <span>🏰{ui.floor}층 R{ui.round}/10</span>
+        <span>🎯 R{ui.round}/100</span>
         <span style={{color:ui.total>=24?"#f44":"#aaa",fontSize:12}}>👾{ui.total}/30</span>
         <button onClick={()=>setShowCombo(true)} style={{background:"#21262d",border:"1px solid #444",color:"#eee",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>조합표</button>
       </div>
@@ -822,7 +1006,7 @@ export default function App(){
         <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
         <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
         <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다! 모든 층을 정복했습니다!</div>
-        <div style={{color:"#aaa",fontSize:12,marginBottom:16,textAlign:"center"}}>❤️ {ui.life} | 💰 {ui.gold}G | 🏰 {ui.floor}층</div>
+        <div style={{color:"#aaa",fontSize:12,marginBottom:16,textAlign:"center"}}>❤️ {ui.life} | 💰 {ui.gold}G | 🎯 R{ui.round}/100</div>
         <Btn bg="#1f6feb" onClick={reset}>처음부터</Btn>
       </Overlay>}
       {/* 히든영웅 선택 */}
@@ -982,6 +1166,7 @@ export default function App(){
         const stackEntries=Object.entries(stacks).filter(([,n])=>n>0);
         return(
         <Overlay>
+          <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];}} style={{width:"100%",marginBottom:10}}>닫기</Btn>
           <div style={{fontSize:15,fontWeight:"bold",color:"#4f8",marginBottom:10,textAlign:"center"}}>✨ 뭉치기</div>
 
           {/* 스택 보관함 */}
@@ -1028,39 +1213,6 @@ export default function App(){
             </div>
           </div>
 
-          {/* 레시피 조합 - 전설/신화/불멸 */}
-          <div style={{borderTop:"1px solid #30363d",paddingTop:10,marginBottom:8}}>
-            <div style={{fontSize:12,color:"#fa0",marginBottom:8,fontWeight:"bold"}}>⚗️ 레시피 조합 (전설/신화/불멸)</div>
-            {RECIPES.map(recipe=>{
-              const can=canRecipe(recipe);
-              const gc=GC[recipe.g]||"#aaa";
-              const unitCnt={};
-              for(const h of heroes) unitCnt[h.element]=(unitCnt[h.element]||0)+1;
-              return(
-                <div key={recipe.r} style={{background:can?"rgba(80,200,80,0.08)":"#161b22",border:`1px solid ${can?gc:"#30363d"}`,borderRadius:8,padding:"7px 10px",marginBottom:5}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div>
-                      <span style={{color:gc,fontWeight:"bold",fontSize:12}}>{recipe.r}</span>
-                      <span style={{color:"#888",fontSize:10,marginLeft:6}}>[{recipe.g}]</span>
-                    </div>
-                    <button onClick={()=>doRecipe(recipe)} disabled={!can}
-                      style={{background:can?gc+"33":"#21262d",border:`1px solid ${can?gc:"#444"}`,
-                        color:can?gc:"#555",borderRadius:6,padding:"3px 10px",cursor:can?"pointer":"not-allowed",fontSize:11,fontWeight:"bold"}}>
-                      {can?"조합!":"재료부족"}
-                    </button>
-                  </div>
-                  <div style={{fontSize:9,color:"#888",marginTop:3,lineHeight:1.6}}>
-                    {recipe.parts.map(p=>{
-                      const have=(unitCnt[p.u]||0);
-                      const ok=have>=p.n;
-                      return <span key={p.u} style={{color:ok?"#4f8":"#f66",marginRight:4,background:ok?"rgba(0,80,0,0.3)":"rgba(80,0,0,0.3)",borderRadius:3,padding:"0 3px"}}>{EN[p.u]||p.u}×{p.n}({have})</span>;
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
           {/* 무작위 3개 조합 */}
           <div style={{borderTop:"1px solid #30363d",paddingTop:10}}>
             <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🎲 무작위 3개 조합 <span style={{color:"#fd0"}}>({randomPicks.length}/3)</span></div>
@@ -1082,7 +1234,6 @@ export default function App(){
               🎲 조합하기 {randomPicks.length===3?"":"(3개 선택)"}
             </Btn>
           </div>
-          <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];}} style={{width:"100%"}}>닫기</Btn>
         </Overlay>
         );
       })()}
@@ -1090,10 +1241,10 @@ export default function App(){
       {modal==="shop"&&(
         <Overlay>
           <div style={{fontSize:15,fontWeight:"bold",color:"#a78bfa",marginBottom:4,textAlign:"center"}}>🪙 코인 상점</div>
-          <div style={{color:"#fd0",fontSize:13,marginBottom:10,textAlign:"center"}}>보유: {ui.coins}개 | 현재 {ui.floor}층</div>
+          <div style={{color:"#fd0",fontSize:13,marginBottom:10,textAlign:"center"}}>보유: {ui.coins}개 | 현재 {ui.round}라운드</div>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
             {SHOP_ITEMS.map(item=>{
-              const locked=ui.floor<item.unlockFloor;
+              const locked=ui.round<item.unlockRound;
               return(
                 <button key={item.id} onClick={()=>!locked&&buyWithCoin(item)}
                   disabled={ui.coins<item.cost||locked}
@@ -1104,7 +1255,7 @@ export default function App(){
                     color:locked?"#444":ui.coins>=item.cost?"#eee":"#555",
                     fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:locked?"#444":item.color,fontWeight:"bold"}}>
-                    {locked?`🔒 ${item.label} (${item.unlockFloor}층~)`:item.label}
+                    {locked?`🔒 ${item.label} (${item.unlockRound}라운드~)`:item.label}
                   </span>
                   <span style={{color:locked?"#444":"#a78bfa",fontWeight:"bold"}}>🪙 {item.cost}</span>
                 </button>
@@ -1112,7 +1263,7 @@ export default function App(){
             })}
           </div>
           <div style={{display:"flex",gap:6}}>
-            <Btn bg="#1a3a2a" onClick={()=>setModal("gamble")} style={{flex:1}}>🎲 도박장</Btn>
+            <Btn bg={ui.round>=10?"#1a3a2a":"#21262d"} onClick={()=>{if(ui.round<10){alert("도박장은 10라운드 이후 해금됩니다!");return;}setModal("gamble");}} style={{flex:1,color:ui.round>=10?undefined:"#555"}}>{ui.round>=10?"🎲 도박장":"🔒 도박장 (10R~)"}</Btn>
             <Btn bg="#333" onClick={()=>setModal(null)} style={{flex:1}}>닫기</Btn>
           </div>
         </Overlay>
@@ -1184,13 +1335,13 @@ export default function App(){
               {cost:3,label:"🪙3 — 영웅~신화",desc:"영웅 50% / 전설 35% / 신화 10% / 꽝 5%",
                fn:()=>{
                  const g=G.current;if(g.coins<3){alert("코인 부족!");return;}
-                 if(g.floor<20&&Math.random()>0.5){g.coins-=3;sync();alert("😢 꽝... (신화는 20층 이후 해금)");return;}
+                 if(g.round<20&&Math.random()>0.5){g.coins-=3;sync();alert("😢 꽝... (신화는 20라운드 이후 해금)");return;}
                  g.coins-=3;const r=Math.random();
                  let grade;
                  if(r<0.05)grade=null;
                  else if(r<0.55)grade="영웅";
                  else if(r<0.90)grade="전설";
-                 else grade=g.floor>=20?"신화":"전설";
+                 else grade=g.round>=20?"신화":"전설";
                  if(grade){
                    const pool=[...new Set(COMBO.filter(x=>x.g===grade).map(x=>x.r))];
                    const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];
@@ -1200,10 +1351,10 @@ export default function App(){
                    sync();draw();alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);
                  }else{sync();alert("😢 꽝...");}
                }},
-              {cost:5,label:"🪙5 — 신화 or 무속성",desc:"신화 60% / 무속성 30% / 꽝 10% (50층↑)",
+              {cost:5,label:"🪙5 — 신화 or 무속성",desc:"신화 60% / 무속성 30% / 꽝 10% (35라운드↑)",
                fn:()=>{
                  const g=G.current;if(g.coins<5){alert("코인 부족!");return;}
-                 if(g.floor<50){alert("50층 이후 해금!");return;}
+                 if(g.round<35){alert("35라운드 이후 해금!");return;}
                  g.coins-=5;const r=Math.random();
                  if(r<0.10){sync();alert("😢 꽝...");return;}
                  let h;
@@ -1221,14 +1372,14 @@ export default function App(){
                }},
             ].map(item=>(
               <button key={item.cost} onClick={item.fn}
-                disabled={ui.coins<item.cost||(item.cost===5&&ui.floor<50)}
-                style={{background:ui.coins>=item.cost&&!(item.cost===5&&ui.floor<50)?"#0a2a1a":"#21262d",
-                  border:`1px solid ${ui.coins>=item.cost&&!(item.cost===5&&ui.floor<50)?"#4f8":"#333"}`,
+                disabled={ui.coins<item.cost||(item.cost===5&&ui.round<35)}
+                style={{background:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#0a2a1a":"#21262d",
+                  border:`1px solid ${ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#4f8":"#333"}`,
                   borderRadius:8,padding:"8px 12px",
-                  cursor:ui.coins>=item.cost&&!(item.cost===5&&ui.floor<50)?"pointer":"not-allowed",
-                  color:ui.coins>=item.cost&&!(item.cost===5&&ui.floor<50)?"#eee":"#555",fontSize:12,textAlign:"left"}}>
+                  cursor:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"pointer":"not-allowed",
+                  color:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#eee":"#555",fontSize:12,textAlign:"left"}}>
                 <div style={{fontWeight:"bold",color:item.cost===5?"#f44":item.cost===3?"#fa0":"#4af"}}>{item.label}</div>
-                <div style={{fontSize:10,color:"#888",marginTop:2}}>{item.cost===5&&ui.floor<50?`🔒 50층 이후 해금`:item.desc}</div>
+                <div style={{fontSize:10,color:"#888",marginTop:2}}>{item.cost===5&&ui.round<35?`🔒 35라운드 이후 해금`:item.desc}</div>
               </button>
             ))}
           </div>
@@ -1248,7 +1399,7 @@ export default function App(){
                   style={{background:comboFilter===g?(GC[g]||"#444")+"44":"#21262d",border:`1px solid ${GC[g]||"#555"}`,borderRadius:6,padding:"2px 7px",cursor:"pointer",color:GC[g]||"#eee",fontSize:11}}>{g}</button>
               ))}
             </div>
-            {["고급","영웅","전설","신화","불멸"].filter(g=>comboFilter==="전체"||comboFilter===g).map(g=>(
+            {["고급","영웅"].filter(g=>comboFilter==="전체"||comboFilter===g).map(g=>(
               <div key={g} style={{marginBottom:10}}>
                 <div style={{color:GC[g],fontWeight:"bold",fontSize:11,marginBottom:4,borderBottom:"1px solid #333",paddingBottom:2}}>[{g}] {fCombo.filter(r=>r.g===g).length}종</div>
                 {fCombo.filter(r=>r.g===g).map((r,i)=>{
@@ -1264,6 +1415,42 @@ export default function App(){
                 })}
               </div>
             ))}
+            {/* 레시피 조합 - 전설/신화/불멸 */}
+            {["전설","신화","불멸"].filter(g=>comboFilter==="전체"||comboFilter===g).map(g=>{
+              const gRecipes=RECIPES.filter(r=>r.g===g);
+              const unitCnt={};
+              for(const h of heroes) unitCnt[h.element]=(unitCnt[h.element]||0)+1;
+              return(
+                <div key={g} style={{marginBottom:10}}>
+                  <div style={{color:GC[g],fontWeight:"bold",fontSize:11,marginBottom:4,borderBottom:"1px solid #333",paddingBottom:2}}>[{g}] {gRecipes.length}종 (레시피)</div>
+                  {gRecipes.map(recipe=>{
+                    const can=canRecipe(recipe);
+                    const gc=GC[recipe.g]||"#aaa";
+                    return(
+                      <div key={recipe.r} style={{background:can?"rgba(80,200,80,0.08)":"#161b22",border:`1px solid ${can?gc:"#30363d"}`,borderRadius:8,padding:"6px 8px",marginBottom:5}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <span style={{color:gc,fontWeight:"bold",fontSize:12}}>{EN[recipe.r]||recipe.r}</span>
+                          </div>
+                          <button onClick={()=>doRecipe(recipe)} disabled={!can}
+                            style={{background:can?gc+"33":"#21262d",border:`1px solid ${can?gc:"#444"}`,
+                              color:can?gc:"#555",borderRadius:6,padding:"3px 10px",cursor:can?"pointer":"not-allowed",fontSize:11,fontWeight:"bold"}}>
+                            {can?"조합!":"재료부족"}
+                          </button>
+                        </div>
+                        <div style={{fontSize:9,color:"#888",marginTop:3,lineHeight:1.6}}>
+                          {recipe.parts.map(p=>{
+                            const have=(unitCnt[p.u]||0);
+                            const ok=have>=p.n;
+                            return <span key={p.u} style={{color:ok?"#4f8":"#f66",marginRight:4,background:ok?"rgba(0,80,0,0.3)":"rgba(80,0,0,0.3)",borderRadius:3,padding:"0 3px"}}>{EN[p.u]||p.u}×{p.n}({have})</span>;
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
             <Btn bg="#333" onClick={()=>setShowCombo(false)} style={{width:"100%",marginTop:6}}>닫기</Btn>
           </div>
         </div>
