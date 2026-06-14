@@ -1098,7 +1098,7 @@ export default function App(){
       {/* 코인 속성 선택 모달 */}
       {modal&&modal.type==="coinPick"&&(()=>{
         const item=modal.item;
-        const pool=item.grade==="노말"?BASE:item.grade==="고급"?[...new Set(COMBO.filter(r=>r.g==="고급").map(r=>r.r))]:item.grade==="영웅"?[...new Set(COMBO.filter(r=>r.g==="영웅").map(r=>r.r))]:[...new Set(COMBO.filter(r=>r.g==="전설").map(r=>r.r))];
+        const pool=item.grade==="노말"?BASE:item.grade==="고급"?[...new Set(COMBO.filter(r=>r.g==="고급").map(r=>r.r))]:item.grade==="영웅"?[...new Set(COMBO.filter(r=>r.g==="영웅").map(r=>r.r))]:[...new Set(RECIPES.filter(r=>r.g==="전설").map(r=>r.r))];
         return(
           <Overlay>
             <div style={{fontSize:15,fontWeight:"bold",color:item.color,marginBottom:4,textAlign:"center"}}>{item.label}</div>
@@ -1343,7 +1343,7 @@ export default function App(){
                  else if(r<0.90)grade="전설";
                  else grade=g.round>=20?"신화":"전설";
                  if(grade){
-                   const pool=[...new Set(COMBO.filter(x=>x.g===grade).map(x=>x.r))];
+                   const pool=grade==="신화"?[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))]:grade==="전설"?[...new Set(RECIPES.filter(x=>x.g==="전설").map(x=>x.r))]:grade==="영웅"?[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))];
                    const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];
                    const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
                    if(pos){h.col=pos[0];h.row=pos[1];}
@@ -1359,8 +1359,8 @@ export default function App(){
                  if(r<0.10){sync();alert("😢 꽝...");return;}
                  let h;
                  if(r<0.70){
-                   const pool=[...new Set(COMBO.filter(x=>x.g==="신화").map(x=>x.r))];
-                   const el=pool[Math.floor(Math.random()*pool.length)];
+                   const pool=[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))];
+                   const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];
                    h=mkH(el,"신화",g.gradeEnhLv||{});
                    const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
                    g.heroes=[...g.heroes,h];sync();draw();alert(`✨ ${EE[el]||""} ${el} [신화] 획득!`);
