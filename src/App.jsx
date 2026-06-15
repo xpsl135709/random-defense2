@@ -225,6 +225,37 @@ let hid=1,eid=1;
 const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람"};
 const elBase=(el)=>EL_BASE[el]||el;
 const GRADE_FX={노말:{glow:0,trail:0},고급:{glow:4,trail:0},영웅:{glow:6,trail:3},전설:{glow:10,trail:5},신화:{glow:14,trail:8},불멸:{glow:20,trail:12}};
+// 속성별 기본 사거리 (타일 단위)
+const EL_RANGE={
+  "불":2.5,"물":3.0,"땅":1.8,"바람":3.5,"전기":3.2,
+  "얼음":2.0,"빛":4.5,"어둠":2.8,"소리":3.8,"무속성":3.0,
+  "독":2.2,"나무":2.0,
+  // 고급
+  "화염폭풍":2.5,"해일":3.0,"지진":1.8,"돌풍":3.5,"번개신":3.2,
+  "절대영도":2.0,"신성광":4.5,"심연":2.8,"공명":3.8,
+  "용암":2.2,"빙하":2.5,"번개폭풍":3.5,"공허":3.0,"폭풍화염":2.8,"음파해일":4.0,
+  "맹독":2.2,"독안개":3.0,"가시숲":1.8,
+  // 영웅
+  "용암폭풍":2.5,"냉기폭풍":2.8,"뇌신":3.5,"빙하신":2.2,"빛의신":5.0,
+  "어둠신":2.8,"성음":4.0,"태풍":3.8,"용암지진":2.0,"음파폭풍":4.2,
+  "불의왕":2.8,"빙설신":2.5,"신성폭풍":4.5,"독폭풍":2.8,"맹독늪":2.2,
+  // 전설
+  "화염제왕":3.0,"파도왕":3.5,"대지왕":2.2,"폭풍왕":4.0,"번개왕":3.8,
+  "빙하왕":2.5,"광명왕":5.5,"암흑왕":3.0,"음파왕":4.5,"혼돈왕":3.5,
+  // 신화
+  "화염신화":3.2,"파도신화":3.8,"폭풍신화":4.5,"번개신화":4.0,
+  "빙하신화":2.8,"광명신화":6.0,"암흑신화":3.2,"음파신화":5.0,
+  // 불멸
+  "폭풍불멸":5.0,"빙하불멸":3.0,"광명불멸":6.5,"화염불멸":3.5,"궁극불멸":7.0,
+};
+// 등급별 사거리 보정
+const GRADE_RANGE_BONUS={"노말":0,"고급":0.2,"영웅":0.4,"전설":0.6,"신화":0.8,"불멸":1.2};
+const getRange=(el,grade)=>{
+  const base=EL_RANGE[el]||3.0;
+  const bonus=GRADE_RANGE_BONUS[grade]||0;
+  return Math.min(base+bonus, 7.0);
+};
+
 const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸"]);
 const ICE_SLOW={"노말":{cd:5,dur:2,range:1.5,slow:0.45},"고급":{cd:4,dur:3,range:2.0,slow:0.40},"영웅":{cd:3,dur:4,range:2.5,slow:0.35},"전설":{cd:2,dur:5,range:3.0,slow:0.30},"신화":{cd:1.5,dur:6,range:3.5,slow:0.25},"불멸":{cd:1,dur:8,range:4.0,slow:0.20}};
 
@@ -237,7 +268,8 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
   const bonus=lv>0?{atk:([5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]||5)*lv,spd:0.05*lv}:{atk:0,spd:0};
   const isIce=ICE_UNITS.has(el);
   const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):null;
-  return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range:isIce?iceCfg.range:3.5,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
+  const range=isIce?iceCfg.range:getRange(el,g);
+  return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
 };
 
 // ── 적 생성: 분기맵이면 path 정보 포함
@@ -450,6 +482,34 @@ export default function App(){
         if(TS.has(`${col},${r}`)||(col===CX&&r===CY))continue;
         ctx.fillStyle="rgba(255,255,255,0.04)";ctx.fillRect(col*CS,r*CS,CS,CS);
         ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.strokeRect(col*CS,r*CS,CS,CS);
+      }
+    }
+
+    // 선택된 유닛 사거리 표시
+    if(g&&selHero){
+      const sh=g.heroes.find(h=>h.id===selHero);
+      if(sh&&sh.col!==null){
+        const hx=sh.col*CS+CS/2,hy=sh.row*CS+CS/2;
+        const rng=(sh.range||3.0)*CS;
+        const gc=GC[sh.grade]||"#aaa";
+        // 사거리 채우기
+        ctx.save();
+        ctx.beginPath();ctx.arc(hx,hy,rng,0,Math.PI*2);
+        ctx.fillStyle=gc.replace('#','rgba(').replace(/^rgba\(/,'rgba(')+'22)';
+        // 직접 rgba 계산
+        ctx.fillStyle=hr(gc,0.08);
+        ctx.fill();
+        // 사거리 테두리
+        ctx.strokeStyle=gc;ctx.lineWidth=1.5;ctx.globalAlpha=0.5;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.arc(hx,hy,rng,0,Math.PI*2);ctx.stroke();
+        ctx.setLineDash([]);ctx.globalAlpha=1;
+        // 사거리 수치 표시
+        ctx.font="bold 10px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillStyle="#fff";ctx.globalAlpha=0.8;
+        ctx.fillText(`사거리 ${sh.range.toFixed(1)}`,hx,hy-rng-8);
+        ctx.globalAlpha=1;ctx.textAlign="left";ctx.textBaseline="alphabetic";
+        ctx.restore();
       }
     }
 
@@ -1092,7 +1152,7 @@ export default function App(){
             <div>
               <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{EN[selHeroObj.element]||selHeroObj.element} [{selHeroObj.grade}]</span>
               {selHeroObj.enhLv>0&&<span style={{color:"#fd0",marginLeft:6}}>+{selHeroObj.enhLv}</span>}
-              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</div>
+              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}% | 사거리 {(selHeroObj.range||3.0).toFixed(1)}</div>
             </div>
             <button onClick={()=>setSelHero(null)} style={{marginLeft:"auto",background:"#333",border:"none",color:"#aaa",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>✕</button>
           </div>
