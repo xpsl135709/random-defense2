@@ -283,7 +283,7 @@ const autoPlace=(heroes)=>{
   return avail.length?avail[Math.floor(Math.random()*avail.length)]:null;
 };
 
-const initGame=()=>({
+const initGame=(diff='hard')=>({
   heroes:[],hiddenHero:null,enemies:[],projs:[],
   life:20,gold:50,coins:0,round:1,
   total:0,running:false,spawnT:0,spawnC:0,maxSpawn:15,
@@ -292,6 +292,9 @@ const initGame=()=>({
   stacks:{},gameTime:0,gradeEnhLv:{},
   impacts:[],
   mapKey:CURRENT_MAP||'A',
+  difficulty:diff,
+  // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
+  diffMul:diff==='easy'?1.5:diff==='normal'?1.25:1.0,
 });
 
 // ══════════════════════════════════════════
@@ -355,6 +358,7 @@ export default function App(){
 
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
+  const [difficulty,setDifficulty]=useState('hard'); // easy/normal/hard
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
@@ -607,7 +611,8 @@ export default function App(){
       }
       if(near){
         h.lastShot=g.gameTime;
-        const baseAtk=((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk;
+        const diffMul=g.diffMul||1.0;
+        const baseAtk=(((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*diffMul;
         const dmg=Math.floor(baseAtk*(1+buff.magic));
         g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0",elBase:elBase(h.element),grade:h.grade,sx:hx,sy:hy,age:0});
       }
@@ -663,7 +668,7 @@ export default function App(){
     const mk=mapOverride||keys[Math.floor(Math.random()*keys.length)];
     buildMap(mk);
     setCurrentMapName(MAP_DEFS[mk].name);
-    G.current=initGame();
+    G.current=initGame(difficulty);
     G.current.mapKey=mk;
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
@@ -969,7 +974,27 @@ export default function App(){
           <div style={{textAlign:"center",marginBottom:4}}>
             <div style={{fontSize:11,color:"#4af",marginBottom:4}}>🗺️ {currentMapName} 맵</div>
             <div style={{fontSize:18,fontWeight:"bold",marginBottom:4}}>👑 히든영웅 선택</div>
-            <div style={{fontSize:12,color:"#666",marginBottom:16}}>영웅을 선택하면 게임이 시작됩니다</div>
+            <div style={{fontSize:12,color:"#666",marginBottom:12}}>영웅을 선택하면 게임이 시작됩니다</div>
+          </div>
+          {/* 난이도 선택 */}
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
+            <div style={{display:"flex",gap:6}}>
+              {[
+                {key:'easy',label:'쉬움',desc:'공격력 ×1.5',color:'#4f8',icon:'🌱'},
+                {key:'normal',label:'보통',desc:'공격력 ×1.25',color:'#4af',icon:'⚔️'},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀'},
+              ].map(d=>(
+                <button key={d.key} onClick={()=>setDifficulty(d.key)}
+                  style={{flex:1,background:difficulty===d.key?d.color+'22':'#21262d',
+                    border:`2px solid ${difficulty===d.key?d.color:'#30363d'}`,
+                    borderRadius:10,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
+                  <div style={{fontSize:18,marginBottom:2}}>{d.icon}</div>
+                  <div style={{fontSize:12,fontWeight:"bold",color:difficulty===d.key?d.color:'#aaa'}}>{d.label}</div>
+                  <div style={{fontSize:9,color:"#555",marginTop:1}}>{d.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {HH.map(h=>(
@@ -1002,6 +1027,7 @@ export default function App(){
         <span>💰<b style={{color:"#fd0"}}>{ui.gold}G</b></span>
         <span style={{color:"#a78bfa",fontWeight:"bold",cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
         <span style={{fontSize:11,color:"#4af"}}>🗺️{currentMapName}</span>
+        <span style={{fontSize:10,color:G.current?.difficulty==='easy'?'#4f8':G.current?.difficulty==='normal'?'#4af':'#f44'}}>{G.current?.difficulty==='easy'?'🌱쉬움':G.current?.difficulty==='normal'?'⚔️보통':'💀어려움'}</span>
         <span>🎯R{ui.round}/100</span>
         <span style={{color:ui.total>=24?"#f44":"#aaa",fontSize:12}}>👾{ui.total}/30</span>
         <button onClick={()=>setShowCombo(true)} style={{background:"#21262d",border:"1px solid #444",color:"#eee",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>조합표</button>
