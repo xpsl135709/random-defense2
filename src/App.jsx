@@ -146,6 +146,78 @@ function buildMap(mapKey){
   CURRENT_MAP=mapKey;
 }
 
+// ══════════════════════════════════════════
+// 패치노트
+// ══════════════════════════════════════════
+const PATCH_NOTES=[
+  {
+    version:"v0.6",
+    date:"2025-06-16",
+    title:"사거리 & 난이도 업데이트",
+    changes:[
+      "⚔️ 난이도 선택 추가 (쉬움/보통/어려움)",
+      "🎯 유닛별 사거리 차별화 (속성/등급마다 다름)",
+      "🎯 유닛 클릭 시 사거리 원 시각화",
+      "🐛 난이도 선택 버그 수정 (비동기 적용 오류)",
+    ]
+  },
+  {
+    version:"v0.5",
+    date:"2025-06-16",
+    title:"조합표 개편",
+    changes:[
+      "📋 조합표 탭 분리 (고급/영웅/전설/신화/불멸)",
+      "📋 전설 이상 유닛도 선택 패널에서 조합 가능",
+      "📋 조합표는 정보 확인 전용, 보유수 표시",
+      "🐛 게임 시작 후 적이 움직이지 않던 버그 수정",
+    ]
+  },
+  {
+    version:"v0.4",
+    date:"2025-06-16",
+    title:"맵 시스템 & 시작화면",
+    changes:[
+      "🗺️ 맵 3종 랜덤 적용 (지그재그/S자/분기)",
+      "🔀 분기 맵 추가 - 적이 두 갈래로 나뉘어 이동",
+      "🎮 타이틀 시작화면 추가",
+      "👑 히든영웅 선택 화면 분리",
+      "🏠 게임 중 홈버튼 추가",
+    ]
+  },
+  {
+    version:"v0.3",
+    date:"2025-06-15",
+    title:"속성 & 소환 연출",
+    changes:[
+      "☠️ 독/나무 속성 추가 (조합 포함)",
+      "✨ 전설 이상 뽑기 시 소환 연출 추가",
+      "🎨 속성별 투사체/임팩트 이펙트 차별화",
+    ]
+  },
+  {
+    version:"v0.2",
+    date:"2025-06-15",
+    title:"골드/조합 시스템",
+    changes:[
+      "💰 킬골드 제거 → 라운드 클리어 골드 방식",
+      "⚗️ 조합 시스템 개편 (고급15종 + 영웅13종 COMBO)",
+      "⚗️ 전설/신화/불멸 레시피 조합 추가",
+      "🎰 도박장 추가 (10라운드 해금)",
+    ]
+  },
+  {
+    version:"v0.1",
+    date:"2025-06-14",
+    title:"초기 버전",
+    changes:[
+      "🎮 랜덤 디펜스 기본 시스템",
+      "🗡️ 히든영웅 버프 시스템",
+      "🪙 코인 상점",
+      "📦 뭉치기/보관함 시스템",
+    ]
+  },
+];
+
 const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무"];
 const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",독:"#8bc34a",나무:"#4caf50",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",신성폭풍:"#fda",혼돈:"#628",맹독:"#6db33f",독안개:"#9ccc65",가시숲:"#388e3c",독폭풍:"#7cb342",맹독늪:"#558b2f",지진:"#a73",음파해일:"#08f",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef",성음:"#feb",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염불멸:"#f80",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",암흑불멸:"#808",광명불멸:"#ffd"};
 const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",독:"☠️",나무:"🌿",맹독:"🐍",독안개:"🌫️",가시숲:"🌵",독폭풍:"💀",맹독늪:"🌑",용암:"👺",폭풍화염:"💣",빙하:"🧊",번개폭풍:"🦅",공허:"🧛",공명:"🦇",돌풍:"💨",화염폭풍:"😈",해일:"🧟",번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",용암폭풍:"🪓",냉기폭풍:"🥶",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",신성폭풍:"🪽",혼돈:"🌀",폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫"};
@@ -390,7 +462,8 @@ export default function App(){
 
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
-  const [difficulty,setDifficulty]=useState('hard'); // easy/normal/hard
+  const [difficulty,setDifficulty]=useState('hard');
+  const [showPatch,setShowPatch]=useState(true); // 첫 진입시 패치노트 표시 // easy/normal/hard
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
@@ -740,6 +813,9 @@ export default function App(){
   const pickHidden=(h)=>{
     const g=G.current;
     g.hiddenHero={...h,id:h.id};
+    // 난이도를 히든영웅 선택 시점에 최종 반영 (state 비동기 문제 해결)
+    g.difficulty=difficulty;
+    g.diffMul=difficulty==='easy'?1.5:difficulty==='normal'?1.25:1.0;
     // 미배치 유닛 자동 배치
     for(const hero of g.heroes){
       if(hero.col===null){
@@ -996,6 +1072,7 @@ export default function App(){
   // ══════════════════════════════════════════
   if(phase==='title'){
     return(
+      <>
       <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
         <div style={{fontSize:44,marginBottom:8}}>🗡️</div>
         <div style={{fontSize:28,fontWeight:"bold",color:"#4af",marginBottom:4,letterSpacing:2}}>랜덤 디펜스</div>
@@ -1019,8 +1096,59 @@ export default function App(){
           style={{background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 48px",cursor:"pointer",fontSize:18,fontWeight:"bold",letterSpacing:2,boxShadow:"0 4px 20px rgba(31,111,235,0.4)",marginBottom:12}}>
           ⚔️ 게임 시작
         </button>
+        <button onClick={()=>setShowPatch(true)}
+          style={{background:"none",border:"1px solid #30363d",color:"#555",borderRadius:8,padding:"6px 20px",cursor:"pointer",fontSize:12,marginBottom:8}}>
+          📋 패치노트
+        </button>
         <div style={{fontSize:11,color:"#444",textAlign:"center"}}>매 게임 3종 맵 중 랜덤으로 시작</div>
       </div>
+
+      {/* 패치노트 모달 */}
+      {showPatch&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:380,maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+            {/* 헤더 */}
+            <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div>
+                <div style={{fontSize:16,fontWeight:"bold",color:"#eee"}}>📋 패치노트</div>
+                <div style={{fontSize:11,color:"#555",marginTop:2}}>랜덤 디펜스 업데이트 내역</div>
+              </div>
+              <button onClick={()=>setShowPatch(false)}
+                style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer",padding:"0 4px",lineHeight:1}}>✕</button>
+            </div>
+            {/* 스크롤 영역 */}
+            <div style={{overflowY:"auto",flex:1,padding:"12px 20px"}}>
+              {PATCH_NOTES.map((p,i)=>(
+                <div key={p.version} style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                    <span style={{background:i===0?"#1f6feb22":"#21262d",border:`1px solid ${i===0?"#1f6feb":"#30363d"}`,borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:"bold",color:i===0?"#4af":"#555"}}>
+                      {p.version}
+                    </span>
+                    <span style={{fontSize:12,fontWeight:"bold",color:i===0?"#eee":"#666"}}>{p.title}</span>
+                    <span style={{fontSize:10,color:"#333",marginLeft:"auto"}}>{p.date}</span>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4,paddingLeft:4}}>
+                    {p.changes.map((c,j)=>(
+                      <div key={j} style={{fontSize:12,color:i===0?"#aaa":"#444",lineHeight:1.5}}>
+                        {c}
+                      </div>
+                    ))}
+                  </div>
+                  {i<PATCH_NOTES.length-1&&<div style={{borderBottom:"1px solid #21262d",marginTop:14}}/>}
+                </div>
+              ))}
+            </div>
+            {/* 닫기 버튼 */}
+            <div style={{padding:"12px 20px",borderTop:"1px solid #21262d",flexShrink:0}}>
+              <button onClick={()=>setShowPatch(false)}
+                style={{width:"100%",background:"#1f6feb",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:14,fontWeight:"bold"}}>
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
