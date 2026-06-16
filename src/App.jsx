@@ -384,17 +384,32 @@ const HH=[
 // ══════════════════════════════════════════
 // 보스 테이블 (10라운드마다)
 // ══════════════════════════════════════════
-const BOSS_TABLE={
-  10: {name:"화염군주",emoji:"🔥",weak:["불","용암","화염폭풍"],color:"#f60",desc:"불 계열만 정상 데미지"},
-  20: {name:"빙하제왕",emoji:"❄️",weak:["얼음","빙하","절대영도"],color:"#0cf",desc:"얼음 계열만 정상 데미지"},
-  30: {name:"번개신황",emoji:"⚡",weak:["전기","번개신","뇌신"],color:"#ff0",desc:"전기 계열만 정상 데미지"},
-  40: {name:"어둠군주",emoji:"🌑",weak:["어둠","심연","공허"],color:"#a4f",desc:"어둠 계열만 정상 데미지"},
-  50: {name:"대지의왕",emoji:"🪨",weak:["땅","지진","용암"],color:"#a73",desc:"땅/불 계열만 정상 데미지"},
-  60: {name:"음파황제",emoji:"🔊",weak:["소리","공명","성음"],color:"#f8c",desc:"소리 계열만 정상 데미지"},
-  70: {name:"독신",emoji:"☠️",weak:["독","나무","맹독"],color:"#8bc",desc:"독/나무 계열만 정상 데미지"},
-  80: {name:"시간신",emoji:"⏳",weak:["시간","홍수","운석"],color:"#c084fc",desc:"시간/홍수/운석만 정상 데미지"},
-  90: {name:"빛의신황",emoji:"✨",weak:["빛","신성광","빛의신"],color:"#ffa",desc:"빛 계열만 정상 데미지"},
-  100:{name:"혼돈신",emoji:"💫",weak:["무속성"],color:"#fff",desc:"무속성만 정상 데미지 (모든속성 약점)"},
+// 랜덤 보스 생성
+const BOSS_NAMES=["화염군주","빙하제왕","번개신황","어둠군주","대지의왕","음파황제","독군주","시간신","빛의신황","혼돈마왕","심연군주","폭풍황제","독룡","운석신황","냉기제왕","번개마신","대지신","소리황제","시간마왕","혼돈신"];
+const BOSS_EMOJIS=["🔥","❄️","⚡","🌑","🪨","🔊","☠️","⏳","✨","💫","🌀","🌪️","🐉","☄️","🥶","💀","🌍","🎵","🕰️","🌈"];
+const BOSS_WEAK_POOL=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","시간","홍수","운석","무속성"];
+const BOSS_COLORS=["#f60","#0cf","#ff0","#a4f","#a73","#f8c","#8bc","#c084fc","#ffa","#fff","#628","#4fa","#f80","#fb923c","#8df","#f44","#4af","#f6f","#a855f7","#38bdf8"];
+
+const makeBoss=(round)=>{
+  // 시드 기반 랜덤 (같은 라운드면 항상 같은 보스)
+  const seed=round*1234567;
+  const rnd=(n)=>((seed*n*9301+49297)%233280)/233280;
+  const nameIdx=Math.floor(rnd(1)*BOSS_NAMES.length);
+  const emojiIdx=Math.floor(rnd(2)*BOSS_EMOJIS.length);
+  const colorIdx=Math.floor(rnd(3)*BOSS_COLORS.length);
+  // 약점 2개 랜덤 (중복 없이)
+  const pool=[...BOSS_WEAK_POOL];
+  const w1idx=Math.floor(rnd(4)*pool.length);
+  const w1=pool.splice(w1idx,1)[0];
+  const w2idx=Math.floor(rnd(5)*pool.length);
+  const w2=pool[w2idx];
+  return{
+    name:BOSS_NAMES[nameIdx],
+    emoji:BOSS_EMOJIS[emojiIdx],
+    color:BOSS_COLORS[colorIdx],
+    weak:[w1,w2],
+    desc:`${w1}·${w2} 약점`,
+  };
 };
 // 보스 weak 속성에 포함된 유닛인지 확인
 const isBossWeak=(element,bossWeaks)=>{
@@ -1130,7 +1145,7 @@ export default function App(){
     if(g.spawnT>spawnInterval&&g.spawnC<g.maxSpawn){
       g.spawnT=0;g.spawnC++;
       if(isBossRound&&!g.bossSpawned){
-        const bossInfo=BOSS_TABLE[g.round]||{name:"고대보스",emoji:"💀",weak:[],color:"#888",desc:"모든 속성 정상 데미지"};
+        const bossInfo=makeBoss(g.round);
         g.currentBoss=bossInfo;
         const boss=mkE("일반",g.round,true,false,g.mapKey,{});
         boss.isRageReady=true;boss.bossInfo=bossInfo;
@@ -1196,7 +1211,7 @@ export default function App(){
           e.hp-=e.dotDmg;
           if(e.hp<=0&&!e.rewarded){e.rewarded=true;if(e.isBoss)g.currentBoss=null;}
         }
-        if(e.dotTimer<=0){e.dotTimer=0;e.dotDmg=0;e._dotTick=0;}
+        if(e.dotTimer<=0){e.dotTimer=0;e.dotDmg=0;e._dotTick=0;e.dotStacks=0;}
       }
 
       // 재생형: 매 3초마다 최대HP의 3% 회복
@@ -1270,7 +1285,9 @@ export default function App(){
     const buff=getBuff();
     // 황금정령: 적 처치 시 골드 지급
     const goldUnits=g.heroes.filter(h=>h.col!==null&&h.element==="황금정령");
-    const goldPerKill=goldUnits.reduce((s,h)=>s+1+(h.enhLv||0),0);
+    // 황금정령은 1개 한정 (여러 개 있어도 가장 높은 강화레벨 1개만 적용)
+    const bestGold=goldUnits.length>0?goldUnits.reduce((best,h)=>h.enhLv>best.enhLv?h:best,goldUnits[0]):null;
+    const goldPerKill=bestGold?1+(bestGold.enhLv||0):0;
 
     const allH=g.heroes.filter(h=>h.col!==null);
     for(const h of allH){
@@ -1392,8 +1409,12 @@ export default function App(){
           // 독 지속데미지
           if(t2){
             applyDmg(t2,p.dmg,goldPerKill,g);
-            t2.dotDmg=(t2.dotDmg||0)+Math.floor(p.dmg*(trait.dotMul||0.3));
-            t2.dotTimer=(t2.dotTimer||0)+(trait.dotDur||3);
+            const maxDotStacks=3;
+            t2.dotStacks=(t2.dotStacks||0)+1;
+            if(t2.dotStacks<=maxDotStacks){
+              t2.dotDmg=(t2.dotDmg||0)+Math.floor(p.dmg*(trait.dotMul||0.3));
+            }
+            t2.dotTimer=Math.max(t2.dotTimer||0,trait.dotDur||3); // 타이머 갱신 (합산X)
           }
 
         } else if(trait.type==="root"){
@@ -1641,9 +1662,11 @@ export default function App(){
   const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
   const getGradeEnhLv=(grade)=>(G.current?.gradeEnhLv||{})[grade]||0;
 
+  const MAX_GRADE_ENH=20;
   const doGradeEnhance=(grade)=>{
     const g=G.current;if(!g.gradeEnhLv)g.gradeEnhLv={};
     const lv=g.gradeEnhLv[grade]||0;
+    if(lv>=MAX_GRADE_ENH){alert(`최대 등급강화(${MAX_GRADE_ENH}강)에 도달했습니다!`);return;}
     const cost=GRADE_ENH_COST[grade]*(lv+1);
     if(g.gold<cost){alert(`골드 부족! (${cost}G)`);return;}
     g.gold-=cost;g.gradeEnhLv[grade]=(lv+1);
@@ -1652,10 +1675,15 @@ export default function App(){
     sync();draw();alert(`✅ ${grade} 강화 완료! ATK+${bonus.atk}/SPD+${(bonus.spd*100).toFixed(0)}% (Lv.${lv+1})`);
   };
 
+  const ENHANCE_GRADES=["전설","신화","불멸"]; // 강화 가능 등급
+  const maxEnh=(h)=>h.element==="황금정령"?20:10; // 황금정령만 20강
   const enhCost=(h)=>10*(h.enhLv+1);
+  const canEnhance=(h)=>ENHANCE_GRADES.includes(h.grade)&&(h.enhLv||0)<maxEnh(h);
   const doEnhance=(heroId)=>{
     const g=G.current,h=g.heroes.find(x=>x.id===heroId);
     if(!h)return;
+    if(!ENHANCE_GRADES.includes(h.grade)){alert("전설 이상 유닛만 강화 가능합니다!");return;}
+    if((h.enhLv||0)>=maxEnh(h)){alert(`최대 강화(${maxEnh(h)}강)에 도달했습니다!`);return;}
     const cost=enhCost(h);
     if(g.gold<cost){alert(`골드 부족! (${cost}G)`);return;}
     g.gold-=cost;h.enhLv=(h.enhLv||0)+1;h.atk+=5;h.spd=Math.min((h.spd||1)+0.02,2.5);
@@ -1712,6 +1740,10 @@ export default function App(){
 
   const doRecipe=(recipe)=>{
     const g=G.current;if(!canRecipe(recipe)){alert("재료 부족!");return;}
+    // 황금정령은 1개만 보유 가능
+    if(recipe.r==="황금정령"&&g.heroes.some(h=>h.element==="황금정령")){
+      alert("황금정령은 1개만 보유할 수 있습니다!");return;
+    }
     const remaining=[...g.heroes];
     for(const part of recipe.parts){let removed=0;for(let i=remaining.length-1;i>=0&&removed<part.n;i--){if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}}}
     const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});const pos=autoPlace(remaining);
@@ -1928,7 +1960,49 @@ export default function App(){
         </div>
       )}
 
-      {/* 패치노트 모달 */}}
+      {/* 게임 설명 모달 */}
+      {showGuide&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"88vh",display:"flex",flexDirection:"column"}}>
+            <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div style={{fontSize:16,fontWeight:"bold",color:"#4af"}}>📖 게임 설명</div>
+              <button onClick={()=>setShowGuide(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{overflowY:"auto",flex:1,padding:"14px 18px"}}>
+              {[
+                {icon:"🎯",title:"게임 목표",color:"#f87171",items:["적이 경로를 따라 GOAL에 도달하면 라이프 감소","라이프가 0이 되거나 적이 30마리 넘으면 게임 오버","100라운드를 버티면 클리어 (무한모드 도전 가능)"]},
+                {icon:"🎲",title:"유닛 뽑기 & 배치",color:"#60a5fa",items:["뽑기(10G) → 랜덤 속성 노말 유닛 획득","획득한 유닛을 경로 밖 빈 칸에 배치","유닛 클릭 → 이동/강화/판매 가능","유닛 꾹 누르기 → 상세 정보 확인"]},
+                {icon:"⚗️",title:"조합 시스템",color:"#a78bfa",items:["같은 속성 2개 → 고급 유닛으로 조합","고급 유닛 2개 → 영웅 유닛으로 조합","영웅 이상 조합으로 전설/신화/불멸 제작 가능","조합표에서 필요 재료 확인","유닛 선택 후 하단 조합 버튼 클릭"]},
+                {icon:"⚡",title:"속성별 특성",color:"#fbbf24",items:["🔥 불/☄️ 운석 → 범위 스플래시 데미지","⚡ 전기 → 최대 3회 체인 공격","🌀 바람/🔊 소리 → 일직선 관통","☠️ 독 → 3초 지속데미지 (최대 3중첩)","🌿 나무 → 속박 / 💧 물 → 방어감소","🌑 어둠 → 스턴 / ❄️ 얼음·시간·홍수 → 슬로우"]},
+                {icon:"👑",title:"히든영웅",color:"#f97316",items:["게임 시작 전 히든영웅 1명 선택","전체 유닛에 버프 적용 (공격력/속도/사거리 등)","상인: 골드+30% / 저격수: 사거리+2","수호자: 라이프+10 / 번개신: 연쇄공격","시간술사: 슬로우 강화 / 연금술사: 균형형"]},
+                {icon:"⬆️",title:"강화 시스템",color:"#4ade80",items:["개별강화: 전설 이상만 가능 (최대 10강)","황금정령은 개별강화 20강 (강화마다 +1골드)","등급강화: 전 유닛 일괄 능력치 상승 (최대 20강)","코인 상점에서 고급/영웅/전설 유닛 구매"]},
+                {icon:"💀",title:"보스 & 웨이브",color:"#f44",items:["5라운드마다 중간보스, 10라운드마다 보스 등장","보스는 약점 속성에만 정상 데미지 (나머지 10%)","카운트다운에서 다음 보스 약점 미리 확인","무리/속도/장갑/힐러 등 다양한 웨이브 등장","보스 HP 40% 이하 시 광폭화"]},
+              ].map(section=>(
+                <div key={section.title} style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <span style={{fontSize:18}}>{section.icon}</span>
+                    <span style={{fontSize:14,fontWeight:"bold",color:section.color}}>{section.title}</span>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4,paddingLeft:8}}>
+                    {section.items.map((item,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,fontSize:12,color:"#94a3b8",lineHeight:1.5}}>
+                        <span style={{color:section.color,flexShrink:0}}>•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{borderBottom:"1px solid #1e293b",marginTop:12}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:"12px 18px",borderTop:"1px solid #21262d",flexShrink:0}}>
+              <button onClick={()=>setShowGuide(false)} style={{width:"100%",background:"#1d4ed8",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:14,fontWeight:"bold"}}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 패치노트 모달 */}
       {showPatch&&(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}}>
           <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:380,maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
@@ -2067,7 +2141,7 @@ export default function App(){
 
       {countdown>0&&(()=>{
         const nb=G.current?.round%10===0;
-        const bossInfo=nb?BOSS_TABLE[G.current?.round]:null;
+        const bossInfo=nb?makeBoss(G.current?.round||10):null;
         return(
         <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:bossInfo?"linear-gradient(135deg,#450a0a,#7f1d1d)":"linear-gradient(135deg,#052e16,#14532d)",borderRadius:bossInfo?"8px 8px 0 0":8,padding:"6px 10px",border:`1px solid ${bossInfo?"#ef4444":"#166534"}`,fontSize:15,color:bossInfo?"#fca5a5":"#4ade80",fontWeight:"bold"}}>
@@ -2214,7 +2288,10 @@ export default function App(){
           </div>
           <div style={{display:"flex",gap:5,marginBottom:8}}>
             <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>📍 이동</button>
-            <button onClick={()=>doEnhance(selHeroObj.id)} style={{flex:1,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>⬆️ {enhCost(selHeroObj)}G</button>
+            {canEnhance(selHeroObj)?
+              <button onClick={()=>doEnhance(selHeroObj.id)} style={{flex:1,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>⬆️ {enhCost(selHeroObj)}G <span style={{fontSize:9,opacity:0.7}}>({selHeroObj.enhLv||0}/{maxEnh(selHeroObj)})</span></button>
+              :<div style={{flex:1,background:"#1e293b",border:"1px solid #334155",color:"#475569",borderRadius:8,padding:"6px",fontSize:11,textAlign:"center"}}>{ENHANCE_GRADES.includes(selHeroObj.grade)?"최대강화":"강화불가"}</div>
+            }
             <button onClick={()=>doSell(selHeroObj.id)} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>💰+{SELL_PRICE[selHeroObj.grade]||5}G</button>
           </div>
           {combOpts.length>0&&(<><div style={{fontSize:11,color:"#aaa",marginBottom:5}}>⚗️ 조합 가능</div>
@@ -2380,7 +2457,7 @@ export default function App(){
               return(<div key={grade} style={{background:"#21262d",borderRadius:9,padding:"8px 12px",border:`1px solid ${GC[grade]||"#444"}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                   <div><span style={{color:GC[grade],fontWeight:"bold",fontSize:13}}>{grade}</span><span style={{color:"#555",fontSize:11,marginLeft:6}}>보유 {count}개</span>{lv>0&&<span style={{color:"#fd0",fontSize:11,marginLeft:6}}>Lv.{lv}</span>}</div>
-                  <button onClick={()=>doGradeEnhance(grade)} disabled={!canAfford} style={{background:canAfford?GC[grade]+"33":"#333",border:`1px solid ${canAfford?GC[grade]:"#444"}`,color:canAfford?GC[grade]:"#555",borderRadius:7,padding:"4px 12px",cursor:canAfford?"pointer":"not-allowed",fontSize:12,fontWeight:"bold"}}>💰 {cost}G</button>
+                  <button onClick={()=>doGradeEnhance(grade)} disabled={!canAfford||lv>=MAX_GRADE_ENH} style={{background:canAfford&&lv<MAX_GRADE_ENH?GC[grade]+"33":"#333",border:`1px solid ${canAfford&&lv<MAX_GRADE_ENH?GC[grade]:"#444"}`,color:canAfford&&lv<MAX_GRADE_ENH?GC[grade]:"#555",borderRadius:7,padding:"4px 12px",cursor:canAfford&&lv<MAX_GRADE_ENH?"pointer":"not-allowed",fontSize:12,fontWeight:"bold"}}>{lv>=MAX_GRADE_ENH?"최대":"💰 "+cost+"G"}</button>
                 </div>
                 <div style={{fontSize:10,color:"#888"}}>ATK+{bonus.atk}/SPD+{(bonus.spd*100).toFixed(0)}%{lv>0&&<span style={{color:"#fd0",marginLeft:6}}>누적: ATK+{bonus.atk*lv}</span>}</div>
               </div>);
