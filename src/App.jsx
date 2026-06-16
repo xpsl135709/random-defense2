@@ -681,6 +681,7 @@ export default function App(){
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('hard');
   const [showPatch,setShowPatch]=useState(true);
+  const [showGuide,setShowGuide]=useState(false);
   const [nickname,setNickname]=useState('');
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
@@ -1899,6 +1900,10 @@ export default function App(){
           <button onClick={()=>{setShowRanking(true);loadRanking();}}
             style={{background:"none",border:"1px solid #30363d",color:"#fd0",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
             🏆 랭킹
+          </button>
+          <button onClick={()=>setShowGuide(true)}
+            style={{background:"none",border:"1px solid #30363d",color:"#4af",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
+            📖 설명
           </button>
           <button onClick={()=>setShowPatch(true)}
             style={{background:"none",border:"1px solid #30363d",color:"#555",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
