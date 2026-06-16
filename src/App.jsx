@@ -151,6 +151,24 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v1.1",
+    date:"2025-06-17",
+    title:"속성별 특성 구현",
+    changes:[
+      "🔥 불/운석 → 범위공격 (스플래시 데미지)",
+      "⚡ 전기 → 체인 (최대 3회 튕김, 60% 감쇠)",
+      "🌀 바람/소리 → 관통 (일직선 전체 타격)",
+      "☠️ 독 → 지속데미지 (3초 독 중첩)",
+      "🌿 나무 → 속박 (1.5초 이동정지)",
+      "💧 물 → 방어감소 (5초간 받는 데미지+30%)",
+      "🌑 어둠 → 스턴 (0.8초 완전정지)",
+      "✨ 빛 → 광역데미지 (범위 2.0칸)",
+      "❄️ 얼음/⏳시간/🌊홍수 → 슬로우 (기존 유지)",
+      "🎨 상태이상 시각화 (스턴=황금테두리, 속박=초록점선, 독=초록오라, 방어감소=빨간테두리)",
+      "📋 유닛 선택 패널에 속성 특성 설명 표시",
+    ]
+  },
+  {
     version:"v1.0",
     date:"2025-06-16",
     title:"콘텐츠 대확장",
@@ -437,6 +455,32 @@ const getRange=(el,grade)=>{
   return Math.min(base+bonus, 7.0);
 };
 
+// ══════════════════════════════════════════
+// 속성별 특성 (elBase 기준)
+// ══════════════════════════════════════════
+const EL_TRAITS={
+  "불":   {type:"splash",   desc:"범위공격",    detail:"반경 1.5칸 스플래시",   splashR:1.5, dmgMul:0.6},
+  "운석": {type:"splash",   desc:"범위공격",    detail:"반경 2.0칸 스플래시",   splashR:2.0, dmgMul:0.5},
+  "전기": {type:"chain",    desc:"체인",        detail:"최대 3회 튕김 (60%감쇠)",chainCnt:3,  chainMul:0.6},
+  "바람": {type:"pierce",   desc:"관통",        detail:"일직선 적 전체 타격"},
+  "소리": {type:"pierce",   desc:"관통",        detail:"일직선 적 전체 타격"},
+  "독":   {type:"dot",      desc:"독데미지",    detail:"3초간 지속데미지",       dotDur:3,    dotMul:0.3},
+  "나무": {type:"root",     desc:"속박",        detail:"1.5초 이동정지",         rootDur:1.5},
+  "물":   {type:"debuff",   desc:"방어감소",    detail:"5초간 받는 데미지+30%",  debuffDur:5, debuffMul:1.3},
+  "어둠": {type:"stun",     desc:"스턴",        detail:"0.8초 완전 정지",        stunDur:0.8},
+  "빛":   {type:"heal",     desc:"치유",        detail:"주변 아군 HP%로 회복 (미구현→광역데미지)", splashR:2.0, dmgMul:0.4},
+  "얼음": {type:"slow",     desc:"슬로우",      detail:"속도 감소"},
+  "시간": {type:"slow",     desc:"광역슬로우",  detail:"범위 내 전체 슬로우"},
+  "홍수": {type:"slow",     desc:"광역슬로우",  detail:"넓은 범위 슬로우"},
+  "시간의눈보라":{type:"slow",desc:"슬로우",   detail:"속도 감소"},
+  "홍수해일":{type:"slow",  desc:"슬로우",      detail:"속도 감소"},
+  "화염운석":{type:"splash",desc:"범위공격",   detail:"반경 1.5칸 스플래시",    splashR:1.5,dmgMul:0.5},
+};
+const getElTrait=(el)=>{
+  const base=EL_BASE[el]||el;
+  return EL_TRAITS[el]||EL_TRAITS[base]||{type:"single",desc:"단일공격",detail:"적 1명 타격"};
+};
+
 const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸","시간","시간폭풍","시간지배자"]);
 const ICE_SLOW={"노말":{cd:5,dur:2,range:1.5,slow:0.45},"고급":{cd:4,dur:3,range:2.0,slow:0.40},"영웅":{cd:3,dur:4,range:2.5,slow:0.35},"전설":{cd:2,dur:5,range:3.0,slow:0.30},"신화":{cd:1.5,dur:6,range:3.5,slow:0.25},"불멸":{cd:1,dur:8,range:4.0,slow:0.20}};
 // 홍수 속성: 범위 슬로우 (얼음보다 느리지만 범위 넓음)
@@ -556,7 +600,7 @@ const initGame=(diff='hard')=>({
   mapKey:CURRENT_MAP||'A',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
-  diffMul:diff==='easy'?2.6:diff==='normal'?2.1:1.7,
+  diffMul:diff==='easy'?2.0:diff==='normal'?1.5:1.3,
 });
 
 // ══════════════════════════════════════════
@@ -640,6 +684,8 @@ export default function App(){
   const [randomPicks,setRandomPicks]=useState([]);
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
+  const [detailHero,setDetailHero]=useState(null); // 상세정보 모달
+  const longPressTimer=useRef(null);
   const [currentMapName,setCurrentMapName]=useState('');
 
   const triggerSummon=(el,grade)=>{
@@ -962,10 +1008,30 @@ export default function App(){
       // 테두리
       ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=0.5;ctx.strokeRect(bx,by,bw,bh);
 
-      // 슬로우 표시
-      if(e.slowTimer>0){
+      // 상태이상 시각화
+      if(e.stunTimer>0){
+        ctx.strokeStyle="#ffd700";ctx.lineWidth=2.5;ctx.globalAlpha=0.8;
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+3,0,Math.PI*2);ctx.stroke();
+        ctx.font="10px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillStyle="#ffd700";ctx.fillText("★",ex+CS/2,ey+CS/2-rad-6);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";
+      } else if(e.rootTimer>0){
+        ctx.strokeStyle="#22c55e";ctx.lineWidth=2;ctx.globalAlpha=0.8;
+        ctx.setLineDash([3,3]);
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+3,0,Math.PI*2);ctx.stroke();
+        ctx.setLineDash([]);
+      } else if(e.slowTimer>0){
         ctx.fillStyle="rgba(147,210,255,0.25)";
         ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+2,0,Math.PI*2);ctx.fill();
+      }
+      if(e.dotTimer>0&&e.dotDmg>0){
+        ctx.globalAlpha=0.5+Math.sin(Date.now()/200)*0.3;
+        ctx.fillStyle="rgba(139,195,74,0.4)";
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+4,0,Math.PI*2);ctx.fill();
+      }
+      if(e.debuff){
+        ctx.strokeStyle="#ef4444";ctx.lineWidth=1.5;ctx.globalAlpha=0.6;
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+5,0,Math.PI*2);ctx.stroke();
       }
 
       ctx.restore();
@@ -1104,7 +1170,33 @@ export default function App(){
       // 슬로우 타이머
       if(e.slowTimer>0){
         e.slowTimer-=dt;
-        if(e.slowTimer<=0){e.slowTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+        if(e.slowTimer<=0){e.slowTimer=0;if(e.baseSpeed&&!e.stunTimer&&!e.rootTimer){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+      }
+      // 스턴 타이머
+      if(e.stunTimer>0){
+        e.stunTimer-=dt;
+        if(e.stunTimer<=0){e.stunTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+      }
+      // 속박 타이머
+      if(e.rootTimer>0){
+        e.rootTimer-=dt;
+        if(e.rootTimer<=0){e.rootTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+      }
+      // 방어감소 타이머
+      if(e.debuffTimer>0){
+        e.debuffTimer-=dt;
+        if(e.debuffTimer<=0){e.debuffTimer=0;e.debuff=false;e.debuffMul=1;}
+      }
+      // 독 지속데미지
+      if(e.dotTimer>0&&e.dotDmg>0){
+        e.dotTimer-=dt;
+        e._dotTick=(e._dotTick||0)+dt;
+        if(e._dotTick>=1){
+          e._dotTick=0;
+          e.hp-=e.dotDmg;
+          if(e.hp<=0&&!e.rewarded){e.rewarded=true;if(e.isBoss)g.currentBoss=null;}
+        }
+        if(e.dotTimer<=0){e.dotTimer=0;e.dotDmg=0;e._dotTick=0;}
       }
 
       // 재생형: 매 3초마다 최대HP의 3% 회복
@@ -1227,23 +1319,113 @@ export default function App(){
         }
       }
     }
+    const applyDmg=(enemy,dmg,killGold,g2)=>{
+      if(!enemy||enemy.remove||enemy.hp<=0)return;
+      const debuffMul=enemy.debuff?enemy.debuffMul||1:1;
+      const reduced=Math.max(1,Math.floor(dmg*(1-(enemy.armor||0))*debuffMul));
+      enemy.hp-=reduced;
+      if(enemy.hp<=0&&!enemy.rewarded){
+        enemy.rewarded=true;
+        if(enemy.isBoss)g2.currentBoss=null;
+        const kg=(enemy.reward||0)+killGold;
+        if(kg>0){g2.gold+=kg;setUi(prev=>({...prev,gold:g2.gold}));}
+      }
+    };
+
     for(const p of g.projs){
       p.age=(p.age||0)+dt;
       const dx=p.tx-p.x,dy=p.ty-p.y,dist=Math.sqrt(dx*dx+dy*dy),mv=p.spd*dt;
       if(dist<mv){
         p.hit=true;
         if(!g.impacts)g.impacts=[];
-        g.impacts.push({x:p.tx,y:p.ty,t:0,maxT:0.25,color:p.color,elBase:p.elBase,grade:p.grade});
+        g.impacts.push({x:p.tx,y:p.ty,t:0,maxT:0.3,color:p.color,elBase:p.elBase,grade:p.grade});
         const t2=g.enemies.find(e=>e.id===p.tid&&!e.remove&&e.hp>0);
-        if(t2&&p.dmg>0){
-          // 방어력 적용 (방패/장갑 적)
-          const reduced=Math.max(1,Math.floor(p.dmg*(1-(t2.armor||0))));
-          t2.hp-=reduced;
-          if(t2.hp<=0&&!t2.rewarded){t2.rewarded=true;if(t2.isBoss)g.currentBoss=null;const killGold=(t2.reward||0)+goldPerKill;if(killGold>0){g.gold+=killGold;setUi(prev=>({...prev,gold:g.gold}));}}
+        const trait=getElTrait(p.elBase||"무속성");
+
+        if(trait.type==="splash"||trait.type==="heal"){
+          // 범위공격 - 중심점 주변 스플래시
+          const sr=(trait.splashR||1.5)*CS;
+          for(const e of g.enemies){
+            if(e.remove)continue;
+            const sd=Math.sqrt((e.x+CS/2-p.tx)**2+(e.y+CS/2-p.ty)**2);
+            if(sd<=sr){
+              const splashDmg=e.id===p.tid?p.dmg:Math.floor(p.dmg*(trait.dmgMul||0.5));
+              if(splashDmg>0)applyDmg(e,splashDmg,goldPerKill,g);
+              g.impacts.push({x:e.x+CS/2,y:e.y+CS/2,t:0,maxT:0.2,color:p.color,elBase:p.elBase,grade:p.grade});
+            }
+          }
+
+        } else if(trait.type==="chain"){
+          // 체인 - 튕기기
+          if(t2&&p.dmg>0)applyDmg(t2,p.dmg,goldPerKill,g);
+          let chainSrc=t2;let chainDmg=Math.floor(p.dmg*(trait.chainMul||0.6));
+          const hit=new Set([p.tid]);
+          for(let ci=0;ci<(trait.chainCnt||3)&&chainSrc&&chainDmg>0;ci++){
+            const nxt=g.enemies.filter(e=>!e.remove&&e.hp>0&&!hit.has(e.id))
+              .sort((a,b)=>Math.sqrt((a.x-chainSrc.x)**2+(a.y-chainSrc.y)**2)-Math.sqrt((b.x-chainSrc.x)**2+(b.y-chainSrc.y)**2))[0];
+            if(!nxt)break;
+            hit.add(nxt.id);
+            applyDmg(nxt,chainDmg,goldPerKill,g);
+            g.projs.push({x:chainSrc.x+CS/2,y:chainSrc.y+CS/2,tx:nxt.x+CS/2,ty:nxt.y+CS/2,tid:nxt.id,dmg:0,spd:500,color:"#ffd700",elBase:"전기",grade:p.grade,sx:chainSrc.x+CS/2,sy:chainSrc.y+CS/2,age:0,isChainVfx:true});
+            chainSrc=nxt;chainDmg=Math.floor(chainDmg*(trait.chainMul||0.6));
+          }
+
+        } else if(trait.type==="pierce"){
+          // 관통 - 발사 방향 직선상 적 전체
+          const px=p.sx,py=p.sy,ex2=p.tx,ey2=p.ty;
+          const pdx=ex2-px,pdy=ey2-py,plen=Math.sqrt(pdx*pdx+pdy*pdy)||1;
+          const pux=pdx/plen,puy=pdy/plen;
+          for(const e of g.enemies){
+            if(e.remove)continue;
+            const epx=e.x+CS/2-px,epy=e.y+CS/2-py;
+            const dot=epx*pux+epy*puy;
+            if(dot<0)continue;
+            const perpX=epx-dot*pux,perpY=epy-dot*puy;
+            const perp=Math.sqrt(perpX*perpX+perpY*perpY);
+            if(perp<=CS*0.6){
+              applyDmg(e,p.dmg,goldPerKill,g);
+              g.impacts.push({x:e.x+CS/2,y:e.y+CS/2,t:0,maxT:0.2,color:p.color,elBase:p.elBase,grade:p.grade});
+            }
+          }
+
+        } else if(trait.type==="dot"){
+          // 독 지속데미지
+          if(t2){
+            applyDmg(t2,p.dmg,goldPerKill,g);
+            t2.dotDmg=(t2.dotDmg||0)+Math.floor(p.dmg*(trait.dotMul||0.3));
+            t2.dotTimer=(t2.dotTimer||0)+(trait.dotDur||3);
+          }
+
+        } else if(trait.type==="root"){
+          // 속박
+          if(t2){
+            applyDmg(t2,p.dmg,goldPerKill,g);
+            if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
+            t2.speed=0;t2.rootTimer=(trait.rootDur||1.5);
+          }
+
+        } else if(trait.type==="stun"){
+          // 스턴 - 완전 정지 + 데미지 없음
+          if(t2){
+            applyDmg(t2,p.dmg,goldPerKill,g);
+            if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
+            t2.speed=0;t2.stunTimer=(trait.stunDur||0.8);
+          }
+
+        } else if(trait.type==="debuff"){
+          // 방어감소 디버프
+          if(t2){
+            applyDmg(t2,p.dmg,goldPerKill,g);
+            t2.debuff=true;t2.debuffMul=(trait.debuffMul||1.3);t2.debuffTimer=(trait.debuffDur||5);
+          }
+
+        } else {
+          // 단일공격 (기본)
+          if(t2&&p.dmg>0)applyDmg(t2,p.dmg,goldPerKill,g);
         }
       }else{p.x+=dx/dist*mv;p.y+=dy/dist*mv;}
     }
-    g.projs=g.projs.filter(p=>!p.hit);
+    g.projs=g.projs.filter(p=>!p.hit&&!p.isChainVfx);
     if(g.impacts){for(const im of g.impacts)im.t+=dt;g.impacts=g.impacts.filter(im=>im.t<im.maxT);}
 
     const spawnDone=(isBossRound&&g.bossSpawned)||(isMidRound&&g.midSpawned)||(!isBossRound&&!isMidRound&&g.spawnC>=g.maxSpawn);
@@ -1329,7 +1511,7 @@ export default function App(){
     g.hiddenHero={...h,id:h.id};
     // 난이도 최종 반영
     g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?2.6:difficulty==='normal'?2.1:1.7;
+    g.diffMul=difficulty==='easy'?2.0:difficulty==='normal'?1.5:1.3;
     // 수호자: 시작 라이프 +10
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
     // 미배치 유닛 자동 배치
@@ -1402,10 +1584,19 @@ export default function App(){
     const myEls=g.heroes.filter(x=>x.id!==heroId).map(x=>x.element);
     const myCnt={};
     for(const hero of g.heroes) myCnt[hero.element]=(myCnt[hero.element]||0)+1;
+    // 같은 속성 조합 체크용 (선택한 유닛 제외한 카운트)
+    const myElsCntEx={};
+    for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
 
     // 고급/영웅: COMBO 방식
     const comboOpts=COMBO.filter(r=>{
-      if((r.a===h.element&&myEls.includes(r.b))||(r.b===h.element&&myEls.includes(r.a))){
+      const isSame=r.a===r.b;
+      // 동속성: 내가 그 속성이고 + 나머지에 1개 더 있어야
+      // 이속성: 내가 a면 나머지에 b, 내가 b면 나머지에 a
+      const match=isSame
+        ?(h.element===r.a&&(myElsCntEx[r.a]||0)>=1)
+        :((r.a===h.element&&myEls.includes(r.b))||(r.b===h.element&&myEls.includes(r.a)));
+      if(match){
         if(r.g==="신화"&&g.round<20)return false;
         if(r.g==="불멸"&&g.round<50)return false;
         return true;
@@ -1625,6 +1816,7 @@ export default function App(){
   const changeSpeed=(s)=>{spR.current=s;setSpeedState(s);};
   const hd=HH.find(h=>h.id===selH);
   const myEls=new Set(heroes.map(h=>h.element));
+  const myElsCnt=heroes.reduce((acc,h)=>{acc[h.element]=(acc[h.element]||0)+1;return acc;},{});
   const fCombo=COMBO.filter(r=>r.g===comboFilter);
   const selHeroObj=heroes.find(h=>h.id===selHero);
   const combOpts=selHero?getCombOptions(selHero):[];
@@ -1802,9 +1994,9 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×2.6',color:'#4f8',icon:'🌱'},
-                {key:'normal',label:'보통',desc:'공격력 ×2.1',color:'#4af',icon:'⚔️'},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.7',color:'#f44',icon:'💀'},
+                {key:'easy',label:'쉬움',desc:'공격력 ×2.0',color:'#4f8',icon:'🌱'},
+                {key:'normal',label:'보통',desc:'공격력 ×1.5',color:'#4af',icon:'⚔️'},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀'},
               ].map(d=>(
                 <button key={d.key} onClick={()=>setDifficulty(d.key)}
                   style={{flex:1,background:difficulty===d.key?d.color+'22':'#21262d',
@@ -2005,6 +2197,18 @@ export default function App(){
                 <span>💨{(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</span>
                 <span>🎯{(selHeroObj.range||3.0).toFixed(1)}</span>
               </div>
+              {(()=>{
+                const trait=getElTrait(elBase(selHeroObj.element));
+                const traitColor={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";
+                return(
+                  <div style={{marginTop:4,display:"flex",gap:4,flexWrap:"wrap"}}>
+                    <span style={{background:traitColor+"22",border:`1px solid ${traitColor}55`,borderRadius:5,padding:"1px 6px",fontSize:10,color:traitColor,fontWeight:"bold"}}>
+                      {trait.desc}
+                    </span>
+                    <span style={{fontSize:10,color:"#475569"}}>{trait.detail}</span>
+                  </div>
+                );
+              })()}
             </div>
             <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontSize:13}}>✕</button>
           </div>
@@ -2032,12 +2236,26 @@ export default function App(){
           const isSel=h.id===selHero,isDrag=h.id===drag;
           const gc=GC[h.grade]||"#6b7280";
           return(
-            <div key={h.id} onClick={()=>onHero(h)}
+            <div key={h.id}
+              onClick={()=>onHero(h)}
+              onTouchStart={(e)=>{
+                e.preventDefault();
+                longPressTimer.current=setTimeout(()=>{
+                  longPressTimer.current=null;
+                  setDetailHero(h);
+                },450);
+              }}
+              onTouchEnd={()=>{
+                if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}
+              }}
+              onTouchMove={()=>{
+                if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}
+              }}
               style={{background:isSel?`${gc}20`:isDrag?"#1e3a5f":"#0f172a",
                 border:`2px solid ${isSel?gc:isDrag?"#60a5fa":gc+"44"}`,
                 borderRadius:9,padding:"5px 6px",cursor:"pointer",minWidth:50,textAlign:"center",
                 boxShadow:isSel?`0 0 10px ${gc}55`:"none",
-                transition:"border-color 0.15s"}}>
+                transition:"border-color 0.15s",userSelect:"none",WebkitUserSelect:"none"}}>
               <div style={{fontSize:18,lineHeight:1.2}}>{EE[h.element]||"?"}</div>
               <div style={{fontSize:8,color:gc,fontWeight:"bold",lineHeight:1.2}}>{h.grade}</div>
               {h.enhLv>0&&<div style={{fontSize:8,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
@@ -2045,6 +2263,87 @@ export default function App(){
           );
         })}
       </div>
+
+      {/* 유닛 상세정보 모달 (롱프레스) */}
+      {detailHero&&(()=>{
+        const dh=detailHero;
+        const gc2=GC[dh.grade]||"#aaa";
+        const trait=getElTrait(elBase(dh.element));
+        const traitColor={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";
+        const atkVal=Math.floor(((dh.atk+(dh.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic));
+        const spdVal=(((dh.spd||1)*(1+buff.spd))*100).toFixed(0);
+        const rngVal=((dh.range||3.0)+(buff.rangeBonus||0)).toFixed(1);
+        return(
+          <div onClick={()=>setDetailHero(null)}
+            style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:20}}>
+            <div onClick={e=>e.stopPropagation()}
+              style={{background:"#0f172a",border:`2px solid ${gc2}`,borderRadius:16,padding:20,width:"100%",maxWidth:320,boxShadow:`0 0 30px ${gc2}44`}}>
+              {/* 헤더 */}
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                <div style={{width:56,height:56,borderRadius:12,background:`${gc2}22`,border:`2px solid ${gc2}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>
+                  {EE[dh.element]||"?"}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:18,fontWeight:"bold",color:"#f1f5f9"}}>{EN[dh.element]||dh.element}</div>
+                  <div style={{display:"flex",gap:6,marginTop:3,alignItems:"center"}}>
+                    <span style={{background:`${gc2}22`,color:gc2,fontSize:11,borderRadius:5,padding:"1px 7px",border:`1px solid ${gc2}44`,fontWeight:"bold"}}>{dh.grade}</span>
+                    {dh.enhLv>0&&<span style={{color:"#fcd34d",fontSize:12,fontWeight:"bold"}}>+{dh.enhLv}</span>}
+                  </div>
+                </div>
+                <button onClick={()=>setDetailHero(null)} style={{background:"none",border:"none",color:"#475569",fontSize:20,cursor:"pointer"}}>✕</button>
+              </div>
+
+              {/* 스탯 */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+                {[
+                  {label:"공격력",value:atkVal,icon:"⚔️",color:"#f87171"},
+                  {label:"공속",value:spdVal+"%",icon:"💨",color:"#60a5fa"},
+                  {label:"사거리",value:rngVal,icon:"🎯",color:"#a78bfa"},
+                ].map(s=>(
+                  <div key={s.label} style={{background:"#1e293b",borderRadius:10,padding:"8px 6px",textAlign:"center"}}>
+                    <div style={{fontSize:16,marginBottom:2}}>{s.icon}</div>
+                    <div style={{fontSize:14,fontWeight:"bold",color:s.color}}>{s.value}</div>
+                    <div style={{fontSize:9,color:"#64748b",marginTop:1}}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 특성 */}
+              <div style={{background:"#1e293b",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
+                <div style={{fontSize:11,color:"#64748b",marginBottom:6}}>속성 특성</div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{background:traitColor+"22",border:`1px solid ${traitColor}55`,borderRadius:6,padding:"3px 10px",fontSize:12,color:traitColor,fontWeight:"bold",flexShrink:0}}>
+                    {trait.desc}
+                  </span>
+                  <span style={{fontSize:11,color:"#94a3b8"}}>{trait.detail}</span>
+                </div>
+              </div>
+
+              {/* 속성 */}
+              <div style={{background:"#1e293b",borderRadius:10,padding:"10px 12px",marginBottom:16}}>
+                <div style={{fontSize:11,color:"#64748b",marginBottom:6}}>속성</div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:20}}>{EE[elBase(dh.element)]||EE[dh.element]||"?"}</span>
+                  <span style={{fontSize:13,color:"#e2e8f0"}}>{elBase(dh.element)}</span>
+                  {elBase(dh.element)!==dh.element&&<span style={{fontSize:11,color:"#475569"}}>({dh.element})</span>}
+                </div>
+              </div>
+
+              {/* 버튼 */}
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>{setDetailHero(null);setSelHero(dh.id===selHero?null:dh.id);}}
+                  style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>
+                  선택
+                </button>
+                <button onClick={()=>setDetailHero(null)}
+                  style={{flex:1,background:"#1e293b",border:"1px solid #334155",color:"#94a3b8",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:13}}>
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 히든영웅 버프 */}
       {hd&&(
@@ -2233,7 +2532,7 @@ export default function App(){
                     parts:[{u:r.a,n:1},{u:r.b,n:1}],
                     result:r.r,
                     grade:r.g,
-                    can:myEls.has(r.a)&&myEls.has(r.b),
+                    can:(r.a===r.b?(unitCnt[r.a]||0)>=2:(myEls.has(r.a)&&myEls.has(r.b))),
                   }));
                 } else {
                   // 전설/신화/불멸: RECIPES 전체 표시
