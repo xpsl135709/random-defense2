@@ -151,6 +151,67 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v1.0",
+    date:"2025-06-16",
+    title:"콘텐츠 대확장",
+    changes:[
+      "⏳ 새 속성 3종 추가 (시간/홍수/운석) + 조합 연결",
+      "💰 황금정령 추가 (전설, 처치마다 골드+, 강화할수록 증가)",
+      "🔄 변신정령 추가 (영웅, 라운드마다 속성 랜덤 변경)",
+      "👑 히든영웅 6종 추가 (상인/저격수/수호자/번개신/시간술사/연금술사)",
+      "👑 기존 히든영웅 버프 전면 강화",
+      "💀 보스 속성 저항 추가 (라운드별 약점 1~2개, 약점 2배/기타 10%)",
+      "📣 보스 카운트다운에 약점 속성 미리 표시",
+      "🌀 무한모드 추가 (100라운드 클리어 후 계속)",
+      "⚡ 연쇄공격 시스템 (번개신 히든영웅 전용)",
+      "💰 상인 히든영웅 골드 보너스 적용",
+    ]
+  },
+  {
+    version:"v0.9",
+    date:"2025-06-16",
+    title:"게임성 개선 - 웨이브 & 적 다양화",
+    changes:[
+      "🐝 웨이브 5종 추가 (무리/속도/장갑/힐러/일반)",
+      "🧬 적 4종 추가 (분열/재생/돌진/방패)",
+      "💀 보스 광폭화 (HP 40% 이하 시 속도·데미지 증가)",
+      "💚 힐러형 적 - 주변 적 HP 회복",
+      "🛡️ 방패·장갑 적 - 데미지 감소",
+      "🌀 재생형 적 - 주기적 HP 회복",
+      "🐗 돌진형 적 - 주기적 순간 가속",
+      "🧬 분열형 적 - 처치 시 2마리로 분열",
+      "📣 웨이브 타입 카운트다운에 표시",
+    ]
+  },
+  {
+    version:"v0.8",
+    date:"2025-06-16",
+    title:"UI/UX 전면 개선",
+    changes:[
+      "🎨 맵 타일 비주얼 개선 (흙길 텍스처, 방향 화살표)",
+      "🎨 스폰/골 타일 펄스 애니메이션",
+      "👾 적 비주얼 개선 (일반/중간보스/보스 각각 차별화)",
+      "❤️ 체력바 개선 (둥근 모서리, 색상 변화)",
+      "🧊 슬로우 걸린 적 파란 오라 표시",
+      "📊 HUD 2줄 분리 및 뱃지 스타일 적용",
+      "🔘 액션 버튼 그라디언트 + 그림자 효과",
+      "✨ 유닛 등급별 글로우 이펙트 강화",
+      "🏆 닉네임 + 랭킹 시스템 추가",
+      "🐛 슬로우 타이머 버그 수정 (적 멈춤 현상)",
+    ]
+  },
+  {
+    version:"v0.7",
+    date:"2025-06-16",
+    title:"난이도 & 랭킹 기반 작업",
+    changes:[
+      "⚔️ 난이도 수치 재조정 (쉬움×2.0 / 보통×1.6 / 어려움×1.3)",
+      "📋 조합표 개편 - 탭 분리, 클릭 조합 제거 (정보 전용)",
+      "🗡️ 전설/신화/불멸 유닛 선택 패널에서 조합 가능",
+      "🐛 랭킹 동일 닉네임 갱신 기준 수정 (라운드→골드→코인)",
+    ]
+  },
+  {
     version:"v0.6",
     date:"2025-06-16",
     title:"사거리 & 난이도 업데이트",
@@ -218,10 +279,10 @@ const PATCH_NOTES=[
   },
 ];
 
-const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무"];
-const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",독:"#8bc34a",나무:"#4caf50",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",신성폭풍:"#fda",혼돈:"#628",맹독:"#6db33f",독안개:"#9ccc65",가시숲:"#388e3c",독폭풍:"#7cb342",맹독늪:"#558b2f",지진:"#a73",음파해일:"#08f",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef",성음:"#feb",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염불멸:"#f80",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",암흑불멸:"#808",광명불멸:"#ffd"};
-const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",독:"☠️",나무:"🌿",맹독:"🐍",독안개:"🌫️",가시숲:"🌵",독폭풍:"💀",맹독늪:"🌑",용암:"👺",폭풍화염:"💣",빙하:"🧊",번개폭풍:"🦅",공허:"🧛",공명:"🦇",돌풍:"💨",화염폭풍:"😈",해일:"🧟",번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",용암폭풍:"🪓",냉기폭풍:"🥶",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",신성폭풍:"🪽",혼돈:"🌀",폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫"};
-const EN={불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",독:"독정령",나무:"나무정령",맹독:"맹독정령",독안개:"독안개",가시숲:"가시숲정령",독폭풍:"독폭풍",맹독늪:"맹독늪",용암:"고블린",폭풍화염:"화염폭탄병",빙하:"빙하유령",번개폭풍:"폭풍매",공허:"뱀파이어",공명:"음파박쥐",돌풍:"돌풍조",화염폭풍:"임프",해일:"구울",번개신:"스켈레톤",절대영도:"코볼트",신성광:"하피",심연:"좀비",용암폭풍:"오크전사",냉기폭풍:"냉기마법사",태풍:"폭풍독수리",뇌신:"뇌신전사",빙하신:"빙하신수",빛의신:"신성폭격수",어둠신:"드레드로드",신성폭풍:"타락천사",혼돈:"혼돈술사",폭풍신화:"폭풍의신",번개신화:"번개의신",빙하신화:"빙하의신",광명신화:"광명의신",암흑신화:"암흑의신",창조신화:"창조신",용왕신화:"용왕",신성신화:"신성군주",혼돈신화:"혼돈신",폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",화염제왕:"화염제왕",파도왕:"파도왕",대지왕:"대지왕",폭풍왕:"폭풍왕",번개왕:"번개왕",빙하왕:"빙하왕",광명왕:"광명왕",암흑왕:"암흑왕",음파왕:"음파왕",혼돈왕:"혼돈왕",화염신화:"화염신화",파도신화:"파도신화",음파신화:"음파신화",화염불멸:"화염불멸",지진:"지진정령",음파해일:"음파해일",용암지진:"용암지진",음파폭풍:"음파폭풍",불의왕:"불의왕",빙설신:"빙설신",성음:"성음"};
+const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","시간","홍수","운석"];
+const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",독:"#8bc34a",나무:"#4caf50",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",신성폭풍:"#fda",혼돈:"#628",맹독:"#6db33f",독안개:"#9ccc65",가시숲:"#388e3c",독폭풍:"#7cb342",맹독늪:"#558b2f",지진:"#a73",음파해일:"#08f",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef",성음:"#feb",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염불멸:"#f80",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",암흑불멸:"#808",광명불멸:"#ffd",시간:"#c084fc",홍수:"#38bdf8",운석:"#fb923c",시간의눈보라:"#d8b4fe",홍수해일:"#7dd3fc",화염운석:"#fdba74",시간폭풍:"#a855f7",대홍수:"#0ea5e9",운석폭우:"#f97316",시간지배자:"#9333ea",해일왕:"#0284c7",운석신:"#ea580c",황금정령:"#ffd700",변신정령:"#e2e8f0"};
+const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",독:"☠️",나무:"🌿",맹독:"🐍",독안개:"🌫️",가시숲:"🌵",독폭풍:"💀",맹독늪:"🌑",용암:"👺",폭풍화염:"💣",빙하:"🧊",번개폭풍:"🦅",공허:"🧛",공명:"🦇",돌풍:"💨",화염폭풍:"😈",해일:"🧟",번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",용암폭풍:"🪓",냉기폭풍:"🥶",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",신성폭풍:"🪽",혼돈:"🌀",폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫",시간:"⏳",홍수:"🌊",운석:"☄️",시간의눈보라:"❄️",홍수해일:"🌊",화염운석:"🔥",시간폭풍:"⌛",대홍수:"🌀",운석폭우:"💥",시간지배자:"🕰️",해일왕:"🌊",운석신:"☄️",황금정령:"💰",변신정령:"🔄"};
+const EN={불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",독:"독정령",나무:"나무정령",맹독:"맹독정령",독안개:"독안개",가시숲:"가시숲정령",독폭풍:"독폭풍",맹독늪:"맹독늪",용암:"고블린",폭풍화염:"화염폭탄병",빙하:"빙하유령",번개폭풍:"폭풍매",공허:"뱀파이어",공명:"음파박쥐",돌풍:"돌풍조",화염폭풍:"임프",해일:"구울",번개신:"스켈레톤",절대영도:"코볼트",신성광:"하피",심연:"좀비",용암폭풍:"오크전사",냉기폭풍:"냉기마법사",태풍:"폭풍독수리",뇌신:"뇌신전사",빙하신:"빙하신수",빛의신:"신성폭격수",어둠신:"드레드로드",신성폭풍:"타락천사",혼돈:"혼돈술사",폭풍신화:"폭풍의신",번개신화:"번개의신",빙하신화:"빙하의신",광명신화:"광명의신",암흑신화:"암흑의신",창조신화:"창조신",용왕신화:"용왕",신성신화:"신성군주",혼돈신화:"혼돈신",폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",화염제왕:"화염제왕",파도왕:"파도왕",대지왕:"대지왕",폭풍왕:"폭풍왕",번개왕:"번개왕",빙하왕:"빙하왕",광명왕:"광명왕",암흑왕:"암흑왕",음파왕:"음파왕",혼돈왕:"혼돈왕",화염신화:"화염신화",파도신화:"파도신화",음파신화:"음파신화",화염불멸:"화염불멸",지진:"지진정령",음파해일:"음파해일",용암지진:"용암지진",음파폭풍:"음파폭풍",불의왕:"불의왕",빙설신:"빙설신",성음:"성음",시간:"시간정령",홍수:"홍수정령",운석:"운석정령",시간의눈보라:"시간의눈보라",홍수해일:"홍수해일",화염운석:"화염운석",시간폭풍:"시간폭풍술사",대홍수:"대홍수신",운석폭우:"운석술사",시간지배자:"시간지배자",해일왕:"해일왕",운석신:"운석신",황금정령:"황금정령",변신정령:"변신정령"};
 const hr=(hex,a)=>{const h=hex.replace('#','');const l=h.length===3?h[0]+h[0]+h[1]+h[1]+h[2]+h[2]:h;return `rgba(${parseInt(l.slice(0,2),16)},${parseInt(l.slice(2,4),16)},${parseInt(l.slice(4,6),16)},${a})`;};
 const GC={노말:"#aaa",고급:"#4af",영웅:"#a4f",전설:"#fa0",신화:"#f44",불멸:"#f8f"};
 const ATK_MAP={노말:7,고급:20,영웅:40,전설:65,신화:95,불멸:145};
@@ -242,6 +303,21 @@ const COMBO=[
   {a:"폭풍화염",b:"용암폭풍",r:"불의왕",g:"영웅"},{a:"냉기폭풍",b:"빙하신",r:"빙설신",g:"영웅"},
   {a:"신성광",b:"태풍",r:"신성폭풍",g:"영웅"},
   {a:"맹독",b:"독안개",r:"독폭풍",g:"영웅"},{a:"가시숲",b:"독안개",r:"맹독늪",g:"영웅"},
+  // 시간 조합
+  {a:"시간",b:"시간",r:"시간폭풍",g:"고급"},
+  {a:"시간",b:"바람",r:"시간의눈보라",g:"고급"},
+  // 홍수 조합
+  {a:"홍수",b:"홍수",r:"대홍수",g:"고급"},
+  {a:"홍수",b:"물",r:"홍수해일",g:"고급"},
+  // 운석 조합
+  {a:"운석",b:"운석",r:"운석폭우",g:"고급"},
+  {a:"운석",b:"불",r:"화염운석",g:"고급"},
+  // 영웅 조합 (새 속성 - 동속성)
+  {a:"시간폭풍",b:"대홍수",r:"시간지배자",g:"영웅"},
+  {a:"대홍수",b:"운석폭우",r:"해일왕",g:"영웅"},
+  {a:"시간폭풍",b:"운석폭우",r:"운석신",g:"영웅"},
+  // 변신정령 (영웅)
+  {a:"시간지배자",b:"해일왕",r:"변신정령",g:"영웅"},
 ];
 const RECIPES=[
   {r:"화염제왕",g:"전설",parts:[{u:"용암폭풍",n:1},{u:"불의왕",n:1},{u:"화염폭풍",n:1}]},
@@ -267,15 +343,48 @@ const RECIPES=[
   {r:"광명불멸",g:"불멸",parts:[{u:"광명신화",n:1},{u:"암흑신화",n:1},{u:"광명왕",n:1},{u:"암흑왕",n:1},{u:"빛의신",n:1},{u:"어둠신",n:1},{u:"신성광",n:1},{u:"심연",n:1},{u:"빛",n:1}]},
   {r:"화염불멸",g:"불멸",parts:[{u:"화염신화",n:1},{u:"음파신화",n:1},{u:"화염제왕",n:1},{u:"음파왕",n:1},{u:"용암폭풍",n:1},{u:"성음",n:1},{u:"화염폭풍",n:1},{u:"공명",n:1},{u:"불",n:1}]},
   {r:"궁극불멸",g:"불멸",parts:[{u:"폭풍신화",n:1},{u:"빙하신화",n:1},{u:"광명신화",n:1},{u:"화염신화",n:1},{u:"혼돈왕",n:1},{u:"대지왕",n:1},{u:"음파왕",n:1},{u:"파도왕",n:1},{u:"무속성",n:1}]},
+  // 돈유닛 (전설 히든 - 최종조합 없음)
+  {r:"황금정령",g:"전설",isGoldUnit:true,parts:[{u:"시간지배자",n:1},{u:"해일왕",n:1},{u:"운석신",n:1},{u:"무속성",n:1}]},
+  // 변신유닛 (영웅급) - 조합은 COMBO에서 처리
 ];
 
 const HH=[
-  {id:"warrior",name:"전사",emoji:"⚔️",color:"#c33",desc:"ATK×1.75, SPD+15%",buff:{atkMul:1.75,atk:0,spd:0.15,magic:0}},
-  {id:"mage",name:"마법사",emoji:"🧙",color:"#63c",desc:"ATK×1.5, 마법+40%",buff:{atkMul:1.5,atk:0,spd:0,magic:0.40}},
-  {id:"rogue",name:"도적",emoji:"🗡️",color:"#363",desc:"ATK×1.5, SPD+30%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0}},
-  {id:"archer",name:"궁수",emoji:"🏹",color:"#c83",desc:"ATK×1.6, SPD+20%",buff:{atkMul:1.6,atk:0,spd:0.20,magic:0}},
-  {id:"healer",name:"힐러",emoji:"💚",color:"#3c6",desc:"ATK×1.4, SPD+25%, 마법+25%",buff:{atkMul:1.4,atk:0,spd:0.25,magic:0.25}},
+  // ── 기존 5종 버프 강화
+  {id:"warrior",name:"전사",emoji:"⚔️",color:"#ef4444",desc:"ATK×2.0, SPD+20%",buff:{atkMul:2.0,atk:0,spd:0.20,magic:0}},
+  {id:"mage",name:"마법사",emoji:"🧙",color:"#8b5cf6",desc:"ATK×1.6, 마법+60%",buff:{atkMul:1.6,atk:0,spd:0,magic:0.60}},
+  {id:"rogue",name:"도적",emoji:"🗡️",color:"#22c55e",desc:"ATK×1.7, SPD+40%",buff:{atkMul:1.7,atk:0,spd:0.40,magic:0}},
+  {id:"archer",name:"궁수",emoji:"🏹",color:"#f97316",desc:"ATK×1.8, SPD+25%",buff:{atkMul:1.8,atk:0,spd:0.25,magic:0}},
+  {id:"healer",name:"힐러",emoji:"💚",color:"#10b981",desc:"ATK×1.5, SPD+30%, 마법+35%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0.35}},
+  // ── 신규 6종
+  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"ATK×1.3, 골드획득+30%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,goldMul:0.3}},
+  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"ATK×1.6, 사거리+2.0",buff:{atkMul:1.6,atk:0,spd:0,magic:0,rangeBonus:2.0}},
+  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"ATK×1.3, 라이프+10, 피해감소50%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,extraLife:10,dmgReduce:0.5}},
+  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"ATK×1.6, 10% 확률 연쇄공격",buff:{atkMul:1.6,atk:0,spd:0,magic:0,chain:0.10}},
+  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"ATK×1.5, 슬로우 효과+50%",buff:{atkMul:1.5,atk:0,spd:0,magic:0,slowBonus:0.5}},
+  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"ATK×1.4, SPD+20%, 마법+20%",buff:{atkMul:1.4,atk:0,spd:0.20,magic:0.20}},
 ];
+// ══════════════════════════════════════════
+// 보스 테이블 (10라운드마다)
+// ══════════════════════════════════════════
+const BOSS_TABLE={
+  10: {name:"화염군주",emoji:"🔥",weak:["불","용암","화염폭풍"],color:"#f60",desc:"불 계열만 정상 데미지"},
+  20: {name:"빙하제왕",emoji:"❄️",weak:["얼음","빙하","절대영도"],color:"#0cf",desc:"얼음 계열만 정상 데미지"},
+  30: {name:"번개신황",emoji:"⚡",weak:["전기","번개신","뇌신"],color:"#ff0",desc:"전기 계열만 정상 데미지"},
+  40: {name:"어둠군주",emoji:"🌑",weak:["어둠","심연","공허"],color:"#a4f",desc:"어둠 계열만 정상 데미지"},
+  50: {name:"대지의왕",emoji:"🪨",weak:["땅","지진","용암"],color:"#a73",desc:"땅/불 계열만 정상 데미지"},
+  60: {name:"음파황제",emoji:"🔊",weak:["소리","공명","성음"],color:"#f8c",desc:"소리 계열만 정상 데미지"},
+  70: {name:"독신",emoji:"☠️",weak:["독","나무","맹독"],color:"#8bc",desc:"독/나무 계열만 정상 데미지"},
+  80: {name:"시간신",emoji:"⏳",weak:["시간","홍수","운석"],color:"#c084fc",desc:"시간/홍수/운석만 정상 데미지"},
+  90: {name:"빛의신황",emoji:"✨",weak:["빛","신성광","빛의신"],color:"#ffa",desc:"빛 계열만 정상 데미지"},
+  100:{name:"혼돈신",emoji:"💫",weak:["무속성"],color:"#fff",desc:"무속성만 정상 데미지 (모든속성 약점)"},
+};
+// 보스 weak 속성에 포함된 유닛인지 확인
+const isBossWeak=(element,bossWeaks)=>{
+  if(!bossWeaks||bossWeaks.length===0)return true;
+  const base=EL_BASE[element]||element;
+  return bossWeaks.some(w=>w===element||w===base);
+};
+
 const SHOP_ITEMS=[
   {id:"advanced",label:"고급 유닛 선택",cost:1,grade:"고급",color:"#4af",unlockRound:1},
   {id:"hero",label:"영웅 유닛 선택",cost:2,grade:"영웅",color:"#a4f",unlockRound:1},
@@ -294,7 +403,7 @@ const GAMBLE_COIN=[
 ];
 
 let hid=1,eid=1;
-const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람"};
+const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람","시간":"시간","홍수":"홍수","운석":"운석","시간의눈보라":"시간","홍수해일":"홍수","화염운석":"운석","시간폭풍":"시간","대홍수":"홍수","운석폭우":"운석","시간지배자":"시간","해일왕":"홍수","운석신":"운석","황금정령":"무속성","변신정령":"무속성"};
 const elBase=(el)=>EL_BASE[el]||el;
 const GRADE_FX={노말:{glow:0,trail:0},고급:{glow:4,trail:0},영웅:{glow:6,trail:3},전설:{glow:10,trail:5},신화:{glow:14,trail:8},불멸:{glow:20,trail:12}};
 // 속성별 기본 사거리 (타일 단위)
@@ -318,7 +427,7 @@ const EL_RANGE={
   "화염신화":3.2,"파도신화":3.8,"폭풍신화":4.5,"번개신화":4.0,
   "빙하신화":2.8,"광명신화":6.0,"암흑신화":3.2,"음파신화":5.0,
   // 불멸
-  "폭풍불멸":5.0,"빙하불멸":3.0,"광명불멸":6.5,"화염불멸":3.5,"궁극불멸":7.0,
+  "폭풍불멸":5.0,"빙하불멸":3.0,"광명불멸":6.5,"화염불멸":3.5,"궁극불멸":7.0,"시간":3.5,"홍수":2.8,"운석":4.0,"시간폭풍":4.0,"대홍수":3.2,"운석폭우":4.5,"시간지배자":4.5,"해일왕":3.5,"운석신":5.0,"황금정령":3.0,"변신정령":3.0,
 };
 // 등급별 사거리 보정
 const GRADE_RANGE_BONUS={"노말":0,"고급":0.2,"영웅":0.4,"전설":0.6,"신화":0.8,"불멸":1.2};
@@ -328,8 +437,11 @@ const getRange=(el,grade)=>{
   return Math.min(base+bonus, 7.0);
 };
 
-const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸"]);
+const ICE_UNITS=new Set(["얼음","절대영도","빙하","빙하신","빙설신","빙하왕","빙하신화","빙하불멸","시간","시간폭풍","시간지배자"]);
 const ICE_SLOW={"노말":{cd:5,dur:2,range:1.5,slow:0.45},"고급":{cd:4,dur:3,range:2.0,slow:0.40},"영웅":{cd:3,dur:4,range:2.5,slow:0.35},"전설":{cd:2,dur:5,range:3.0,slow:0.30},"신화":{cd:1.5,dur:6,range:3.5,slow:0.25},"불멸":{cd:1,dur:8,range:4.0,slow:0.20}};
+// 홍수 속성: 범위 슬로우 (얼음보다 느리지만 범위 넓음)
+const FLOOD_UNITS=new Set(["홍수","대홍수","해일왕"]);
+const FLOOD_SLOW={"노말":{cd:6,dur:1.5,range:2.5,slow:0.6},"고급":{cd:5,dur:2,range:3.0,slow:0.55},"영웅":{cd:4,dur:2.5,range:3.5,slow:0.5},"전설":{cd:3,dur:3,range:4.0,slow:0.45},"신화":{cd:2,dur:4,range:4.5,slow:0.4},"불멸":{cd:1.5,dur:5,range:5.0,slow:0.35}};
 
 const SPRITE_CACHE={};
 const loadSprite=(el)=>{if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;const img=new Image();img.src=`/${el}.png`;SPRITE_CACHE[el]=img;};
@@ -339,42 +451,87 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
   const bonus=lv>0?{atk:([5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]||5)*lv,spd:0.05*lv}:{atk:0,spd:0};
   const isIce=ICE_UNITS.has(el);
-  const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):null;
-  const range=isIce?iceCfg.range:getRange(el,g);
-  return{id:hid++,element:el,grade:g,atk:isIce?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range,col:null,row:null,lastShot:0,enhLv:0,isIce,iceCfg};
+  const isFlood=FLOOD_UNITS.has(el);
+  const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):isFlood?(FLOOD_SLOW[g]||FLOOD_SLOW["노말"]):null;
+  const range=(isIce||isFlood)?iceCfg.range:getRange(el,g);  // rangeBonus는 게임루프에서 동적 적용
+  return{id:hid++,element:el,grade:g,atk:(isIce||isFlood)?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range,col:null,row:null,lastShot:0,enhLv:0,isIce:isIce||isFlood,iceCfg};
 };
 
-// ── 적 생성: 분기맵이면 path 정보 포함
-const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='A')=>{
-  const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*22;
-  const hp=Math.floor(type==="은신"?base*0.8:type==="공중"?base*1.2:base);
-  const spd=isBoss?0.6:isMid?0.8:type==="공중"?1.4:1.0;
+// ── 웨이브 타입 정의
+// waveType: 'normal'|'horde'|'fast'|'armored'|'healer'|'boss_rage'
+// enemyType: '일반'|'은신'|'공중'|'분열'|'재생'|'돌진'|'방패'
 
-  if(mapKey==='C'&&FORK_PATHS){
-    // 분기맵: 분기점에서 랜덤 좌/우 선택
-    const branch=Math.random()<0.5?'left':'right';
-    const fullPath=[
-      ...FORK_PATHS.main,
-      ...FORK_PATHS[branch],
-      ...FORK_PATHS.merge,
-    ];
-    return{id:eid++,type,hp,maxHp:hp,
-      x:fullPath[0][0]*CS,y:fullPath[0][1]*CS,
-      pathIdx:0,path:fullPath,
-      speed:spd,dmg:isBoss?5:isMid?3:1,
-      remove:false,rewarded:false,
-      isBoss,isMid,
-      reward:isBoss?100:isMid?20:0,
-      branch};
-  }
-  // 단일경로
-  return{id:eid++,type,hp,maxHp:hp,
-    x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,
-    pathIdx:0,path:TRACK,
-    speed:spd,dmg:isBoss?5:isMid?3:1,
+// ── 적 생성
+const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='A',waveOpts={})=>{
+  const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*22;
+  // 타입별 HP
+  let hp=Math.floor(
+    type==="은신"?base*0.75:
+    type==="공중"?base*1.1:
+    type==="분열"?base*0.7:
+    type==="재생"?base*1.3:
+    type==="방패"?base*1.5:
+    base
+  );
+  // 웨이브 보정
+  if(waveOpts.armor)hp=Math.floor(hp*1.6);
+  if(waveOpts.horde)hp=Math.floor(hp*0.55);
+
+  const spd=isBoss?0.6:isMid?0.8:
+    type==="공중"?1.5:
+    type==="돌진"?1.3:
+    waveOpts.fast?1.9:1.0;
+
+  // 방어력 (장갑 웨이브 or 방패형)
+  const armor=waveOpts.armor?0.4:type==="방패"?0.35:0;
+
+  const base_e={
+    id:eid++,type,hp,maxHp:hp,
+    pathIdx:0,
+    speed:spd,baseSpd:spd,
+    dmg:isBoss?5:isMid?3:1,
     remove:false,rewarded:false,
     isBoss,isMid,
-    reward:isBoss?100:isMid?20:0};
+    reward:isBoss?100:isMid?20:0,
+    armor,          // 0~1: 데미지 감소율
+    regenTimer:0,   // 재생형 HP 회복 타이머
+    dashTimer:type==="돌진"?3+Math.random()*2:0, // 돌진 쿨다운
+    isDashing:false,
+    isRaging:false, // 보스 광폭화
+    healTimer:type==="힐러"?2:0, // 힐러 쿨다운
+  };
+
+  if(mapKey==='C'&&FORK_PATHS){
+    const branch=Math.random()<0.5?'left':'right';
+    const fullPath=[...FORK_PATHS.main,...FORK_PATHS[branch],...FORK_PATHS.merge];
+    return{...base_e,x:fullPath[0][0]*CS,y:fullPath[0][1]*CS,path:fullPath,branch};
+  }
+  return{...base_e,x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,path:TRACK};
+};
+
+// ── 웨이브 타입 결정
+const getWaveType=(round)=>{
+  if(round%10===0)return'boss';
+  if(round%5===0)return'mid';
+  // 라운드별 웨이브 타입 확률
+  const r=Math.random();
+  if(round<10)return'normal';
+  if(round<20){
+    if(r<0.3)return'horde';
+    return'normal';
+  }
+  if(round<40){
+    if(r<0.25)return'horde';
+    if(r<0.45)return'fast';
+    if(r<0.6)return'armored';
+    return'normal';
+  }
+  // 40라운드 이후 모든 웨이브 가능
+  if(r<0.2)return'horde';
+  if(r<0.38)return'fast';
+  if(r<0.54)return'armored';
+  if(r<0.65)return'healer';
+  return'normal';
 };
 
 const autoPlace=(heroes)=>{
@@ -394,11 +551,12 @@ const initGame=(diff='hard')=>({
   cleared:false,over:false,
   bossSpawned:false,midSpawned:false,
   stacks:{},gameTime:0,gradeEnhLv:{},
+  waveType:'normal',waveLabel:'',
   impacts:[],
   mapKey:CURRENT_MAP||'A',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
-  diffMul:diff==='easy'?1.5:diff==='normal'?1.25:1.0,
+  diffMul:diff==='easy'?2.0:diff==='normal'?1.6:1.3,
 });
 
 // ══════════════════════════════════════════
@@ -463,7 +621,11 @@ export default function App(){
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('hard');
-  const [showPatch,setShowPatch]=useState(true); // 첫 진입시 패치노트 표시 // easy/normal/hard
+  const [showPatch,setShowPatch]=useState(true);
+  const [nickname,setNickname]=useState('');
+  const [showRanking,setShowRanking]=useState(false);
+  const [ranking,setRanking]=useState([]);
+  const [rankLoading,setRankLoading]=useState(false); // 첫 진입시 패치노트 표시 // easy/normal/hard
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
@@ -474,6 +636,7 @@ export default function App(){
   const [speed,setSpeedState]=useState(1);
   const [selHero,setSelHero]=useState(null);
   const [countdown,setCountdown]=useState(0);
+  const countdownRef=useRef(null);
   const [randomPicks,setRandomPicks]=useState([]);
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
@@ -492,9 +655,9 @@ export default function App(){
   },[]);
 
   const getBuff=useCallback(()=>{
-    const g=G.current;if(!g||!g.hiddenHero)return{atk:0,spd:0,magic:0};
+    const g=G.current;if(!g||!g.hiddenHero)return{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0};
     const hd=HH.find(h=>h.id===g.hiddenHero.id);
-    return hd?hd.buff:{atk:0,spd:0,magic:0};
+    return hd?{...{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0},...hd.buff}:{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0};
   },[]);
 
   const draw=useCallback(()=>{
@@ -503,50 +666,97 @@ export default function App(){
     ctx.clearRect(0,0,COLS*CS,ROWS*CS);
     ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
 
-    // 타일 배경
+    // ── 배경
+    ctx.fillStyle="#0d1117";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
+
+    // ── 타일 배경
     for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
       const isT=TS.has(`${col},${r}`),isC=col===CX&&r===CY;
       const isSpawn=col===SPAWN_TILE[0]&&r===SPAWN_TILE[1];
       const isGoal=col===GOAL_TILE[0]&&r===GOAL_TILE[1];
-      ctx.fillStyle=isC?"#2d2d60":isSpawn?"#1a3a1a":isGoal?"#3a1a1a":isT?"#1e3a1e":"#16213e";
-      ctx.fillRect(col*CS,r*CS,CS,CS);
-      ctx.strokeStyle="#0d1b2a";ctx.strokeRect(col*CS,r*CS,CS,CS);
+      if(isSpawn||isGoal){
+        // 스폰/골은 나중에 별도 처리
+        ctx.fillStyle="#111827";ctx.fillRect(col*CS,r*CS,CS,CS);
+      } else if(isC){
+        // 히든영웅 슬롯
+        ctx.fillStyle="#1e1b4b";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.strokeStyle="#3730a3";ctx.lineWidth=1;ctx.strokeRect(col*CS+0.5,r*CS+0.5,CS-1,CS-1);ctx.lineWidth=1;
+      } else if(isT){
+        // 경로 타일 - 흙길 느낌
+        ctx.fillStyle="#1c2a1c";ctx.fillRect(col*CS,r*CS,CS,CS);
+        // 경로 텍스처 (어두운 점)
+        ctx.fillStyle="#162016";
+        ctx.fillRect(col*CS+4,r*CS+4,2,2);
+        ctx.fillRect(col*CS+CS-8,r*CS+CS-8,2,2);
+        ctx.strokeStyle="#0f1a0f";ctx.lineWidth=1;ctx.strokeRect(col*CS,r*CS,CS,CS);
+      } else {
+        // 일반 타일 - 약간 질감
+        ctx.fillStyle="#111827";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.strokeStyle="#0d1420";ctx.lineWidth=1;ctx.strokeRect(col*CS,r*CS,CS,CS);
+      }
     }
 
-    // 분기맵 C: 왼/오른쪽 경로 색 다르게
+    // ── 분기맵 경로 색상
     if(CURRENT_MAP==='C'&&FORK_PATHS){
       FORK_PATHS.left.forEach(([col,r])=>{
-        ctx.fillStyle="rgba(0,120,200,0.12)";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.fillStyle="rgba(59,130,246,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
       });
       FORK_PATHS.right.forEach(([col,r])=>{
-        ctx.fillStyle="rgba(200,80,0,0.12)";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.fillStyle="rgba(239,68,68,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
       });
-      // 분기점 표시
+      // 분기점/합류점 황금 테두리
       const bp=FORK_PATHS.main[FORK_PATHS.main.length-1];
-      ctx.strokeStyle="#fd0";ctx.lineWidth=2;ctx.strokeRect(bp[0]*CS+1,bp[1]*CS+1,CS-2,CS-2);ctx.lineWidth=1;
-      // 합류점 표시
+      ctx.save();ctx.shadowColor="#fd0";ctx.shadowBlur=8;
+      ctx.strokeStyle="#fd0";ctx.lineWidth=2;ctx.strokeRect(bp[0]*CS+2,bp[1]*CS+2,CS-4,CS-4);
       const mp=FORK_PATHS.merge[0];
-      ctx.strokeStyle="#fd0";ctx.lineWidth=2;ctx.strokeRect(mp[0]*CS+1,mp[1]*CS+1,CS-2,CS-2);ctx.lineWidth=1;
+      ctx.strokeRect(mp[0]*CS+2,mp[1]*CS+2,CS-4,CS-4);
+      ctx.restore();
     }
 
-    // 경로 방향점
-    const trackRef=CURRENT_MAP==='C'&&FORK_PATHS?[...FORK_PATHS.main,...FORK_PATHS.left,...FORK_PATHS.right,...FORK_PATHS.merge]:TRACK;
-    for(let i=0;i<trackRef.length;i+=3){const[col,r]=trackRef[i];ctx.fillStyle="#2a4a2a";ctx.fillRect(col*CS+22,r*CS+22,4,4);}
+    // ── 경로 화살표 (방향 표시)
+    {
+      const trackRef=CURRENT_MAP==='C'&&FORK_PATHS?[...FORK_PATHS.main,...FORK_PATHS.left,...FORK_PATHS.right,...FORK_PATHS.merge]:TRACK;
+      ctx.fillStyle="rgba(255,255,255,0.08)";
+      for(let i=1;i<trackRef.length-1;i+=4){
+        const[pc,pr]=trackRef[i-1],[nc,nr]=trackRef[i+1];
+        const dx=nc-pc,dy=nr-pr;
+        const cx2=trackRef[i][0]*CS+CS/2,cy2=trackRef[i][1]*CS+CS/2;
+        const len=Math.sqrt(dx*dx+dy*dy)||1;
+        const ux=dx/len,uy=dy/len;
+        ctx.beginPath();
+        ctx.moveTo(cx2+ux*6,cy2+uy*6);
+        ctx.lineTo(cx2-ux*4+uy*4,cy2-uy*4-ux*4);
+        ctx.lineTo(cx2-ux*4-uy*4,cy2-uy*4+ux*4);
+        ctx.closePath();ctx.fill();
+      }
+    }
 
-    // 스폰/골 표시
+    // ── 스폰 타일
     {const[sc,sr]=SPAWN_TILE;
-      ctx.fillStyle="rgba(80,255,80,0.2)";ctx.fillRect(sc*CS,sr*CS,CS,CS);
-      ctx.strokeStyle="#4f8";ctx.lineWidth=2;ctx.strokeRect(sc*CS+1,sr*CS+1,CS-2,CS-2);ctx.lineWidth=1;
+      const t=Date.now()/1000;
+      const pulse=Math.sin(t*2)*0.15+0.25;
+      ctx.save();
+      ctx.shadowColor="#22c55e";ctx.shadowBlur=12;
+      ctx.fillStyle=`rgba(34,197,94,${pulse})`;ctx.fillRect(sc*CS,sr*CS,CS,CS);
+      ctx.strokeStyle="#22c55e";ctx.lineWidth=2;ctx.strokeRect(sc*CS+1,sr*CS+1,CS-2,CS-2);
+      ctx.restore();
       ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.font="bold 8px sans-serif";ctx.fillStyle="#4f8";ctx.fillText("SPAWN",sc*CS+CS/2,sr*CS+14);
-      ctx.font="bold 14px sans-serif";ctx.fillStyle="#4f8";ctx.fillText("S",sc*CS+CS/2,sr*CS+34);
+      ctx.font="bold 8px sans-serif";ctx.fillStyle="#4ade80";ctx.fillText("SPAWN",sc*CS+CS/2,sr*CS+14);
+      ctx.font="bold 16px sans-serif";ctx.fillStyle="#4ade80";ctx.fillText("▶",sc*CS+CS/2,sr*CS+33);
       ctx.textAlign="left";ctx.textBaseline="alphabetic";}
+
+    // ── 골 타일
     {const[gc2,gr]=GOAL_TILE;
-      ctx.fillStyle="rgba(255,80,80,0.2)";ctx.fillRect(gc2*CS,gr*CS,CS,CS);
-      ctx.strokeStyle="#f44";ctx.lineWidth=2;ctx.strokeRect(gc2*CS+1,gr*CS+1,CS-2,CS-2);ctx.lineWidth=1;
+      const t=Date.now()/1000;
+      const pulse=Math.sin(t*2+1)*0.15+0.25;
+      ctx.save();
+      ctx.shadowColor="#ef4444";ctx.shadowBlur=12;
+      ctx.fillStyle=`rgba(239,68,68,${pulse})`;ctx.fillRect(gc2*CS,gr*CS,CS,CS);
+      ctx.strokeStyle="#ef4444";ctx.lineWidth=2;ctx.strokeRect(gc2*CS+1,gr*CS+1,CS-2,CS-2);
+      ctx.restore();
       ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.font="bold 8px sans-serif";ctx.fillStyle="#f44";ctx.fillText("GOAL",gc2*CS+CS/2,gr*CS+14);
-      ctx.font="bold 14px sans-serif";ctx.fillStyle="#f44";ctx.fillText("G",gc2*CS+CS/2,gr*CS+34);
+      ctx.font="bold 8px sans-serif";ctx.fillStyle="#f87171";ctx.fillText("GOAL",gc2*CS+CS/2,gr*CS+14);
+      ctx.font="bold 16px sans-serif";ctx.fillStyle="#f87171";ctx.fillText("🏁",gc2*CS+CS/2,gr*CS+33);
       ctx.textAlign="left";ctx.textBaseline="alphabetic";}
 
     // 배치 가이드
@@ -602,32 +812,163 @@ export default function App(){
       if(h.col===null)continue;
       const sel=h.id===dragR.current||h.id===selHero;
       const hx=h.col*CS,hy=h.row*CS;
-      const gr=GC[h.grade]||"#aaaaaa";
-      if(sel){ctx.fillStyle="rgba(255,215,0,0.15)";ctx.fillRect(hx,hy,CS,CS);}
-      const spr=SPRITE_CACHE[h.element];
+      const gr=GC[h.grade]||"#6b7280";
+      ctx.save();
+      // 등급별 배경 글로우
+      const glowMap={노말:0,고급:4,영웅:6,전설:10,신화:14,불멸:20};
+      const glow=glowMap[h.grade]||0;
+      if(glow>0){ctx.shadowColor=gr;ctx.shadowBlur=glow;}
+      if(sel){ctx.fillStyle="rgba(251,191,36,0.12)";ctx.fillRect(hx,hy,CS,CS);}
+      // 변신정령: 현재 변신 속성으로 표시
+      const dispEl=h._isMorph&&h._morphEl?h._morphEl:h.element;
+      const spr=SPRITE_CACHE[dispEl]||SPRITE_CACHE[h.element];
       if(spr&&spr.complete&&spr.naturalWidth>0){ctx.drawImage(spr,hx,hy,CS,CS);}
-      else{ctx.fillStyle=gr+"33";ctx.fillRect(hx,hy,CS,CS);ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(EE[h.element]||"?",hx+CS/2,hy+CS/2);ctx.textAlign="left";ctx.textBaseline="alphabetic";loadSprite(h.element);}
-      ctx.strokeStyle=sel?"#ffd700":gr;ctx.lineWidth=sel?2.5:1;ctx.strokeRect(hx,hy,CS,CS);ctx.lineWidth=1;
-      ctx.fillStyle=gr;ctx.font="bold 7px sans-serif";ctx.fillText(h.grade,hx+2,hy+CS-3);
-      if(h.enhLv>0){ctx.fillStyle="#fd0";ctx.font="bold 8px sans-serif";ctx.fillText(`+${h.enhLv}`,hx+32,hy+14);}
+      else{
+        ctx.fillStyle=gr+"22";ctx.beginPath();ctx.arc(hx+CS/2,hy+CS/2,CS/2-2,0,Math.PI*2);ctx.fill();
+        ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.shadowBlur=0;ctx.fillStyle="#fff";
+        ctx.fillText(EE[dispEl]||EE[h.element]||"?",hx+CS/2,hy+CS/2);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";loadSprite(h.element);
+      }
+      // 변신정령 표시
+      if(h._isMorph){
+        ctx.fillStyle="#a78bfa";ctx.font="bold 7px sans-serif";ctx.textAlign="center";
+        ctx.fillText("변신",hx+CS/2,hy+8);ctx.textAlign="left";
+      }
+      ctx.shadowBlur=0;
+      // 테두리
+      ctx.strokeStyle=sel?"#fbbf24":gr;ctx.lineWidth=sel?2.5:h.grade==="불멸"?2:1;
+      ctx.strokeRect(hx+0.5,hy+0.5,CS-1,CS-1);ctx.lineWidth=1;
+      // 등급 뱃지 (하단)
+      ctx.fillStyle=gr+"cc";ctx.fillRect(hx,hy+CS-12,CS,12);
+      ctx.fillStyle="#000a";ctx.fillRect(hx,hy+CS-12,CS,12);
+      ctx.fillStyle=gr;ctx.font="bold 7px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(h.grade,hx+CS/2,hy+CS-6);ctx.textAlign="left";ctx.textBaseline="alphabetic";
+      if(h.enhLv>0){
+        ctx.fillStyle="#fcd34d";ctx.font="bold 9px sans-serif";
+        ctx.fillText(`+${h.enhLv}`,hx+3,hy+12);
+      }
+      ctx.restore();
     }
 
-    // 적
+    // ── 적 렌더링
     if(g)for(const e of g.enemies){
       if(e.remove)continue;
-      if(e.type==="은신")ctx.globalAlpha=0.35;
-      const hR=e.hp/e.maxHp;
-      const bw=e.isBoss?CS*1.3:e.isMid?CS*1.1:CS-4;
-      ctx.fillStyle="#333";ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw,5);
-      ctx.fillStyle=e.isBoss?"#f44":e.isMid?"#fa0":hR>0.5?"#4f4":hR>0.25?"#fa0":"#f44";
-      ctx.fillRect(e.x+(CS-bw)/2,e.y-8,bw*hR,5);
-      const rad=e.isBoss?CS/2:e.isMid?CS/2-2:CS/2-4;
-      ctx.fillStyle=e.isBoss?"#800":e.isMid?"#850":e.type==="일반"?"#c44":e.type==="은신"?"#646":"#44c";
-      ctx.beginPath();ctx.arc(e.x+CS/2,e.y+CS/2,rad,0,Math.PI*2);ctx.fill();
-      if(e.isBoss){ctx.fillStyle="#faa";ctx.font="bold 8px sans-serif";ctx.fillText("BOSS",e.x+8,e.y+CS/2+3);}
-      else if(e.isMid){ctx.fillStyle="#fda";ctx.font="bold 7px sans-serif";ctx.fillText("MID",e.x+11,e.y+CS/2+3);}
-      else{ctx.font="15px serif";ctx.fillText(e.type==="일반"?"👾":e.type==="은신"?"🥷":"🦅",e.x+10,e.y+29);}
-      ctx.globalAlpha=1;
+      ctx.save();
+      if(e.type==="은신")ctx.globalAlpha=0.4;
+      const ex=e.x,ey=e.y;
+      const hR=Math.max(0,e.hp/e.maxHp);
+      const rad=e.isBoss?CS/2+2:e.isMid?CS/2-1:CS/2-5;
+
+      // 보스: 붉은 육각 + 글로우
+      if(e.isBoss){
+        ctx.shadowColor="#ff0000";ctx.shadowBlur=16;
+        // 육각형
+        ctx.beginPath();
+        for(let i=0;i<6;i++){const a=i*Math.PI/3-Math.PI/6;ctx.lineTo(ex+CS/2+rad*Math.cos(a),ey+CS/2+rad*Math.sin(a));}
+        ctx.closePath();
+        const bg=ctx.createRadialGradient(ex+CS/2,ey+CS/2,0,ex+CS/2,ey+CS/2,rad);
+        bg.addColorStop(0,"#7f1d1d");bg.addColorStop(1,"#450a0a");
+        ctx.fillStyle=bg;ctx.fill();
+        ctx.strokeStyle="#ef4444";ctx.lineWidth=2;ctx.stroke();
+        ctx.shadowBlur=0;
+        // 이모지
+        ctx.font="22px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText("💀",ex+CS/2,ey+CS/2);
+        ctx.font="bold 7px sans-serif";ctx.fillStyle="#fca5a5";ctx.fillText("BOSS",ex+CS/2,ey+CS/2+14);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";
+
+      // 중간보스: 주황 다이아몬드
+      } else if(e.isMid){
+        ctx.shadowColor="#f97316";ctx.shadowBlur=10;
+        ctx.save();ctx.translate(ex+CS/2,ey+CS/2);ctx.rotate(Math.PI/4);
+        const s=rad*0.85;
+        const bg2=ctx.createLinearGradient(-s,-s,s,s);
+        bg2.addColorStop(0,"#7c2d12");bg2.addColorStop(1,"#431407");
+        ctx.fillStyle=bg2;ctx.fillRect(-s,-s,s*2,s*2);
+        ctx.strokeStyle="#fb923c";ctx.lineWidth=1.5;ctx.strokeRect(-s,-s,s*2,s*2);
+        ctx.restore();
+        ctx.shadowBlur=0;
+        ctx.font="16px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText("⚡",ex+CS/2,ey+CS/2);
+        ctx.font="bold 6px sans-serif";ctx.fillStyle="#fed7aa";ctx.fillText("MID",ex+CS/2,ey+CS/2+13);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";
+
+      // 일반/특수 적
+      } else {
+        const typeStyle={
+          "일반":  {clr:"#991b1b",clrL:"#dc2626",emoji:"👾"},
+          "은신":  {clr:"#5b21b6",clrL:"#7c3aed",emoji:"🥷"},
+          "공중":  {clr:"#1e3a8a",clrL:"#2563eb",emoji:"🦅"},
+          "분열":  {clr:"#065f46",clrL:"#059669",emoji:"🧬"},
+          "재생":  {clr:"#134e4a",clrL:"#0d9488",emoji:"🌀"},
+          "돌진":  {clr:"#7c2d12",clrL:"#ea580c",emoji:"🐗"},
+          "방패":  {clr:"#1e3a5f",clrL:"#0369a1",emoji:"🛡️"},
+          "힐러":  {clr:"#14532d",clrL:"#16a34a",emoji:"💚"},
+        };
+        const ts=typeStyle[e.type]||typeStyle["일반"];
+
+        // 돌진 중 빠른 잔상
+        if(e.isDashing){
+          ctx.globalAlpha=0.3;ctx.fillStyle=ts.clrL;
+          ctx.beginPath();ctx.arc(ex+CS/2-8,ey+CS/2,rad*0.7,0,Math.PI*2);ctx.fill();
+          ctx.globalAlpha=e.type==="은신"?0.4:1;
+        }
+
+        const bg3=ctx.createRadialGradient(ex+CS/2-2,ey+CS/2-2,0,ex+CS/2,ey+CS/2,rad);
+        bg3.addColorStop(0,ts.clrL);bg3.addColorStop(1,ts.clr);
+        ctx.fillStyle=bg3;
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad,0,Math.PI*2);ctx.fill();
+
+        // 방패형: 앞쪽에 방패 표시
+        if(e.type==="방패"){
+          ctx.strokeStyle="#38bdf8";ctx.lineWidth=2.5;
+          ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+2,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+        }
+        // 재생형: 회전 오라
+        if(e.type==="재생"){
+          const t2=Date.now()/1000;
+          ctx.strokeStyle="#2dd4bf";ctx.lineWidth=1.5;ctx.globalAlpha=0.5;
+          ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+3,t2*2,t2*2+Math.PI*1.2);ctx.stroke();
+          ctx.globalAlpha=e.type==="은신"?0.4:1;
+        }
+        // 힐러형: 초록 십자
+        if(e.type==="힐러"){
+          ctx.strokeStyle="#4ade80";ctx.lineWidth=2;ctx.globalAlpha=0.7;
+          const cx2=ex+CS/2,cy2=ey+CS/2;
+          ctx.beginPath();ctx.moveTo(cx2,cy2-rad-4);ctx.lineTo(cx2,cy2+rad+4);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(cx2-rad-4,cy2);ctx.lineTo(cx2+rad+4,cy2);ctx.stroke();
+          ctx.globalAlpha=1;
+        }
+
+        ctx.strokeStyle=ts.clrL;ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad,0,Math.PI*2);ctx.stroke();
+        ctx.font="14px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText(ts.emoji,ex+CS/2,ey+CS/2+1);
+        ctx.textAlign="left";ctx.textBaseline="alphabetic";
+      }
+
+      // 체력바 - 개선
+      const bw=e.isBoss?CS*1.2:e.isMid?CS*1.0:CS-8;
+      const bx=ex+(CS-bw)/2,by=ey-10;
+      const bh=e.isBoss?6:4;
+      // 배경
+      ctx.fillStyle="rgba(0,0,0,0.6)";ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,by,bw,bh,bh/2):ctx.fillRect(bx,by,bw,bh);ctx.fill();
+      // 체력
+      const hpColor=hR>0.6?"#22c55e":hR>0.3?"#eab308":"#ef4444";
+      ctx.fillStyle=hpColor;
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx,by,bw*hR,bh,bh/2);ctx.fill();}
+      else{ctx.fillRect(bx,by,bw*hR,bh);}
+      // 테두리
+      ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=0.5;ctx.strokeRect(bx,by,bw,bh);
+
+      // 슬로우 표시
+      if(e.slowTimer>0){
+        ctx.fillStyle="rgba(147,210,255,0.25)";
+        ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad+2,0,Math.PI*2);ctx.fill();
+      }
+
+      ctx.restore();
     }
 
     // 투사체
@@ -649,6 +990,29 @@ export default function App(){
         case "소리": ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.globalAlpha=0.7;for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(p.x,p.y,3+i*3+Math.sin(p.age*15)*1,0,Math.PI*2);ctx.stroke();}break;
         case "독": ctx.fillStyle=c;ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=0.5;for(let i=0;i<3;i++){const ang=p.age*5+i*(Math.PI*2/3);ctx.fillStyle="#0f0";ctx.beginPath();ctx.arc(p.x+Math.cos(ang)*5,p.y+Math.sin(ang)*5,1.5,0,Math.PI*2);ctx.fill();}break;
         case "나무": ctx.fillStyle=c;ctx.globalAlpha=0.9;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*4);ctx.beginPath();ctx.ellipse(0,-4,2.5,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(4,2,2.5,5,Math.PI/3*2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(-4,2,2.5,5,-Math.PI/3*2,0,Math.PI*2);ctx.fill();ctx.restore();break;
+        case "시간": // 시계 바늘 회전
+          ctx.strokeStyle=c;ctx.lineWidth=2;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*8);
+          ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-3);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(2,0);ctx.stroke();
+          ctx.restore();break;
+        case "홍수": // 물결
+          ctx.fillStyle=c;ctx.globalAlpha=0.8;
+          ctx.beginPath();ctx.ellipse(p.x,p.y,6,3,p.age*3,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.globalAlpha=0.4;
+          ctx.beginPath();ctx.ellipse(p.x,p.y,6,3,p.age*3,0,Math.PI*2);ctx.stroke();
+          break;
+        case "운석": // 불타는 바위
+          ctx.fillStyle=c;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.age*5);
+          ctx.beginPath();
+          for(let i=0;i<5;i++){const a=i*(Math.PI*2/5),r2=i%2===0?5:3;ctx.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);}
+          ctx.closePath();ctx.fill();
+          ctx.restore();
+          ctx.fillStyle="#ff0";ctx.globalAlpha=0.5;
+          ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fill();
+          break;
         default: ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.globalAlpha=0.7;ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.fill();
       }
       if(fx.trail>0){const mdx=p.tx-p.sx,mdy=p.ty-p.sy,mlen=Math.sqrt(mdx*mdx+mdy*mdy)||1;const ux2=mdx/mlen,uy2=mdy/mlen;ctx.globalAlpha=0.25;ctx.strokeStyle=c;ctx.lineWidth=Math.max(1,fx.trail/3);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-ux2*fx.trail*2,p.y-uy2*fx.trail*2);ctx.stroke();}
@@ -689,41 +1053,139 @@ export default function App(){
     const g=G.current;
     if(!g||g.over||!g.running){draw();return;}
     const isMidRound=g.round%5===0&&g.round%10!==0,isBossRound=g.round%10===0;
+    const wt=g.waveType||'normal';
+    const waveOpts={
+      horde:wt==='horde',fast:wt==='fast',
+      armor:wt==='armored',healer:wt==='healer',
+    };
+    // 무리 웨이브는 빠르게 스폰
+    const spawnInterval=wt==='horde'?0.55:1.2;
     g.spawnT+=dt;
-    if(g.spawnT>1.2&&g.spawnC<g.maxSpawn){
+    if(g.spawnT>spawnInterval&&g.spawnC<g.maxSpawn){
       g.spawnT=0;g.spawnC++;
-      if(isBossRound&&!g.bossSpawned){g.enemies.push(mkE("일반",g.round,true,false,g.mapKey));g.bossSpawned=true;}
-      else if(isMidRound&&!g.midSpawned){g.enemies.push(mkE("일반",g.round,false,true,g.mapKey));g.midSpawned=true;}
-      else if(!isBossRound&&!isMidRound){
-        const types=["일반","일반","은신","공중"];
-        g.enemies.push(mkE(types[Math.floor(Math.random()*types.length)],g.round,false,false,g.mapKey));
+      if(isBossRound&&!g.bossSpawned){
+        const bossInfo=BOSS_TABLE[g.round]||{name:"고대보스",emoji:"💀",weak:[],color:"#888",desc:"모든 속성 정상 데미지"};
+        g.currentBoss=bossInfo;
+        const boss=mkE("일반",g.round,true,false,g.mapKey,{});
+        boss.isRageReady=true;boss.bossInfo=bossInfo;
+        g.enemies.push(boss);g.bossSpawned=true;
+      } else if(isMidRound&&!g.midSpawned){
+        g.enemies.push(mkE("일반",g.round,false,true,g.mapKey,{}));g.midSpawned=true;
+      } else if(!isBossRound&&!isMidRound){
+        let type="일반";
+        if(wt==='horde'){
+          // 무리: 일반/공중 위주
+          type=["일반","일반","일반","공중"][Math.floor(Math.random()*4)];
+        } else if(wt==='fast'){
+          type=["일반","은신","공중","돌진"][Math.floor(Math.random()*4)];
+        } else if(wt==='armored'){
+          type=["일반","일반","방패"][Math.floor(Math.random()*3)];
+        } else if(wt==='healer'){
+          // 힐러 웨이브: 5마리 중 1마리 힐러
+          type=g.spawnC%5===2?"힐러":["일반","재생"][Math.floor(Math.random()*2)];
+        } else {
+          // 일반 웨이브: 라운드 따라 다양화
+          const pool=g.round<15
+            ?["일반","일반","은신"]
+            :g.round<30
+            ?["일반","은신","공중","분열"]
+            :["일반","은신","공중","분열","재생","돌진"];
+          type=pool[Math.floor(Math.random()*pool.length)];
+        }
+        g.enemies.push(mkE(type,g.round,false,false,g.mapKey,waveOpts));
       }
     }
 
-    // 적 이동 (path 기반)
+    // 적 이동 + 특수 행동
+    const newEnemies=[];
     for(const e of g.enemies){
       if(e.remove)continue;
+
+      // 슬로우 타이머
+      if(e.slowTimer>0){
+        e.slowTimer-=dt;
+        if(e.slowTimer<=0){e.slowTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+      }
+
+      // 재생형: 매 3초마다 최대HP의 3% 회복
+      if(e.type==="재생"&&!e.remove){
+        e.regenTimer=(e.regenTimer||0)+dt;
+        if(e.regenTimer>=3){e.regenTimer=0;e.hp=Math.min(e.maxHp,e.hp+Math.floor(e.maxHp*0.03));}
+      }
+
+      // 힐러형: 주변 적 HP 회복
+      if(e.type==="힐러"&&!e.remove){
+        e.healTimer=(e.healTimer||0)+dt;
+        if(e.healTimer>=2){
+          e.healTimer=0;
+          for(const other of g.enemies){
+            if(other.id===e.id||other.remove)continue;
+            const d=Math.sqrt((other.x-e.x)**2+(other.y-e.y)**2);
+            if(d<CS*2.5)other.hp=Math.min(other.maxHp,other.hp+Math.floor(other.maxHp*0.05));
+          }
+        }
+      }
+
+      // 돌진형: 주기적으로 순간 가속
+      if(e.type==="돌진"&&!e.remove){
+        e.dashTimer=(e.dashTimer||0)-dt;
+        if(e.dashTimer<=0){
+          e.isDashing=true;
+          e.dashTimer=4+Math.random()*2;
+          setTimeout(()=>{if(e)e.isDashing=false;},600);
+        }
+      }
+
+      // 보스 광폭화: HP 40% 이하
+      if(e.isBoss&&e.isRageReady&&!e.isRaging&&e.hp/e.maxHp<0.4){
+        e.isRaging=true;
+        e.speed=e.baseSpd*1.7;
+        e.dmg=e.dmg*2;
+      }
+
       const path=e.path;
-      if(!path||e.pathIdx>=path.length){e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;continue;}
+      if(!path||e.pathIdx>=path.length){
+        e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;continue;
+      }
       const[tc,tr]=path[e.pathIdx];
       const tx=tc*CS,ty=tr*CS,dx=tx-e.x,dy=ty-e.y;
-      const dist=Math.sqrt(dx*dx+dy*dy),mv=CS*e.speed*dt*1.5;
+      const spd=e.isDashing?e.speed*2.5:e.speed;
+      const dist=Math.sqrt(dx*dx+dy*dy),mv=CS*spd*dt*1.5;
       if(dist<mv){
         e.x=tx;e.y=ty;e.pathIdx++;
         if(e.pathIdx>=path.length){e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;}
       }else{e.x+=dx/dist*mv;e.y+=dy/dist*mv;}
     }
-    g.enemies=g.enemies.filter(e=>!e.remove&&e.hp>0);
+
+    // 분열형 처리: 죽으면 2마리 생성
+    for(const e of g.enemies){
+      if(e.type==="분열"&&e.hp<=0&&!e.rewarded&&!e.splitDone){
+        e.splitDone=true;
+        for(let i=0;i<2;i++){
+          const child=mkE("일반",g.round,false,false,g.mapKey,{});
+          child.hp=Math.floor(child.maxHp*0.4);
+          child.maxHp=child.hp;
+          child.pathIdx=Math.max(0,e.pathIdx-1);
+          child.x=e.x+(i===0?-8:8);child.y=e.y;
+          newEnemies.push(child);
+        }
+      }
+    }
+    g.enemies=[...g.enemies.filter(e=>!e.remove&&e.hp>0),...newEnemies];
     g.total=g.enemies.length;
     if(g.total>=30){g.over=true;g.running=false;sync();draw();return;}
     g.gameTime=(g.gameTime||0)+dt;
     const buff=getBuff();
+    // 황금정령: 적 처치 시 골드 지급
+    const goldUnits=g.heroes.filter(h=>h.col!==null&&h.element==="황금정령");
+    const goldPerKill=goldUnits.reduce((s,h)=>s+1+(h.enhLv||0),0);
+
     const allH=g.heroes.filter(h=>h.col!==null);
     for(const h of allH){
       const hx=h.col*CS+CS/2,hy=h.row*CS+CS/2;
       const baseSpd=(h.spd||1)*(1+buff.spd);
       if(g.gameTime-(h.lastShot||0)<1/baseSpd)continue;
-      const rng=(h.range||3.5)*CS;
+      const rng=((h.range||3.5)+(buff.rangeBonus||0))*CS;
       if(h.isIce&&h.iceCfg){
         const cfg=h.iceCfg;
         if(g.gameTime-h.lastShot>=cfg.cd){
@@ -747,7 +1209,22 @@ export default function App(){
         const diffMul=g.diffMul||1.0;
         const baseAtk=(((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*diffMul;
         const dmg=Math.floor(baseAtk*(1+buff.magic));
-        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg,spd:300,color:EC[h.element]||"#ff0",elBase:elBase(h.element),grade:h.grade,sx:hx,sy:hy,age:0});
+        // 보스 약점 배율
+        const bossData=g.currentBoss;
+        let finalDmg=dmg;
+        if(near.isBoss&&bossData&&bossData.weak){
+          finalDmg=isBossWeak(h.element,bossData.weak)?dmg*2:Math.max(1,Math.floor(dmg*0.1));
+        }
+        const projEl=h._isMorph&&h._morphEl?h._morphEl:h.element;
+        g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:finalDmg,spd:300,color:EC[projEl]||"#ff0",elBase:elBase(projEl),grade:h.grade,sx:hx,sy:hy,age:0});
+        // 연쇄공격 (번개신 히든영웅)
+        if(buff.chain&&Math.random()<buff.chain){
+          const chain2=g.enemies.filter(e=>e.id!==near.id&&!e.remove&&e.hp>0&&Math.sqrt((e.x+CS/2-hx)**2+(e.y+CS/2-hy)**2)<rng);
+          if(chain2.length>0){
+            const ct=chain2[Math.floor(Math.random()*chain2.length)];
+            g.projs.push({x:near.x+CS/2,y:near.y+CS/2,tx:ct.x+CS/2,ty:ct.y+CS/2,tid:ct.id,dmg:Math.floor(finalDmg*0.6),spd:400,color:"#ffd700",elBase:"전기",grade:h.grade,sx:hx,sy:hy,age:0});
+          }
+        }
       }
     }
     for(const p of g.projs){
@@ -758,7 +1235,12 @@ export default function App(){
         if(!g.impacts)g.impacts=[];
         g.impacts.push({x:p.tx,y:p.ty,t:0,maxT:0.25,color:p.color,elBase:p.elBase,grade:p.grade});
         const t2=g.enemies.find(e=>e.id===p.tid&&!e.remove&&e.hp>0);
-        if(t2&&p.dmg>0){t2.hp-=p.dmg;if(t2.hp<=0&&!t2.rewarded){t2.rewarded=true;if(t2.reward>0){g.gold+=t2.reward;setUi(prev=>({...prev,gold:g.gold}));}}}
+        if(t2&&p.dmg>0){
+          // 방어력 적용 (방패/장갑 적)
+          const reduced=Math.max(1,Math.floor(p.dmg*(1-(t2.armor||0))));
+          t2.hp-=reduced;
+          if(t2.hp<=0&&!t2.rewarded){t2.rewarded=true;if(t2.isBoss)g.currentBoss=null;const killGold=(t2.reward||0)+goldPerKill;if(killGold>0){g.gold+=killGold;setUi(prev=>({...prev,gold:g.gold}));}}
+        }
       }else{p.x+=dx/dist*mv;p.y+=dy/dist*mv;}
     }
     g.projs=g.projs.filter(p=>!p.hit);
@@ -768,15 +1250,40 @@ export default function App(){
     if(spawnDone&&g.enemies.length===0&&!g.cleared){
       g.running=false;g.cleared=true;
       if(isMidRound||isBossRound)g.coins+=1;
-      const clearGold=isBossRound?80:isMidRound?50:20;
+      const goldMul=1+(getBuff().goldMul||0);
+      const clearGold=Math.floor((isBossRound?80:isMidRound?50:20)*goldMul);
       g.gold+=clearGold;
       if(g.round%20===0){const nu=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){nu.col=pos[0];nu.row=pos[1];}g.heroes.push(nu);}
-      if(g.round===100){g.victory=true;g.running=false;sync();draw();return;}
+      if(g.round===100&&!g.infiniteMode){
+        // 무한모드 여부 물어보기 (victory 대신 특별 처리)
+        g.victory=true;g.running=false;sync();draw();return;
+      }
+      if(g.round>100){
+        // 무한모드: 난이도 점점 올라감
+        g.diffMul=Math.min((g.diffMul||1.3)*0.95,0.5); // 점점 어려워짐(배율 감소=유닛 약해짐)
+      }
       g.round++;g.cleared=false;g.total=0;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
+      // 변신정령: 라운드마다 속성 랜덤 변경
+      const morphElements=[...BASE];
+      for(const h of g.heroes){
+        if(h.element==="변신정령"||h._isMorph){
+          h._isMorph=true;
+          const newEl=morphElements[Math.floor(Math.random()*morphElements.length)];
+          h._morphEl=newEl; // 시각적 속성 (실제 공격속성)
+        }
+      }
       const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
-      g.maxSpawn=nb?1:nm?1:15+g.round;
-      sync();setCountdown(3);let cd=3;
-      const iv=setInterval(()=>{cd--;setCountdown(cd);if(cd<=0){clearInterval(iv);if(!G.current.over){G.current.running=true;lt.current=performance.now();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));}}},1000);
+      // 웨이브 타입 결정
+      const newWt=getWaveType(g.round);
+      g.waveType=newWt;
+      const waveLabels={normal:'',horde:'🐝 무리 웨이브!',fast:'⚡ 속도 웨이브!',armored:'🛡️ 장갑 웨이브!',healer:'💚 힐러 웨이브!',boss:'💀 보스!',mid:'⚡ 중간보스!'};
+      g.waveLabel=waveLabels[newWt]||'';
+      // 무리 웨이브는 적 많이
+      g.maxSpawn=nb?1:nm?1:newWt==='horde'?Math.floor((15+g.round)*1.8):15+g.round;
+      sync();setCountdown(30);let cd=30;
+      if(countdownRef.current)clearInterval(countdownRef.current);
+      const iv=setInterval(()=>{cd--;setCountdown(cd);if(cd<=0){clearInterval(iv);countdownRef.current=null;if(!G.current.over){G.current.running=true;lt.current=performance.now();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));}}},1000);
+      countdownRef.current=iv;
       return;
     }
     draw();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));
@@ -785,6 +1292,13 @@ export default function App(){
   useEffect(()=>{gameLoopRef.current=gameLoop;},[gameLoop]);
   useEffect(()=>{if(phase==='game')draw();},[draw,phase]);
   useEffect(()=>{if(phase==='game')draw();},[selHero,drag]);
+
+  // 카운트다운 스킵
+  const skipCountdown=()=>{
+    if(countdownRef.current){clearInterval(countdownRef.current);countdownRef.current=null;}
+    setCountdown(0);
+    if(!G.current.over) autoStart(G.current);
+  };
 
   const autoStart=(g)=>{
     const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
@@ -813,9 +1327,11 @@ export default function App(){
   const pickHidden=(h)=>{
     const g=G.current;
     g.hiddenHero={...h,id:h.id};
-    // 난이도를 히든영웅 선택 시점에 최종 반영 (state 비동기 문제 해결)
+    // 난이도 최종 반영
     g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?1.5:difficulty==='normal'?1.25:1.0;
+    g.diffMul=difficulty==='easy'?2.0:difficulty==='normal'?1.6:1.3;
+    // 수호자: 시작 라이프 +10
+    if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
     // 미배치 유닛 자동 배치
     for(const hero of g.heroes){
       if(hero.col===null){
@@ -828,15 +1344,17 @@ export default function App(){
     // 캔버스 렌더 후 카운트다운 → 게임 시작
     setTimeout(()=>{
       draw();
-      setCountdown(3);
-      let cd=3;
+      setCountdown(30);
+      let cd=30;
+      if(countdownRef.current)clearInterval(countdownRef.current);
       const iv=setInterval(()=>{
         cd--;setCountdown(cd);
         if(cd<=0){
-          clearInterval(iv);
+          clearInterval(iv);countdownRef.current=null;
           if(!G.current.over) autoStart(G.current);
         }
       },1000);
+      countdownRef.current=iv;
     },80);
   };
 
@@ -1059,6 +1577,51 @@ export default function App(){
     g.heroes.push(h);setModal(null);sync();draw();triggerSummon(el,item.grade);
   };
 
+  // ── 랭킹 저장
+  const saveRecord=async(isVictory)=>{
+    if(!nickname.trim())return;
+    const g=G.current;
+    const record={
+      name:nickname.trim(),
+      difficulty:g.difficulty||'hard',
+      round:g.round,
+      gold:g.gold,
+      coins:g.coins,
+      map:currentMapName,
+      victory:isVictory,
+      ts:Date.now(),
+    };
+    try{
+      // 기존 랭킹 불러오기
+      let list=[];
+      try{const res=await window.storage.get('ranking',true);if(res)list=JSON.parse(res.value);}catch(e){}
+      // 같은 닉네임 중 더 좋은 기록만 남기기 (라운드 기준)
+      const others=list.filter(r=>r.name!==record.name);
+      const mine=list.find(r=>r.name===record.name);
+      // 이전 기록보다 높을 때만 갱신 (라운드→골드→코인 순 비교)
+      const isBetter=!mine
+        ||(record.round>mine.round)
+        ||(record.round===mine.round&&record.gold>mine.gold)
+        ||(record.round===mine.round&&record.gold===mine.gold&&record.coins>mine.coins);
+      const best=isBetter?record:mine;
+      const newList=[...others,best]
+        .sort((a,b)=>b.round-a.round||b.gold-a.gold)
+        .slice(0,50);
+      await window.storage.set('ranking',JSON.stringify(newList),true);
+    }catch(e){console.error('ranking save error',e);}
+  };
+
+  // ── 랭킹 불러오기
+  const loadRanking=async()=>{
+    setRankLoading(true);
+    try{
+      const res=await window.storage.get('ranking',true);
+      if(res){setRanking(JSON.parse(res.value));}
+      else setRanking([]);
+    }catch(e){setRanking([]);}
+    setRankLoading(false);
+  };
+
   const changeSpeed=(s)=>{spR.current=s;setSpeedState(s);};
   const hd=HH.find(h=>h.id===selH);
   const myEls=new Set(heroes.map(h=>h.element));
@@ -1074,9 +1637,9 @@ export default function App(){
     return(
       <>
       <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
-        <div style={{fontSize:44,marginBottom:8}}>🗡️</div>
-        <div style={{fontSize:28,fontWeight:"bold",color:"#4af",marginBottom:4,letterSpacing:2}}>랜덤 디펜스</div>
-        <div style={{fontSize:13,color:"#555",marginBottom:32}}>Random Defense</div>
+        <div style={{fontSize:52,marginBottom:6,filter:"drop-shadow(0 0 20px #3b82f6)"}}>🗡️</div>
+        <div style={{fontSize:30,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4,letterSpacing:3}}>랜덤 디펜스</div>
+        <div style={{fontSize:12,color:"#374151",marginBottom:28,letterSpacing:4}}>RANDOM DEFENSE</div>
 
         {/* 맵 미리보기 */}
         <div style={{display:"flex",gap:8,marginBottom:28}}>
@@ -1092,18 +1655,81 @@ export default function App(){
           ))}
         </div>
 
+        {/* 닉네임 입력 */}
+        <div style={{width:"100%",maxWidth:340,marginBottom:16}}>
+          <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>👤 닉네임</div>
+          <input
+            value={nickname}
+            onChange={e=>setNickname(e.target.value)}
+            maxLength={12}
+            placeholder="닉네임 입력 (최대 12자)"
+            style={{width:"100%",background:"#161b22",border:"1px solid #30363d",borderRadius:10,padding:"10px 14px",color:"#eee",fontSize:14,outline:"none",boxSizing:"border-box",textAlign:"center"}}
+          />
+        </div>
+
         <button onClick={()=>startGame(null)}
-          style={{background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 48px",cursor:"pointer",fontSize:18,fontWeight:"bold",letterSpacing:2,boxShadow:"0 4px 20px rgba(31,111,235,0.4)",marginBottom:12}}>
+          style={{background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 48px",cursor:"pointer",fontSize:18,fontWeight:"bold",letterSpacing:2,boxShadow:"0 4px 20px rgba(31,111,235,0.4)",marginBottom:10}}>
           ⚔️ 게임 시작
         </button>
-        <button onClick={()=>setShowPatch(true)}
-          style={{background:"none",border:"1px solid #30363d",color:"#555",borderRadius:8,padding:"6px 20px",cursor:"pointer",fontSize:12,marginBottom:8}}>
-          📋 패치노트
-        </button>
+        <div style={{display:"flex",gap:8,marginBottom:8}}>
+          <button onClick={()=>{setShowRanking(true);loadRanking();}}
+            style={{background:"none",border:"1px solid #30363d",color:"#fd0",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
+            🏆 랭킹
+          </button>
+          <button onClick={()=>setShowPatch(true)}
+            style={{background:"none",border:"1px solid #30363d",color:"#555",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
+            📋 패치노트
+          </button>
+        </div>
         <div style={{fontSize:11,color:"#444",textAlign:"center"}}>매 게임 3종 맵 중 랜덤으로 시작</div>
       </div>
 
-      {/* 패치노트 모달 */}
+      {/* 랭킹 모달 */}
+      {showRanking&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"88vh",display:"flex",flexDirection:"column"}}>
+            <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div style={{fontSize:16,fontWeight:"bold"}}>🏆 랭킹</div>
+              <button onClick={()=>setShowRanking(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{overflowY:"auto",flex:1,padding:"12px 16px"}}>
+              {rankLoading&&<div style={{textAlign:"center",color:"#555",padding:20}}>불러오는 중...</div>}
+              {!rankLoading&&ranking.length===0&&<div style={{textAlign:"center",color:"#555",padding:20}}>아직 기록이 없어요</div>}
+              {!rankLoading&&ranking.map((r,i)=>{
+                const diffColor=r.difficulty==='easy'?'#4f8':r.difficulty==='normal'?'#4af':'#f44';
+                const diffLabel=r.difficulty==='easy'?'쉬움':r.difficulty==='normal'?'보통':'어려움';
+                const isMe=r.name===nickname.trim();
+                return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",marginBottom:6,borderRadius:10,background:isMe?"rgba(31,111,235,0.12)":"rgba(255,255,255,0.02)",border:`1px solid ${isMe?"#1f6feb":"#21262d"}`}}>
+                    <div style={{width:28,textAlign:"center",fontWeight:"bold",fontSize:14,color:i===0?"#fd0":i===1?"#aaa":i===2?"#c84":"#555",flexShrink:0}}>
+                      {i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}`}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                        <span style={{fontWeight:"bold",fontSize:13,color:isMe?"#4af":"#eee",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}</span>
+                        {r.victory&&<span style={{fontSize:10,color:"#fd0",flexShrink:0}}>👑클리어</span>}
+                        {isMe&&<span style={{fontSize:10,color:"#4af",flexShrink:0}}>← 나</span>}
+                      </div>
+                      <div style={{display:"flex",gap:8,fontSize:11,color:"#888",flexWrap:"wrap"}}>
+                        <span style={{color:diffColor}}>{diffLabel}</span>
+                        <span style={{color:"#4af"}}>R{r.round}/100</span>
+                        <span style={{color:"#fd0"}}>💰{r.gold}G</span>
+                        <span style={{color:"#a78bfa"}}>🪙{r.coins}</span>
+                        <span style={{color:"#555"}}>{r.map}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{padding:"12px 16px",borderTop:"1px solid #21262d",flexShrink:0}}>
+              <button onClick={()=>setShowRanking(false)} style={{width:"100%",background:"#1f6feb",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:14,fontWeight:"bold"}}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 패치노트 모달 */}}
       {showPatch&&(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}}>
           <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:380,maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
@@ -1169,9 +1795,9 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×1.5',color:'#4f8',icon:'🌱'},
-                {key:'normal',label:'보통',desc:'공격력 ×1.25',color:'#4af',icon:'⚔️'},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀'},
+                {key:'easy',label:'쉬움',desc:'공격력 ×2.0',color:'#4f8',icon:'🌱'},
+                {key:'normal',label:'보통',desc:'공격력 ×1.6',color:'#4af',icon:'⚔️'},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀'},
               ].map(d=>(
                 <button key={d.key} onClick={()=>setDifficulty(d.key)}
                   style={{flex:1,background:difficulty===d.key?d.color+'22':'#21262d',
@@ -1206,88 +1832,179 @@ export default function App(){
   // 게임 화면
   // ══════════════════════════════════════════
   return(
-    <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
-      {/* HUD */}
-      <div style={{width:"100%",maxWidth:440,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#161b22",borderRadius:10,padding:"6px 10px",marginBottom:4,border:"1px solid #30363d",fontSize:13}}>
-        <span>❤️<b style={{color:"#f66"}}>{ui.life}</b></span>
-        <span>💰<b style={{color:"#fd0"}}>{ui.gold}G</b></span>
-        <span style={{color:"#a78bfa",fontWeight:"bold",cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
-        <span style={{fontSize:11,color:"#4af"}}>🗺️{currentMapName}</span>
-        <span style={{fontSize:10,color:G.current?.difficulty==='easy'?'#4f8':G.current?.difficulty==='normal'?'#4af':'#f44'}}>{G.current?.difficulty==='easy'?'🌱쉬움':G.current?.difficulty==='normal'?'⚔️보통':'💀어려움'}</span>
-        <span>🎯R{ui.round}/100</span>
-        <span style={{color:ui.total>=24?"#f44":"#aaa",fontSize:12}}>👾{ui.total}/30</span>
-        <button onClick={()=>setShowCombo(true)} style={{background:"#21262d",border:"1px solid #444",color:"#eee",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>조합표</button>
+      {/* HUD - 2줄 */}
+      <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
+        {/* 1줄: 스탯 */}
+        <div style={{display:"flex",alignItems:"center",gap:0,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 10px",border:"1px solid #1e293b",borderBottom:"none"}}>
+          <div style={{display:"flex",align:"center",gap:6,flex:1,flexWrap:"nowrap",overflow:"hidden"}}>
+            <span style={{background:"#450a0a",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
+            <span style={{background:"#1c1917",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
+            <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
+            <span style={{background:"#172554",borderRadius:6,padding:"2px 7px",fontSize:11,color:"#60a5fa",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{color:"#374151",fontWeight:"normal"}}>/100</span></span>
+            <span style={{background:ui.total>=24?"#450a0a":"#111827",borderRadius:6,padding:"2px 7px",fontSize:11,color:ui.total>=24?"#f87171":"#6b7280",flexShrink:0}}>👾{ui.total}/30</span>
+          </div>
+          <div style={{display:"flex",gap:4,flexShrink:0,marginLeft:6}}>
+            <span style={{fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>
+              {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
+            </span>
+            <span style={{fontSize:10,color:"#60a5fa",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>{currentMapName}</span>
+            <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>조합표</button>
+          </div>
+        </div>
+        {/* 2줄: 배속 + 홈 */}
+        <div style={{display:"flex",gap:3,background:"#0a0f1a",borderRadius:"0 0 10px 10px",padding:"4px 6px",border:"1px solid #1e293b",borderTop:"none"}}>
+          {[1,2,3,4].map(s=>(
+            <button key={s} onClick={()=>changeSpeed(s)}
+              style={{flex:1,background:speed===s?"#1d4ed8":"transparent",border:`1px solid ${speed===s?"#3b82f6":"#1e293b"}`,color:speed===s?"#fff":"#475569",borderRadius:6,padding:"4px 0",cursor:"pointer",fontSize:13,fontWeight:"bold",transition:"all 0.15s"}}>
+              {s}x
+            </button>
+          ))}
+          <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:12}}>🏠</button>
+        </div>
       </div>
 
-      {/* 배속 */}
-      <div style={{width:"100%",maxWidth:440,display:"flex",gap:4,marginBottom:4}}>
-        {[1,2,3,4].map(s=>(
-          <button key={s} onClick={()=>changeSpeed(s)}
-            style={{flex:1,background:speed===s?"#1f6feb":"#21262d",border:`1px solid ${speed===s?"#58f":"#444"}`,color:speed===s?"#fff":"#aaa",borderRadius:7,padding:"5px 0",cursor:"pointer",fontSize:14,fontWeight:"bold"}}>
-            {s}x
-          </button>
-        ))}
-        <button onClick={()=>setPhase('title')} style={{background:"#21262d",border:"1px solid #444",color:"#666",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12}}>🏠</button>
-      </div>
-
-      {countdown>0&&<div style={{width:"100%",maxWidth:440,textAlign:"center",background:"#1a2a1a",borderRadius:8,padding:"5px",marginBottom:4,border:"1px solid #2a4a2a",fontSize:14,color:"#4f8",fontWeight:"bold"}}>⏱ {countdown}초 후 시작...</div>}
+      {countdown>0&&(()=>{
+        const nb=G.current?.round%10===0;
+        const bossInfo=nb?BOSS_TABLE[G.current?.round]:null;
+        return(
+        <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:bossInfo?"linear-gradient(135deg,#450a0a,#7f1d1d)":"linear-gradient(135deg,#052e16,#14532d)",borderRadius:bossInfo?"8px 8px 0 0":8,padding:"6px 10px",border:`1px solid ${bossInfo?"#ef4444":"#166534"}`,fontSize:15,color:bossInfo?"#fca5a5":"#4ade80",fontWeight:"bold"}}>
+            {G.current?.waveLabel&&<span style={{fontSize:13,marginRight:8,color:"#fcd34d"}}>{G.current.waveLabel}</span>}
+            <span>⏱ {countdown}초 후 시작</span>
+            <button onClick={skipCountdown}
+              style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",marginLeft:8,flexShrink:0}}>
+              ▶ 스킵
+            </button>
+          </div>
+          {bossInfo&&(
+            <div style={{background:"#1c0a0a",borderRadius:"0 0 8px 8px",padding:"5px 10px",border:"1px solid #7f1d1d",borderTop:"none",display:"flex",alignItems:"center",gap:8,fontSize:11}}>
+              <span style={{fontSize:16}}>{bossInfo.emoji}</span>
+              <span style={{color:"#fca5a5",fontWeight:"bold"}}>{bossInfo.name}</span>
+              <span style={{color:"#888",flex:1}}>{bossInfo.desc}</span>
+              <div style={{display:"flex",gap:3}}>
+                {(bossInfo.weak||[]).map(w=>(
+                  <span key={w} style={{background:"#451a03",border:"1px solid #f97316",borderRadius:4,padding:"1px 4px",color:"#fb923c",fontSize:10}}>{EE[w]||w}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        );
+      })()}
 
       <canvas ref={cvs} width={COLS*CS} height={ROWS*CS} onClick={onCanvas}
-        style={{width:"100%",maxWidth:440,borderRadius:10,border:`2px solid ${drag?"rgba(255,215,0,0.5)":"#30363d"}`,cursor:drag||selHero?"crosshair":"default"}}/>
+        style={{width:"100%",maxWidth:440,borderRadius:12,
+          border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
+          boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
+          cursor:drag||selHero?"crosshair":"default"}}/>
 
       {/* 게임오버 */}
-      {ui.over&&<Overlay>
-        <div style={{fontSize:40,textAlign:"center"}}>💀</div>
-        <div style={{fontSize:20,fontWeight:"bold",color:"#f44",margin:"8px 0",textAlign:"center"}}>게임 오버</div>
-        <div style={{display:"flex",gap:8,marginTop:8}}>
-          <Btn bg="#c33" onClick={()=>startGame(null)}>다시 시작</Btn>
-          <Btn bg="#333" onClick={()=>setPhase('title')}>타이틀로</Btn>
-        </div>
-      </Overlay>}
-      {ui.victory&&<Overlay>
-        <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
-        <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
-        <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다!</div>
-        <div style={{display:"flex",gap:8,marginTop:8}}>
-          <Btn bg="#1f6feb" onClick={()=>startGame(null)}>다시 시작</Btn>
-          <Btn bg="#333" onClick={()=>setPhase('title')}>타이틀로</Btn>
-        </div>
-      </Overlay>}
+      {ui.over&&(()=>{
+        const g=G.current;
+        const diff=g?.difficulty||'hard';
+        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        return(<Overlay>
+          <div style={{fontSize:40,textAlign:"center"}}>💀</div>
+          <div style={{fontSize:20,fontWeight:"bold",color:"#f44",margin:"8px 0",textAlign:"center"}}>게임 오버</div>
+          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>라운드</span><span style={{color:"#4af",fontWeight:"bold"}}>R{ui.round}/100</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
+            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:8}}>
+            <Btn bg="#c33" onClick={()=>{saveRecord(false);startGame(null);}}>다시 시작</Btn>
+            <Btn bg="#333" onClick={()=>{saveRecord(false);setPhase('title');}}>타이틀로</Btn>
+          </div>
+          <Btn bg="#21262d" onClick={()=>{saveRecord(false);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
+        </Overlay>);
+      })()}
+      {ui.victory&&(()=>{
+        const g=G.current;
+        const diff=g?.difficulty||'hard';
+        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        return(<Overlay>
+          <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
+          <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
+          <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다!</div>
+          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
+            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:8}}>
+            <Btn bg="#1f6feb" onClick={()=>{saveRecord(true);startGame(null);}}>다시 시작</Btn>
+            <Btn bg="#333" onClick={()=>{saveRecord(true);setPhase('title');}}>타이틀로</Btn>
+          </div>
+          <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={()=>{
+            const g=G.current;
+            g.victory=false;g.over=false;g.infiniteMode=true;
+            g.running=true;lt.current=performance.now();
+            raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
+            setUi(prev=>({...prev,victory:false,over:false}));
+          }} style={{width:"100%",marginBottom:6,border:"1px solid #7c3aed"}}>🌀 무한모드 계속하기</Btn>
+          <Btn bg="#21262d" onClick={()=>{saveRecord(true);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
+        </Overlay>);
+      })()}
 
       {/* 액션 버튼 */}
-      <div style={{width:"100%",maxWidth:440,display:"flex",gap:6,marginTop:6}}>
-        <Btn bg="#1f6feb" onClick={()=>{
+      <div style={{width:"100%",maxWidth:440,display:"flex",gap:5,marginTop:5}}>
+        <button onClick={()=>{
           const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
           g.gold-=10;
           const h=mkH(BASE[Math.floor(Math.random()*BASE.length)],"노말",g.gradeEnhLv||{});
           const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
           g.heroes.push(h);sync();draw();
-        }}>🎲 뽑기 (10G)</Btn>
-        <Btn bg="#1a5c2a" onClick={()=>{setRandomPicks([]);setModal("merge");}}>✨ 뭉치기</Btn>
-        <Btn bg="#b8860b" onClick={()=>setModal("gradeEnh")}>⬆️ 강화</Btn>
-        <Btn bg="#6e40c9" onClick={()=>setModal("shop")}>🪙 {ui.coins}</Btn>
+        }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
+          🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
+        </button>
+        <button onClick={()=>{setRandomPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
+          ✨<br/><span style={{fontSize:10,opacity:0.8}}>뭉치기</span>
+        </button>
+        <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(245,158,11,0.2)"}}>
+          ⬆️<br/><span style={{fontSize:10,opacity:0.8}}>강화</span>
+        </button>
+        <button onClick={()=>setModal("shop")} style={{flex:1,background:"linear-gradient(135deg,#4c1d95,#3b0764)",border:"1px solid #a78bfa",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(167,139,250,0.2)"}}>
+          🪙<br/><span style={{fontSize:10,opacity:0.8}}>{ui.coins}</span>
+        </button>
       </div>
 
-      {(drag||selHero)&&<div style={{width:"100%",maxWidth:440,fontSize:12,color:"#fd0",marginTop:4,padding:"3px 8px",background:"rgba(255,215,0,0.07)",borderRadius:6}}>📍 이동할 칸 클릭 / 다른 영웅=스왑 / 같은 영웅=취소</div>}
+      {(drag||selHero)&&(
+        <div style={{width:"100%",maxWidth:440,fontSize:11,color:"#fbbf24",marginTop:4,padding:"4px 10px",background:"rgba(251,191,36,0.08)",borderRadius:7,border:"1px solid rgba(251,191,36,0.2)",textAlign:"center"}}>
+          📍 이동할 칸 클릭 &nbsp;|&nbsp; 다른 영웅 = 스왑 &nbsp;|&nbsp; 같은 영웅 = 취소
+        </div>
+      )}
 
       {/* 선택 영웅 패널 */}
       {selHeroObj&&(
-        <div style={{width:"100%",maxWidth:440,background:"#1c2030",border:"1px solid #fa0",borderRadius:10,padding:"10px 12px",marginTop:6}}>
+        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:`1px solid ${GC[selHeroObj.grade]||"#fa0"}66`,borderRadius:12,padding:"10px 12px",marginTop:5,boxShadow:`0 0 12px ${GC[selHeroObj.grade]||"#fa0"}22`}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-            <span style={{fontSize:22}}>{EE[selHeroObj.element]||"?"}</span>
-            <div>
-              <span style={{color:GC[selHeroObj.grade],fontWeight:"bold"}}>{EN[selHeroObj.element]||selHeroObj.element} [{selHeroObj.grade}]</span>
-              {selHeroObj.enhLv>0&&<span style={{color:"#fd0",marginLeft:6}}>+{selHeroObj.enhLv}</span>}
-              <div style={{fontSize:10,color:"#aaa"}}>ATK {Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))} | SPD {(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}% | 사거리 {(selHeroObj.range||3.0).toFixed(1)}</div>
+            <div style={{width:40,height:40,borderRadius:10,background:`${GC[selHeroObj.grade]||"#aaa"}22`,border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
+              {EE[selHeroObj.element]||"?"}
             </div>
-            <button onClick={()=>setSelHero(null)} style={{marginLeft:"auto",background:"#333",border:"none",color:"#aaa",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:12}}>✕</button>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{color:GC[selHeroObj.grade],fontWeight:"bold",fontSize:13}}>{EN[selHeroObj.element]||selHeroObj.element}</span>
+                <span style={{background:`${GC[selHeroObj.grade]||"#aaa"}22`,color:GC[selHeroObj.grade],fontSize:10,borderRadius:4,padding:"1px 5px",border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}44`}}>{selHeroObj.grade}</span>
+                {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:11,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:2,fontSize:10,color:"#64748b"}}>
+                <span>⚔️{Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))}</span>
+                <span>💨{(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</span>
+                <span>🎯{(selHeroObj.range||3.0).toFixed(1)}</span>
+              </div>
+            </div>
+            <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontSize:13}}>✕</button>
           </div>
-          <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>
-            <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>📍 이동</button>
-            <button onClick={()=>doEnhance(selHeroObj.id)} style={{background:"#553300",border:"1px solid #fd0",color:"#fd0",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>⬆️ 강화 ({enhCost(selHeroObj)}G)</button>
-            <button onClick={()=>doSell(selHeroObj.id)} style={{background:"#3a1010",border:"1px solid #f66",color:"#f88",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>💰 판매 (+{SELL_PRICE[selHeroObj.grade]||5}G)</button>
+          <div style={{display:"flex",gap:5,marginBottom:8}}>
+            <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>📍 이동</button>
+            <button onClick={()=>doEnhance(selHeroObj.id)} style={{flex:1,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>⬆️ {enhCost(selHeroObj)}G</button>
+            <button onClick={()=>doSell(selHeroObj.id)} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>💰+{SELL_PRICE[selHeroObj.grade]||5}G</button>
           </div>
           {combOpts.length>0&&(<><div style={{fontSize:11,color:"#aaa",marginBottom:5}}>⚗️ 조합 가능</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
@@ -1303,19 +2020,20 @@ export default function App(){
       )}
 
       {/* 영웅 목록 */}
-      <div style={{width:"100%",maxWidth:440,display:"flex",gap:5,flexWrap:"wrap",marginTop:6,paddingBottom:4}}>
+      <div style={{width:"100%",maxWidth:440,display:"flex",gap:4,flexWrap:"wrap",marginTop:5,paddingBottom:4}}>
         {heroes.map(h=>{
           const isSel=h.id===selHero,isDrag=h.id===drag;
+          const gc=GC[h.grade]||"#6b7280";
           return(
             <div key={h.id} onClick={()=>onHero(h)}
-              style={{background:isSel?"rgba(255,170,0,0.15)":isDrag?"#004488":"#21262d",
-                border:`2px solid ${isSel?"#fa0":isDrag?"#fd0":GC[h.grade]||"#444"}`,
-                borderRadius:8,padding:"5px 7px",cursor:"pointer",fontSize:13,minWidth:52,textAlign:"center",
-                boxShadow:isSel?"0 0 10px rgba(255,170,0,0.4)":"none"}}>
-              <div style={{fontSize:17}}>{EE[h.element]||"?"}</div>
-              <div style={{fontSize:7,color:"#888",lineHeight:1.1}}>{EN[h.element]||h.element}</div>
-              <div style={{fontSize:9,color:GC[h.grade]}}>{h.grade}</div>
-              {h.enhLv>0&&<div style={{fontSize:8,color:"#fd0"}}>+{h.enhLv}</div>}
+              style={{background:isSel?`${gc}20`:isDrag?"#1e3a5f":"#0f172a",
+                border:`2px solid ${isSel?gc:isDrag?"#60a5fa":gc+"44"}`,
+                borderRadius:9,padding:"5px 6px",cursor:"pointer",minWidth:50,textAlign:"center",
+                boxShadow:isSel?`0 0 10px ${gc}55`:"none",
+                transition:"border-color 0.15s"}}>
+              <div style={{fontSize:18,lineHeight:1.2}}>{EE[h.element]||"?"}</div>
+              <div style={{fontSize:8,color:gc,fontWeight:"bold",lineHeight:1.2}}>{h.grade}</div>
+              {h.enhLv>0&&<div style={{fontSize:8,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
             </div>
           );
         })}
@@ -1323,9 +2041,11 @@ export default function App(){
 
       {/* 히든영웅 버프 */}
       {hd&&(
-        <div style={{width:"100%",maxWidth:440,background:hr(hd.color,0.09),border:`1px solid ${hd.color}`,borderRadius:10,padding:"7px 12px",marginTop:4,fontSize:12}}>
-          <span style={{color:hd.color,fontWeight:"bold"}}>{hd.emoji} {hd.name}</span>
-          <span style={{color:"#aaffaa",marginLeft:8}}>🟢 {hd.desc}</span>
+        <div style={{width:"100%",maxWidth:440,background:hr(hd.color,0.07),border:`1px solid ${hd.color}44`,borderRadius:10,padding:"6px 12px",marginTop:4,display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:20}}>{hd.emoji}</span>
+          <span style={{color:hd.color,fontWeight:"bold",fontSize:12}}>{hd.name}</span>
+          <span style={{color:"#86efac",fontSize:11,flex:1}}>{hd.desc}</span>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 6px #22c55e",flexShrink:0,display:"inline-block"}}/>
         </div>
       )}
 
