@@ -1690,7 +1690,14 @@ export default function App(){
           <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"88vh",display:"flex",flexDirection:"column"}}>
             <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
               <div style={{fontSize:16,fontWeight:"bold"}}>🏆 랭킹</div>
-              <button onClick={()=>setShowRanking(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <button onClick={()=>loadRanking()}
+                  disabled={rankLoading}
+                  style={{background:"#1e293b",border:"1px solid #334155",color:rankLoading?"#475569":"#94a3b8",borderRadius:7,padding:"4px 10px",cursor:rankLoading?"not-allowed":"pointer",fontSize:12}}>
+                  {rankLoading?"⏳":"🔄"} 새로고침
+                </button>
+                <button onClick={()=>setShowRanking(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+              </div>
             </div>
             <div style={{overflowY:"auto",flex:1,padding:"12px 16px"}}>
               {rankLoading&&<div style={{textAlign:"center",color:"#555",padding:20}}>불러오는 중...</div>}
