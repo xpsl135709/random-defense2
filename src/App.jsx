@@ -521,7 +521,7 @@ const loadSprite=(el)=>{if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;co
 
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
-  const bonus=lv>0?{atk:([5,10,20,35,50,80][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]||5)*lv,spd:0.05*lv}:{atk:0,spd:0};
+  const bonus=lv>0?{atk:([2,4,8,14,20,32][["노말","고급","영웅","전설","신화","불멸"].indexOf(g)]||2)*lv,spd:0.05*lv}:{atk:0,spd:0};
   const isIce=ICE_UNITS.has(el);
   const isFlood=FLOOD_UNITS.has(el);
   const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):isFlood?(FLOOD_SLOW[g]||FLOOD_SLOW["노말"]):null;
@@ -1706,7 +1706,7 @@ export default function App(){
   };
 
   const GRADE_ENH_COST={노말:10,고급:15,영웅:25,전설:30,신화:40,불멸:50};
-  const GRADE_ENH_BONUS={노말:{atk:5,spd:0.05},고급:{atk:10,spd:0.05},영웅:{atk:20,spd:0.05},전설:{atk:35,spd:0.05},신화:{atk:50,spd:0.05},불멸:{atk:80,spd:0.05}};
+  const GRADE_ENH_BONUS={노말:{atk:2,spd:0.05},고급:{atk:4,spd:0.05},영웅:{atk:8,spd:0.05},전설:{atk:14,spd:0.05},신화:{atk:20,spd:0.05},불멸:{atk:32,spd:0.05}};
   const getGradeEnhLv=(grade)=>(G.current?.gradeEnhLv||{})[grade]||0;
 
   const MAX_GRADE_ENH=20;
