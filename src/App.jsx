@@ -368,18 +368,18 @@ const RECIPES=[
 
 const HH=[
   // ── 기존 5종 버프 강화
-  {id:"warrior",name:"전사",emoji:"⚔️",color:"#ef4444",desc:"ATK×2.0, SPD+20%",buff:{atkMul:2.0,atk:0,spd:0.20,magic:0}},
-  {id:"mage",name:"마법사",emoji:"🧙",color:"#8b5cf6",desc:"ATK×1.6, 마법+60%",buff:{atkMul:1.6,atk:0,spd:0,magic:0.60}},
-  {id:"rogue",name:"도적",emoji:"🗡️",color:"#22c55e",desc:"ATK×1.7, SPD+40%",buff:{atkMul:1.7,atk:0,spd:0.40,magic:0}},
-  {id:"archer",name:"궁수",emoji:"🏹",color:"#f97316",desc:"ATK×1.8, SPD+25%",buff:{atkMul:1.8,atk:0,spd:0.25,magic:0}},
-  {id:"healer",name:"힐러",emoji:"💚",color:"#10b981",desc:"ATK×1.5, SPD+30%, 마법+35%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0.35}},
+  {id:"warrior",name:"전사",emoji:"⚔️",color:"#ef4444",desc:"공격력×2.0, 속도+20%",buff:{atkMul:2.0,atk:0,spd:0.20,magic:0}},
+  {id:"mage",name:"마법사",emoji:"🧙",color:"#8b5cf6",desc:"공격력×1.6, 마법데미지+60%",buff:{atkMul:1.6,atk:0,spd:0,magic:0.60}},
+  {id:"rogue",name:"도적",emoji:"🗡️",color:"#22c55e",desc:"공격력×1.7, 속도+40%",buff:{atkMul:1.7,atk:0,spd:0.40,magic:0}},
+  {id:"archer",name:"궁수",emoji:"🏹",color:"#f97316",desc:"공격력×1.8, 속도+25%",buff:{atkMul:1.8,atk:0,spd:0.25,magic:0}},
+  {id:"healer",name:"힐러",emoji:"💚",color:"#10b981",desc:"공격력×1.5, 속도+30%, 마법데미지+35%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0.35}},
   // ── 신규 6종
-  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"ATK×1.3, 골드획득+30%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,goldMul:0.3}},
-  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"ATK×1.6, 사거리+2.0",buff:{atkMul:1.6,atk:0,spd:0,magic:0,rangeBonus:2.0}},
-  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"ATK×1.3, 라이프+10, 피해감소50%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,extraLife:10,dmgReduce:0.5}},
-  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"ATK×1.6, 10% 확률 연쇄공격",buff:{atkMul:1.6,atk:0,spd:0,magic:0,chain:0.10}},
-  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"ATK×1.5, 슬로우 효과+50%",buff:{atkMul:1.5,atk:0,spd:0,magic:0,slowBonus:0.5}},
-  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"ATK×1.4, SPD+20%, 마법+20%",buff:{atkMul:1.4,atk:0,spd:0.20,magic:0.20}},
+  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"공격력×1.3, 골드획득+30%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,goldMul:0.3}},
+  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"공격력×1.6, 사거리+2.0",buff:{atkMul:1.6,atk:0,spd:0,magic:0,rangeBonus:2.0}},
+  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"공격력×1.3, 라이프+10, 피해감소50%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,extraLife:10,dmgReduce:0.5}},
+  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"공격력×1.6, 10% 확률 연쇄공격",buff:{atkMul:1.6,atk:0,spd:0,magic:0,chain:0.10}},
+  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"공격력×1.5, 슬로우 효과+50%",buff:{atkMul:1.5,atk:0,spd:0,magic:0,slowBonus:0.5}},
+  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"공격력×1.4, 속도+20%, 마법데미지+20%",buff:{atkMul:1.4,atk:0,spd:0.20,magic:0.20}},
 ];
 // ══════════════════════════════════════════
 // 보스 테이블 (10라운드마다)
