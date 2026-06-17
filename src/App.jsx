@@ -151,6 +151,25 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v1.2",
+    date:"2025-06-17",
+    title:"히든영웅 개편 & 밸런스 조정",
+    changes:[
+      "🦸 히든영웅 전면 개편 (전사/마법사/도적/궁수/힐러 삭제)",
+      "💰 상인: 골드 획득+30%",
+      "🎯 저격수: 사거리+2.0",
+      "🛡️ 수호자: 라이프+15",
+      "⚡ 번개신: 10% 확률 연쇄공격",
+      "🌀 시간술사: 슬로우 효과+50% (버그 수정 포함)",
+      "⚗️ 연금술사: 상태이상 효과×1.5 (지속시간+수치 전부)",
+      "🎰 도박사: 5라운드마다 주사위 굴리기 (1~6 랜덤 보상/페널티)",
+      "🌿 나무 속박 너프: 속박 중 재갱신 불가, 속박 해제 후 면역 3초",
+      "⚔️ 공격력 버프 제거: 히든영웅이 공격력에 영향 없음",
+      "🎮 난이도 재조정: 쉬움×1.7 / 보통×1.3 / 어려움×1.0",
+      "🏠 홈버튼 위치 변경: HUD 좌측 상단 (라이프 왼쪽)",
+    ]
+  },
+  {
     version:"v1.1",
     date:"2025-06-17",
     title:"속성별 특성 구현",
@@ -367,19 +386,13 @@ const RECIPES=[
 ];
 
 const HH=[
-  // ── 기존 5종 버프 강화
-  {id:"warrior",name:"전사",emoji:"⚔️",color:"#ef4444",desc:"공격력×2.0, 속도+20%",buff:{atkMul:2.0,atk:0,spd:0.20,magic:0}},
-  {id:"mage",name:"마법사",emoji:"🧙",color:"#8b5cf6",desc:"공격력×1.6, 마법데미지+60%",buff:{atkMul:1.6,atk:0,spd:0,magic:0.60}},
-  {id:"rogue",name:"도적",emoji:"🗡️",color:"#22c55e",desc:"공격력×1.7, 속도+40%",buff:{atkMul:1.7,atk:0,spd:0.40,magic:0}},
-  {id:"archer",name:"궁수",emoji:"🏹",color:"#f97316",desc:"공격력×1.8, 속도+25%",buff:{atkMul:1.8,atk:0,spd:0.25,magic:0}},
-  {id:"healer",name:"힐러",emoji:"💚",color:"#10b981",desc:"공격력×1.5, 속도+30%, 마법데미지+35%",buff:{atkMul:1.5,atk:0,spd:0.30,magic:0.35}},
-  // ── 신규 6종
-  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"공격력×1.3, 골드획득+30%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,goldMul:0.3}},
-  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"공격력×1.6, 사거리+2.0",buff:{atkMul:1.6,atk:0,spd:0,magic:0,rangeBonus:2.0}},
-  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"공격력×1.3, 라이프+10, 피해감소50%",buff:{atkMul:1.3,atk:0,spd:0,magic:0,extraLife:10,dmgReduce:0.5}},
-  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"공격력×1.6, 10% 확률 연쇄공격",buff:{atkMul:1.6,atk:0,spd:0,magic:0,chain:0.10}},
-  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"공격력×1.5, 슬로우 효과+50%",buff:{atkMul:1.5,atk:0,spd:0,magic:0,slowBonus:0.5}},
-  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"공격력×1.4, 속도+20%, 마법데미지+20%",buff:{atkMul:1.4,atk:0,spd:0.20,magic:0.20}},
+  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"골드 획득+30%",buff:{goldMul:0.3}},
+  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"사거리+2.0",buff:{rangeBonus:2.0}},
+  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"라이프+15",buff:{extraLife:15}},
+  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"10% 확률 연쇄공격",buff:{chain:0.10}},
+  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"슬로우 효과+50%",buff:{slowBonus:0.5}},
+  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"상태이상 효과×1.5",buff:{statusMul:1.5}},
+  {id:"gambler",name:"도박사",emoji:"🎰",color:"#f43f5e",desc:"5라운드마다 주사위 굴리기",buff:{gambler:true}},
 ];
 // ══════════════════════════════════════════
 // 보스 테이블 (10라운드마다)
@@ -615,7 +628,7 @@ const initGame=(diff='hard')=>({
   mapKey:CURRENT_MAP||'A',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
-  diffMul:diff==='easy'?2.0:diff==='normal'?1.5:1.3,
+  diffMul:diff==='easy'?1.7:diff==='normal'?1.3:1.0,
 });
 
 // ══════════════════════════════════════════
@@ -717,9 +730,9 @@ export default function App(){
   },[]);
 
   const getBuff=useCallback(()=>{
-    const g=G.current;if(!g||!g.hiddenHero)return{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0};
+    const g=G.current;if(!g||!g.hiddenHero)return{goldMul:0,rangeBonus:0,chain:0,slowBonus:0,statusMul:1,gambler:false};
     const hd=HH.find(h=>h.id===g.hiddenHero.id);
-    return hd?{...{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0},...hd.buff}:{atk:0,spd:0,magic:0,goldMul:0,rangeBonus:0,chain:0,slowBonus:0,dmgReduce:0};
+    return hd?{...{goldMul:0,rangeBonus:0,chain:0,slowBonus:0,statusMul:1,gambler:false},...hd.buff}:{goldMul:0,rangeBonus:0,chain:0,slowBonus:0,statusMul:1,gambler:false};
   },[]);
 
   const draw=useCallback(()=>{
@@ -1196,8 +1209,10 @@ export default function App(){
       // 속박 타이머
       if(e.rootTimer>0){
         e.rootTimer-=dt;
-        if(e.rootTimer<=0){e.rootTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+        if(e.rootTimer<=0){e.rootTimer=0;e.rootImmune=3;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
       }
+      // 속박 면역 타이머
+      if(e.rootImmune>0){e.rootImmune-=dt;if(e.rootImmune<=0)e.rootImmune=0;}
       // 방어감소 타이머
       if(e.debuffTimer>0){
         e.debuffTimer-=dt;
@@ -1293,7 +1308,7 @@ export default function App(){
     const allH=g.heroes.filter(h=>h.col!==null);
     for(const h of allH){
       const hx=h.col*CS+CS/2,hy=h.row*CS+CS/2;
-      const baseSpd=(h.spd||1)*(1+buff.spd);
+      const baseSpd=(h.spd||1);
       if(g.gameTime-(h.lastShot||0)<1/baseSpd)continue;
       const rng=((h.range||3.5)+(buff.rangeBonus||0))*CS;
       if(h.isIce&&h.iceCfg){
@@ -1303,7 +1318,7 @@ export default function App(){
           for(const e of g.enemies){
             if(e.remove)continue;
             const d=Math.sqrt((e.x+CS/2-hx)**2+(e.y+CS/2-hy)**2);
-            if(d<=cfg.range*CS){if(!e.baseSpeed)e.baseSpeed=e.speed;e.slowTimer=cfg.dur;e.speed=e.baseSpeed*cfg.slow;g.projs.push({x:hx,y:hy,tx:e.x+CS/2,ty:e.y+CS/2,tid:e.id,dmg:0,spd:400,color:"#aef",size:3,age:0,sx:hx,sy:hy});}
+            if(d<=cfg.range*CS){if(!e.baseSpeed)e.baseSpeed=e.speed;e.slowTimer=cfg.dur*(buff.statusMul||1);e.speed=e.baseSpeed*Math.max(0.05,cfg.slow-(buff.slowBonus||0)*cfg.slow);g.projs.push({x:hx,y:hy,tx:e.x+CS/2,ty:e.y+CS/2,tid:e.id,dmg:0,spd:400,color:"#aef",size:3,age:0,sx:hx,sy:hy});}
           }
         }
         continue;
@@ -1317,8 +1332,8 @@ export default function App(){
       if(near){
         h.lastShot=g.gameTime;
         const diffMul=g.diffMul||1.0;
-        const baseAtk=(((h.atk||10)+(h.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*diffMul;
-        const dmg=Math.floor(baseAtk*(1+buff.magic));
+        const baseAtk=((h.atk||10)+(h.enhLv||0)*5)*diffMul;
+        const dmg=Math.floor(baseAtk);
         // 보스 약점 배율
         const bossData=g.currentBoss;
         let finalDmg=dmg;
@@ -1413,17 +1428,19 @@ export default function App(){
             const maxDotStacks=3;
             t2.dotStacks=(t2.dotStacks||0)+1;
             if(t2.dotStacks<=maxDotStacks){
-              t2.dotDmg=(t2.dotDmg||0)+Math.floor(p.dmg*(trait.dotMul||0.3));
+              t2.dotDmg=(t2.dotDmg||0)+Math.floor(p.dmg*(trait.dotMul||0.3)*(buff.statusMul||1));
             }
-            t2.dotTimer=Math.max(t2.dotTimer||0,trait.dotDur||3); // 타이머 갱신 (합산X)
+            t2.dotTimer=Math.max(t2.dotTimer||0,(trait.dotDur||3)*(buff.statusMul||1));
           }
 
         } else if(trait.type==="root"){
-          // 속박
+          // 속박 - 면역 중이면 적용 안 함, 속박 중 재갱신 안 함
           if(t2){
             applyDmg(t2,p.dmg,goldPerKill,g);
-            if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
-            t2.speed=0;t2.rootTimer=(trait.rootDur||1.5);
+            if(!t2.rootImmune&&!t2.rootTimer){
+              if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
+              t2.speed=0;t2.rootTimer=(trait.rootDur||1.5)*(buff.statusMul||1);
+            }
           }
 
         } else if(trait.type==="stun"){
@@ -1431,14 +1448,14 @@ export default function App(){
           if(t2){
             applyDmg(t2,p.dmg,goldPerKill,g);
             if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
-            t2.speed=0;t2.stunTimer=(trait.stunDur||0.8);
+            t2.speed=0;t2.stunTimer=(trait.stunDur||0.8)*(buff.statusMul||1);
           }
 
         } else if(trait.type==="debuff"){
           // 방어감소 디버프
           if(t2){
             applyDmg(t2,p.dmg,goldPerKill,g);
-            t2.debuff=true;t2.debuffMul=(trait.debuffMul||1.3);t2.debuffTimer=(trait.debuffDur||5);
+            t2.debuff=true;t2.debuffMul=(trait.debuffMul||1.3);t2.debuffTimer=(trait.debuffDur||5)*(buff.statusMul||1);
           }
 
         } else {
@@ -1458,6 +1475,35 @@ export default function App(){
       const clearGold=Math.floor((isBossRound?80:isMidRound?50:20)*goldMul);
       g.gold+=clearGold;
       if(g.round%20===0){const nu=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){nu.col=pos[0];nu.row=pos[1];}g.heroes.push(nu);}
+      // 도박사 히든영웅: 5라운드마다 주사위
+      if(getBuff().gambler&&g.round%5===0){
+        const dice=Math.ceil(Math.random()*6);
+        let diceMsg="";
+        if(dice===1){
+          const normals=g.heroes.filter(h=>h.col!==null&&h.grade==="노말");
+          if(normals.length>0){const t=normals[Math.floor(Math.random()*normals.length)];t.col=null;t.row=null;diceMsg="🎲1 - 노말 유닛 1개 랜덤 삭제!";}
+          else diceMsg="🎲1 - 삭제할 노말 유닛 없음";
+        }else if(dice===2){
+          const el=BASE[Math.floor(Math.random()*BASE.length)];
+          const h=mkH(el,"노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
+          if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg=`🎲2 - 노말 ${EN[el]||el} 생성!`;}
+          else diceMsg="🎲2 - 빈 칸 없음";
+        }else if(dice===3){
+          g.gold+=50;diceMsg="🎲3 - 골드 +50!";
+        }else if(dice===4){
+          const el=BASE[Math.floor(Math.random()*BASE.length)];
+          const h=mkH(el,"고급",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
+          if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg=`🎲4 - 고급 ${EN[el]||el} 생성!`;}
+          else diceMsg="🎲4 - 빈 칸 없음";
+        }else if(dice===5){
+          g.coins=(g.coins||0)+3;diceMsg="🎲5 - 코인 +3!";
+        }else{
+          const h=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
+          if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg="🎲6 - 무속성 유닛 생성!";}
+          else diceMsg="🎲6 - 빈 칸 없음";
+        }
+        sync();draw();alert(`🎰 도박사 주사위!\n${diceMsg}`);
+      }
       if(g.round===100&&!g.infiniteMode){
         // 무한모드 여부 물어보기 (victory 대신 특별 처리)
         g.victory=true;g.running=false;sync();draw();return;
@@ -1533,7 +1579,7 @@ export default function App(){
     g.hiddenHero={...h,id:h.id};
     // 난이도 최종 반영
     g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?2.0:difficulty==='normal'?1.5:1.3;
+    g.diffMul=difficulty==='easy'?1.7:difficulty==='normal'?1.3:1.0;
     // 수호자: 시작 라이프 +10
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
     // 미배치 유닛 자동 배치
@@ -2073,9 +2119,9 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×2.0',color:'#4f8',icon:'🌱'},
-                {key:'normal',label:'보통',desc:'공격력 ×1.5',color:'#4af',icon:'⚔️'},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀'},
+                {key:'easy',label:'쉬움',desc:'공격력 ×1.7',color:'#4f8',icon:'🌱'},
+                {key:'normal',label:'보통',desc:'공격력 ×1.3',color:'#4af',icon:'⚔️'},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀'},
               ].map(d=>(
                 <button key={d.key} onClick={()=>setDifficulty(d.key)}
                   style={{flex:1,background:difficulty===d.key?d.color+'22':'#21262d',
@@ -2118,6 +2164,7 @@ export default function App(){
         {/* 1줄: 스탯 */}
         <div style={{display:"flex",alignItems:"center",gap:0,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 10px",border:"1px solid #1e293b",borderBottom:"none"}}>
           <div style={{display:"flex",align:"center",gap:6,flex:1,flexWrap:"nowrap",overflow:"hidden"}}>
+            <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontSize:12,flexShrink:0}}>🏠</button>
             <span style={{background:"#450a0a",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
             <span style={{background:"#1c1917",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
             <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
@@ -2140,7 +2187,6 @@ export default function App(){
               {s}x
             </button>
           ))}
-          <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#475569",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:12}}>🏠</button>
         </div>
       </div>
 
@@ -2272,8 +2318,8 @@ export default function App(){
                 {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:11,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
               </div>
               <div style={{display:"flex",gap:8,marginTop:2,fontSize:10,color:"#64748b"}}>
-                <span>⚔️{Math.floor(((selHeroObj.atk+(selHeroObj.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic))}</span>
-                <span>💨{(((selHeroObj.spd||1)*(1+buff.spd))*100).toFixed(0)}%</span>
+                <span>⚔️{Math.floor((selHeroObj.atk+(selHeroObj.enhLv||0)*5))}</span>
+                <span>💨{((selHeroObj.spd||1)*100).toFixed(0)}%</span>
                 <span>🎯{(selHeroObj.range||3.0).toFixed(1)}</span>
               </div>
               {(()=>{
@@ -2352,8 +2398,8 @@ export default function App(){
         const gc2=GC[dh.grade]||"#aaa";
         const trait=getElTrait(elBase(dh.element));
         const traitColor={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";
-        const atkVal=Math.floor(((dh.atk+(dh.enhLv||0)*5)*(buff.atkMul||1)+buff.atk)*(1+buff.magic));
-        const spdVal=(((dh.spd||1)*(1+buff.spd))*100).toFixed(0);
+        const atkVal=Math.floor((dh.atk+(dh.enhLv||0)*5));
+        const spdVal=((dh.spd||1)*100).toFixed(0);
         const rngVal=((dh.range||3.0)+(buff.rangeBonus||0)).toFixed(1);
         return(
           <div onClick={()=>setDetailHero(null)}
