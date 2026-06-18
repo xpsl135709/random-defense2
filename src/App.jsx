@@ -188,11 +188,14 @@ const PATCH_NOTES=[
   {
     version:"v1.6",
     date:"2025-06-17",
-    title:"난이도 밸런스 조정",
+    title:"난이도 밸런스 & UI 개선",
     changes:[
       "📈 적 HP 라운드당 증가량 +22 → +50으로 상향",
-      "📈 10라운드 구간마다 라운드당 증가량 ×1.3 누적 (1~10R: +50, 11~20R: +65, 21~30R: +84 ...)",
+      "📈 10라운드 구간마다 증가량 ×1.3 누적 (1~10R: +50, 11~20R: +65, 21~30R: +84 ...)",
       "💀 후반 난이도 대폭 상승 (91~100R 라운드당 +530)",
+      "⏩ 라이프 옆 스킵 버튼: 게임 중 누르면 현재 적 유지하면서 다음 라운드 즉시 시작 (클리어 골드 지급)",
+      "⏭️ 카운트다운 중엔 같은 버튼으로 시간 스킵",
+      "🔧 HUD 골드 표시 짤림 수정 (항목 축약으로 공간 확보)",
     ]
   },
   {
@@ -1618,7 +1621,8 @@ export default function App(){
       }
     }
     g.enemies=[...g.enemies.filter(e=>!e.remove&&e.hp>0),...newEnemies];
-    g.total=g.enemies.length;
+    const newTotal=g.enemies.length;
+    if(newTotal!==g.total){g.total=newTotal;sync();}
     if(g.total>=30){g.over=true;g.running=false;sync();draw();return;}
     g.gameTime=(g.gameTime||0)+dt;
     const buff=getBuff();
@@ -1887,6 +1891,31 @@ export default function App(){
     if(countdownRef.current){clearInterval(countdownRef.current);countdownRef.current=null;}
     setCountdown(0);countdownValRef.current=0;
     if(!G.current.over) autoStart(G.current);
+  };
+
+  // 라운드 강제 스킵 (현재 적 유지하면서 다음 라운드 즉시 시작)
+  const skipRound=()=>{
+    const g=G.current;
+    if(!g||!g.running||g.over||g.cleared)return;
+    // 현재 라운드 클리어 골드 지급
+    const isBossRound=g.round%10===0,isMidRound=g.round%5===0&&g.round%10!==0;
+    const goldMul=1+(getBuff().goldMul||0);
+    g.gold+=Math.floor((isBossRound?80:isMidRound?50:20)*goldMul);
+    if(isBossRound||isMidRound)g.coins+=1;
+    // 다음 라운드 설정 (스폰은 게임루프가 1.2초 간격으로 처리)
+    g.round++;
+    g.cleared=false;
+    g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
+    const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
+    const newWt=getWaveType(g.round);
+    g.waveType=newWt;
+    const waveLabels={normal:'',horde:'🐝 무리 웨이브!',fast:'⚡ 속도 웨이브!',armored:'🛡️ 장갑 웨이브!',healer:'💚 힐러 웨이브!',boss:'💀 보스!',mid:'⚡ 중간보스!'};
+    g.waveLabel=waveLabels[newWt]||'';
+    g.maxSpawn=nb?1:nm?1:newWt==='horde'?Math.floor((15+g.round)*1.8):g.rotMode?20:15+g.round;
+    g.total=g.enemies.length;
+    g.running=true;
+    if(!raf.current){lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));}
+    sync();
   };
 
   const autoStart=(g)=>{
@@ -2598,29 +2627,32 @@ export default function App(){
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
-      {/* HUD - 2줄 */}
+      {/* HUD */}
       <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
-        {/* 1줄: 스탯 */}
-        <div style={{display:"flex",alignItems:"center",gap:0,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 10px",border:"1px solid #1e293b",borderBottom:"none"}}>
-          <div style={{display:"flex",align:"center",gap:6,flex:1,flexWrap:"nowrap",overflow:"hidden"}}>
-            <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontSize:12,flexShrink:0}}>🏠</button>
-            <span style={{background:"#450a0a",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
-            {countdown>0&&<button onClick={skipCountdown} style={{background:"#1e3a5f",border:"1px solid #3b82f6",color:"#60a5fa",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>⏭️{countdown}s</button>}
-            <span style={{background:"#1c1917",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
-            <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
-            <span style={{background:"#172554",borderRadius:6,padding:"2px 7px",fontSize:11,color:"#60a5fa",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{color:"#374151",fontWeight:"normal"}}>/100</span></span>
-            <span style={{background:ui.total>=24?"#450a0a":"#111827",borderRadius:6,padding:"2px 7px",fontSize:11,color:ui.total>=24?"#f87171":"#6b7280",flexShrink:0}}>👾{ui.total}/30</span>
-          </div>
-          <div style={{display:"flex",gap:4,flexShrink:0,marginLeft:6}}>
-            <span style={{fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>
-              {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
-            </span>
-            <span style={{fontSize:10,color:"#60a5fa",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>{currentMapName}</span>
-            {rotMode&&<span style={{fontSize:10,color:"#c084fc",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>🔄회전</span>}
-            <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>조합표</button>
-          </div>
+        {/* 1줄: 🏠 ❤️ 스킵 💰 🪙 👾 */}
+        <div style={{display:"flex",alignItems:"center",gap:4,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 8px",border:"1px solid #1e293b",borderBottom:"none"}}>
+          <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontSize:11,flexShrink:0}}>🏠</button>
+          <span style={{background:"#450a0a",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
+          {countdown>0&&
+            <button onClick={skipCountdown} style={{background:"#1e3a5f",border:"1px solid #3b82f6",color:"#60a5fa",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontSize:10,fontWeight:"bold",flexShrink:0}}>⏭️{countdown}s</button>
+          }
+          <span style={{flex:1}}/>
+          <span style={{background:"#1c1917",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
+          <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
+          <span style={{background:ui.total>=25?"#450a0a":ui.total>=15?"#1c1917":"#111827",borderRadius:6,padding:"2px 6px",fontSize:11,color:ui.total>=25?"#f87171":ui.total>=15?"#fcd34d":"#6b7280",fontWeight:ui.total>=15?"bold":"normal",flexShrink:0}}>👾{ui.total}/30</span>
         </div>
-        {/* 2줄: 배속 + 홈 */}
+        {/* 2줄: 라운드 / 지형 / 조합표 */}
+        <div style={{display:"flex",alignItems:"center",gap:4,background:"#0a0f1a",padding:"4px 8px",border:"1px solid #1e293b",borderTop:"none",borderBottom:"none"}}>
+          <span style={{background:"#172554",borderRadius:6,padding:"2px 8px",fontSize:12,color:"#93c5fd",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{fontSize:10,color:"#374151"}}>/100</span></span>
+          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:"#60a5fa",flexShrink:0}}>{currentMapName}{rotMode?" 🔄":""}</span>
+          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
+            {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
+          </span>
+          {rotMode&&<span style={{fontSize:10,color:"#c084fc",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>🔄회전</span>}
+          <span style={{flex:1}}/>
+          <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 10px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
+        </div>
+        {/* 3줄: 배속 */}
         <div style={{display:"flex",gap:3,background:"#0a0f1a",borderRadius:"0 0 10px 10px",padding:"4px 6px",border:"1px solid #1e293b",borderTop:"none"}}>
           {[1,2,3,4].map(s=>(
             <button key={s} onClick={()=>changeSpeed(s)}
