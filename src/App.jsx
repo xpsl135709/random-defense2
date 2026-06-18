@@ -186,7 +186,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
-    version:"v1.5",
+    version:"v1.6",
+    date:"2025-06-17",
+    title:"난이도 밸런스 조정",
+    changes:[
+      "📈 적 HP 라운드당 증가량 +22 → +50으로 상향",
+      "📈 10라운드 구간마다 라운드당 증가량 ×1.3 누적 (1~10R: +50, 11~20R: +65, 21~30R: +84 ...)",
+      "💀 후반 난이도 대폭 상승 (91~100R 라운드당 +530)",
+    ]
+  },
+  {
     date:"2025-06-17",
     title:"인간 계열 유닛 추가",
     changes:[
@@ -713,7 +722,9 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
 
 // ── 적 생성
 const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='B',waveOpts={})=>{
-  const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*22;
+  const tier=Math.floor((rnd-1)/10); // 0=1~10R, 1=11~20R, ...
+  const perRound=Math.floor(50*Math.pow(1.3,tier));
+  const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*perRound;
   // 타입별 HP
   let hp=Math.floor(
     type==="은신"?base*0.75:
