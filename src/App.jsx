@@ -6,112 +6,144 @@ const CS=48,COLS=9,ROWS=14;
 // 맵 정의 (3종)
 // 맵A: 지그재그 4단 (단일경로)
 // 맵B: S자 5단 (단일경로)
-// 맵C: 분기 (두 갈래)
+// 맵 정의
 // ══════════════════════════════════════════
 const MAP_DEFS={
-  A:{
-    name:"지그재그",
-    spawn:[0,0],
-    goal:[8,13],
-    // 촘촘한 지그재그: 꺾임 간격 2행, 5단
-    buildTrack:()=>{
-      const p=[];
-      // 1단: →
-      for(let c=0;c<=8;c++)p.push([c,0]);
-      // 꺾임
-      for(let r=1;r<=2;r++)p.push([8,r]);
-      // 2단: ←
-      for(let c=7;c>=0;c--)p.push([c,2]);
-      // 꺾임
-      for(let r=3;r<=4;r++)p.push([0,r]);
-      // 3단: →
-      for(let c=1;c<=8;c++)p.push([c,4]);
-      // 꺾임
-      for(let r=5;r<=6;r++)p.push([8,r]);
-      // 4단: ←
-      for(let c=7;c>=0;c--)p.push([c,6]);
-      // 꺾임
-      for(let r=7;r<=8;r++)p.push([0,r]);
-      // 5단: →
-      for(let c=1;c<=8;c++)p.push([c,8]);
-      // 꺾임
-      for(let r=9;r<=10;r++)p.push([8,r]);
-      // 6단: ←
-      for(let c=7;c>=0;c--)p.push([c,10]);
-      // 꺾임
-      for(let r=11;r<=12;r++)p.push([0,r]);
-      // 7단: → 골로
-      for(let c=1;c<=8;c++)p.push([c,12]);
-      // 아래 골
-      for(let r=13;r<=13;r++)p.push([8,r]);
-      return p;
-    },
-    fork:false,
-  },
   B:{
     name:"S자",
     spawn:[0,0],
     goal:[4,13],
-    // 넓은 S자: 꺾임 4행 간격, 3단 큰 곡선
     buildTrack:()=>{
       const p=[];
-      // 1구간: 왼쪽→오른쪽 상단
       for(let c=0;c<=8;c++)p.push([c,0]);
-      // 오른쪽 아래로 길게
       for(let r=1;r<=4;r++)p.push([8,r]);
-      // 2구간: 오른쪽→왼쪽 중단
       for(let c=7;c>=0;c--)p.push([c,4]);
-      // 왼쪽 아래로 길게
       for(let r=5;r<=9;r++)p.push([0,r]);
-      // 3구간: 왼쪽→오른쪽 하단
       for(let c=1;c<=8;c++)p.push([c,9]);
-      // 오른쪽 아래로
       for(let r=10;r<=13;r++)p.push([8,r]);
-      // 골 방향: 오른쪽 하단에서 가운데로
       for(let c=7;c>=4;c--)p.push([c,13]);
       return p;
     },
     fork:false,
   },
   C:{
-    name:"분기",
+    name:"이중분기",
     spawn:[4,0],
     goal:[4,13],
-    // 분기맵: paths = { main, left, right, merge }
-    buildTrack:()=>null, // 사용 안함
+    buildTrack:()=>null,
     fork:true,
-    // 분기 경로 정의
-    // main: spawn→분기점
-    // left: 분기점→합류점 (왼쪽)
-    // right: 분기점→합류점 (오른쪽)
-    // merge: 합류점→goal
     buildPaths:()=>{
       const main=[];
-      for(let r=0;r<=3;r++)main.push([4,r]); // 위→아래 (4,0)→(4,3)
-
-      const left=[];
-      // (4,3)→왼쪽→(1,3)→아래→(1,9)→오른쪽→(4,9)
-      for(let c=3;c>=1;c--)left.push([c,3]);
-      for(let r=4;r<=9;r++)left.push([1,r]);
-      for(let c=2;c<=4;c++)left.push([c,9]);
-
-      const right=[];
-      // (4,3)→오른쪽→(7,3)→아래→(7,9)→왼쪽→(4,9)
-      for(let c=5;c<=7;c++)right.push([c,3]);
-      for(let r=4;r<=9;r++)right.push([7,r]);
-      for(let c=6;c>=4;c--)right.push([c,9]);
-
+      for(let r=0;r<=2;r++)main.push([4,r]);
+      const left1=[];
+      for(let c=3;c>=0;c--)left1.push([c,2]);
+      for(let r=3;r<=6;r++)left1.push([0,r]);
+      for(let c=1;c<=4;c++)left1.push([c,6]);
+      const right1=[];
+      for(let c=5;c<=8;c++)right1.push([c,2]);
+      for(let r=3;r<=6;r++)right1.push([8,r]);
+      for(let c=7;c>=4;c--)right1.push([c,6]);
+      const mid=[];
+      for(let r=7;r<=8;r++)mid.push([4,r]);
+      const left2=[];
+      for(let c=3;c>=1;c--)left2.push([c,8]);
+      for(let r=9;r<=11;r++)left2.push([1,r]);
+      for(let c=2;c<=4;c++)left2.push([c,11]);
+      const right2=[];
+      for(let c=5;c<=7;c++)right2.push([c,8]);
+      for(let r=9;r<=11;r++)right2.push([7,r]);
+      for(let c=6;c>=4;c--)right2.push([c,11]);
       const merge=[];
-      // (4,9)→아래→(4,13)
-      for(let r=10;r<=13;r++)merge.push([4,r]);
-
-      return{main,left,right,merge};
+      for(let r=12;r<=13;r++)merge.push([4,r]);
+      return{main,left1,right1,mid,left2,right2,merge};
     },
+  },
+  D:{
+    name:"나선형",
+    spawn:[0,0],
+    goal:[4,7],
+    buildTrack:()=>{
+      const p=[];
+      // 외곽 1겹
+      for(let c=0;c<=8;c++)p.push([c,0]);   // 위 →
+      for(let r=1;r<=13;r++)p.push([8,r]);  // 오른쪽 ↓
+      for(let c=7;c>=0;c--)p.push([c,13]); // 아래 ←
+      for(let r=12;r>=3;r--)p.push([0,r]); // 왼쪽 ↑
+      // 안쪽으로 한 번 더
+      for(let c=1;c<=7;c++)p.push([c,3]);   // →
+      for(let r=4;r<=10;r++)p.push([7,r]);  // ↓
+      for(let c=6;c>=4;c--)p.push([c,10]); // ←
+      // 중앙 골로
+      for(let r=9;r>=7;r--)p.push([4,r]);
+      return p;
+    },
+    fork:false,
+  },
+  E:{
+    name:"역방향",
+    spawn:[4,13],
+    goal:[4,0],
+    buildTrack:()=>{
+      const p=[];
+      // 아래서 위로
+      for(let r=13;r>=10;r--)p.push([4,r]);
+      // 오른쪽으로
+      for(let c=5;c<=8;c++)p.push([c,10]);
+      // 위로
+      for(let r=9;r>=6;r--)p.push([8,r]);
+      // 왼쪽으로
+      for(let c=7;c>=0;c--)p.push([c,6]);
+      // 위로
+      for(let r=5;r>=2;r--)p.push([0,r]);
+      // 오른쪽으로
+      for(let c=1;c<=8;c++)p.push([c,2]);
+      // 위로
+      for(let r=1;r>=0;r--)p.push([8,r]);
+      // 왼쪽으로 골까지
+      for(let c=7;c>=4;c--)p.push([c,0]);
+      return p;
+    },
+    fork:false,
+  },
+  F:{
+    name:"대각선",
+    spawn:[0,0],
+    goal:[8,13],
+    buildTrack:()=>{
+      const p=[];
+      // 대각 ↘
+      for(let i=0;i<=5;i++)p.push([i,i]);
+      // 오른쪽으로
+      for(let c=6;c<=8;c++)p.push([c,5]);
+      // 대각 ↙
+      for(let i=1;i<=6;i++)p.push([8-i,5+i]);
+      // 왼쪽으로
+      for(let c=1;c>=0;c--)p.push([c,11]);
+      // 아래로
+      for(let r=12;r<=13;r++)p.push([0,r]);
+      // 오른쪽으로 골까지
+      for(let c=1;c<=8;c++)p.push([c,13]);
+      return p;
+    },
+    fork:false,
   },
 };
 
 // 현재 맵 상태 (게임 시작시 결정)
 let CURRENT_MAP=null;
+
+// 회전 모드 경로 생성 (외곽을 시계방향으로 N바퀴)
+function buildRotPath(laps){
+  const lap=[];
+  // 시계방향 외곽: 상→우→하→좌
+  for(let c=0;c<COLS;c++)lap.push([c,0]);
+  for(let r=1;r<ROWS;r++)lap.push([COLS-1,r]);
+  for(let c=COLS-2;c>=0;c--)lap.push([c,ROWS-1]);
+  for(let r=ROWS-2;r>=1;r--)lap.push([0,r]);
+  const path=[];
+  for(let i=0;i<laps;i++)for(const t of lap)path.push(t);
+  return path;
+}
 let TRACK=[];
 let FORK_PATHS=null;
 let SPAWN_TILE=[0,0];
@@ -125,23 +157,26 @@ function buildMap(mapKey){
   GOAL_TILE=[...def.goal];
   if(def.fork){
     FORK_PATHS=def.buildPaths();
-    // TS = main + left + right + merge 모든 타일
     const allTiles=[
       ...FORK_PATHS.main,
-      ...FORK_PATHS.left,
-      ...FORK_PATHS.right,
+      ...(FORK_PATHS.left1||FORK_PATHS.left||[]),
+      ...(FORK_PATHS.right1||FORK_PATHS.right||[]),
+      ...(FORK_PATHS.mid||[]),
+      ...(FORK_PATHS.left2||[]),
+      ...(FORK_PATHS.right2||[]),
       ...FORK_PATHS.merge,
     ];
-    TRACK=allTiles; // 대표용 (실제론 안씀)
+    TRACK=allTiles;
     TS=new Set(allTiles.map(([c,r])=>`${c},${r}`));
   } else {
     TRACK=def.buildTrack();
     FORK_PATHS=null;
     TS=new Set(TRACK.map(([c,r])=>`${c},${r}`));
   }
-  // 히든영웅 위치: 경로/스폰/골 안 겹치게
-  // 분기맵은 (4,6)이 경로 위라 (2,6)으로
-  if(mapKey==='C'){CX=2;CY=6;}
+  if(mapKey==='C'){CX=4;CY=5;}
+  else if(mapKey==='D'){CX=4;CY=6;}
+  else if(mapKey==='E'){CX=4;CY=9;}
+  else if(mapKey==='F'){CX=4;CY=7;}
   else{CX=4;CY=6;}
   CURRENT_MAP=mapKey;
 }
@@ -151,7 +186,24 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
-    version:"v1.2",
+    version:"v1.3",
+    date:"2025-06-17",
+    title:"회전 모드 & 맵 대규모 개편",
+    changes:[
+      "🔄 회전 모드 추가: 외곽을 시계방향으로 순환 (일반 2바퀴, 보스 3바퀴)",
+      "🎯 회전 모드 적 종류: 일반/고속(2.2배)/공중(1.8배)/투명(반투명)",
+      "⚔️ 속성별 공격 가능 대상 구분 (공중/투명 타겟팅 차별화)",
+      "🗺️ 맵 5종으로 확대: S자/이중분기/나선형/역방향/대각선",
+      "🔀 이중분기 맵: 1차+2차 분기 각각 독립 랜덤 선택",
+      "🎲 맵 선택 UI: 랜덤맵 / 선택맵 탭 분리",
+      "⏭️ HUD 스킵 버튼: 라이프 옆 카운트다운 표시+스킵",
+      "🎬 적 걷기 애니메이션, 사망 파티클 효과, 유닛 공격 모션 추가",
+      "👁️ 적 클릭 시 하단 정보 패널 (HP/상태이상 표시)",
+      "🌿 나무 속박 너프: 속박 중 재갱신 불가, 해제 후 면역 3초",
+      "📋 패치노트 버전 기반 표시 (새 패치 시 자동으로 다시 표시)",
+    ]
+  },
+  {
     date:"2025-06-17",
     title:"히든영웅 개편 & 밸런스 조정",
     changes:[
@@ -534,7 +586,7 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
 // enemyType: '일반'|'은신'|'공중'|'분열'|'재생'|'돌진'|'방패'
 
 // ── 적 생성
-const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='A',waveOpts={})=>{
+const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='B',waveOpts={})=>{
   const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*22;
   // 타입별 HP
   let hp=Math.floor(
@@ -573,10 +625,31 @@ const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='A',waveOpts={})=>{
     healTimer:type==="힐러"?2:0, // 힐러 쿨다운
   };
 
+  if(mapKey==='ROT'){
+    // 회전 모드: 유닛 타입별 바퀴 수
+    const laps=isBoss?3:isMid?3:2;
+    const rotPath=buildRotPath(laps);
+    // 회전 모드 적 속성
+    const rotSpd=type==='고속'?2.2:type==='공중'?1.8:type==='투명'?1.1:isBoss?0.5:isMid?0.7:1.0;
+    return{...base_e,speed:rotSpd,baseSpd:rotSpd,x:rotPath[0][0]*CS,y:rotPath[0][1]*CS,path:rotPath,rotEnemy:true,
+      type:type,
+      isAir:type==='공중',
+      isInvis:type==='투명',
+    };
+  }
   if(mapKey==='C'&&FORK_PATHS){
-    const branch=Math.random()<0.5?'left':'right';
-    const fullPath=[...FORK_PATHS.main,...FORK_PATHS[branch],...FORK_PATHS.merge];
-    return{...base_e,x:fullPath[0][0]*CS,y:fullPath[0][1]*CS,path:fullPath,branch};
+    // 1차 분기: 랜덤 좌/우
+    const branch1=Math.random()<0.5?'left1':'right1';
+    // 2차 분기: 랜덤 좌/우
+    const branch2=Math.random()<0.5?'left2':'right2';
+    const fullPath=[
+      ...FORK_PATHS.main,
+      ...(FORK_PATHS[branch1]||[]),
+      ...(FORK_PATHS.mid||[]),
+      ...(FORK_PATHS[branch2]||[]),
+      ...FORK_PATHS.merge
+    ];
+    return{...base_e,x:fullPath[0][0]*CS,y:fullPath[0][1]*CS,path:fullPath,branch:branch1};
   }
   return{...base_e,x:TRACK[0][0]*CS,y:TRACK[0][1]*CS,path:TRACK};
 };
@@ -617,7 +690,7 @@ const autoPlace=(heroes)=>{
 };
 
 const initGame=(diff='hard')=>({
-  heroes:[],hiddenHero:null,enemies:[],projs:[],
+  heroes:[],hiddenHero:null,enemies:[],projs:[],particles:[],
   life:20,gold:50,coins:0,round:1,
   total:0,running:false,spawnT:0,spawnC:0,maxSpawn:15,
   cleared:false,over:false,
@@ -625,7 +698,7 @@ const initGame=(diff='hard')=>({
   stacks:{},gameTime:0,gradeEnhLv:{},
   waveType:'normal',waveLabel:'',
   impacts:[],
-  mapKey:CURRENT_MAP||'A',
+  mapKey:CURRENT_MAP||'B',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
   diffMul:diff==='easy'?1.7:diff==='normal'?1.3:1.0,
@@ -693,7 +766,14 @@ export default function App(){
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('hard');
-  const [showPatch,setShowPatch]=useState(true);
+  const [mapMode,setMapMode]=useState('random'); // 'random' | 'pick'
+  const [selectedMap,setSelectedMap]=useState('B');
+  const [showPatch,setShowPatch]=useState(()=>{
+    try{
+      const seen=localStorage.getItem('patchSeenVersion');
+      return seen!==PATCH_NOTES[0].version;
+    }catch{return true;}
+  });
   const [showGuide,setShowGuide]=useState(false);
   const [nickname,setNickname]=useState('');
   const [showRanking,setShowRanking]=useState(false);
@@ -702,6 +782,7 @@ export default function App(){
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
+  const [selEnemy,setSelEnemy]=useState(null);
   const [drag,setDrag]=useState(null);
   const [modal,setModal]=useState(null);
   const [showCombo,setShowCombo]=useState(false);
@@ -710,12 +791,14 @@ export default function App(){
   const [selHero,setSelHero]=useState(null);
   const [countdown,setCountdown]=useState(0);
   const countdownRef=useRef(null);
+  const countdownValRef=useRef(0);
   const [randomPicks,setRandomPicks]=useState([]);
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
   const [detailHero,setDetailHero]=useState(null); // 상세정보 모달
   const longPressTimer=useRef(null);
   const [currentMapName,setCurrentMapName]=useState('');
+  const [rotMode,setRotMode]=useState(false); // 회전 모드 여부
 
   const triggerSummon=(el,grade)=>{
     if(!["전설","신화","불멸"].includes(grade))return;
@@ -771,26 +854,62 @@ export default function App(){
       }
     }
 
+    // ── 회전 모드 외곽 강조
+    if(CURRENT_MAP==='ROT'){
+      ctx.save();
+      ctx.strokeStyle="rgba(124,58,237,0.5)";ctx.lineWidth=3;
+      ctx.strokeRect(0,0,COLS*CS,ROWS*CS);
+      // 외곽 타일 색상
+      for(let c=0;c<COLS;c++){
+        ctx.fillStyle="rgba(124,58,237,0.08)";ctx.fillRect(c*CS,0,CS,CS);
+        ctx.fillRect(c*CS,(ROWS-1)*CS,CS,CS);
+      }
+      for(let r=1;r<ROWS-1;r++){
+        ctx.fillStyle="rgba(124,58,237,0.08)";ctx.fillRect(0,r*CS,CS,CS);
+        ctx.fillRect((COLS-1)*CS,r*CS,CS,CS);
+      }
+      ctx.restore();
+    }
+
     // ── 분기맵 경로 색상
     if(CURRENT_MAP==='C'&&FORK_PATHS){
-      FORK_PATHS.left.forEach(([col,r])=>{
+      // 1차 분기 좌/우
+      (FORK_PATHS.left1||[]).forEach(([col,r])=>{
         ctx.fillStyle="rgba(59,130,246,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
       });
-      FORK_PATHS.right.forEach(([col,r])=>{
+      (FORK_PATHS.right1||[]).forEach(([col,r])=>{
         ctx.fillStyle="rgba(239,68,68,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
       });
+      // 2차 분기 좌/우
+      (FORK_PATHS.left2||[]).forEach(([col,r])=>{
+        ctx.fillStyle="rgba(99,102,241,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
+      });
+      (FORK_PATHS.right2||[]).forEach(([col,r])=>{
+        ctx.fillStyle="rgba(251,146,60,0.15)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
+      });
       // 분기점/합류점 황금 테두리
-      const bp=FORK_PATHS.main[FORK_PATHS.main.length-1];
       ctx.save();ctx.shadowColor="#fd0";ctx.shadowBlur=8;
-      ctx.strokeStyle="#fd0";ctx.lineWidth=2;ctx.strokeRect(bp[0]*CS+2,bp[1]*CS+2,CS-4,CS-4);
-      const mp=FORK_PATHS.merge[0];
-      ctx.strokeRect(mp[0]*CS+2,mp[1]*CS+2,CS-4,CS-4);
+      ctx.strokeStyle="#fd0";ctx.lineWidth=2;
+      // 1차 분기점
+      const bp1=FORK_PATHS.main[FORK_PATHS.main.length-1];
+      ctx.strokeRect(bp1[0]*CS+2,bp1[1]*CS+2,CS-4,CS-4);
+      // 1차 합류/2차 분기점
+      const mp1=FORK_PATHS.mid[0];
+      ctx.strokeRect(mp1[0]*CS+2,mp1[1]*CS+2,CS-4,CS-4);
+      // 2차 분기점
+      const bp2=FORK_PATHS.mid[FORK_PATHS.mid.length-1];
+      ctx.strokeRect(bp2[0]*CS+2,bp2[1]*CS+2,CS-4,CS-4);
+      // 2차 합류점
+      const mp2=FORK_PATHS.merge[0];
+      ctx.strokeRect(mp2[0]*CS+2,mp2[1]*CS+2,CS-4,CS-4);
       ctx.restore();
     }
 
     // ── 경로 화살표 (방향 표시)
     {
-      const trackRef=CURRENT_MAP==='C'&&FORK_PATHS?[...FORK_PATHS.main,...FORK_PATHS.left,...FORK_PATHS.right,...FORK_PATHS.merge]:TRACK;
+      const trackRef=CURRENT_MAP==='C'&&FORK_PATHS
+        ?[...FORK_PATHS.main,...(FORK_PATHS.left1||[]),...(FORK_PATHS.right1||[]),...(FORK_PATHS.mid||[]),...(FORK_PATHS.left2||[]),...(FORK_PATHS.right2||[]),...FORK_PATHS.merge]
+        :TRACK;
       ctx.fillStyle="rgba(255,255,255,0.08)";
       for(let i=1;i<trackRef.length-1;i+=4){
         const[pc,pr]=trackRef[i-1],[nc,nr]=trackRef[i+1];
@@ -886,7 +1005,15 @@ export default function App(){
     if(g)for(const h of g.heroes){
       if(h.col===null)continue;
       const sel=h.id===dragR.current||h.id===selHero;
-      const hx=h.col*CS,hy=h.row*CS;
+      // 공격 모션: 타겟 방향으로 3px 찌르기
+      let animOX=0,animOY=0;
+      if(h.shootAnim>0){
+        const prog=h.shootAnim/0.15;
+        const push=Math.sin(prog*Math.PI)*3;
+        // 아래 방향(적이 아래에 있는 경우가 많음)으로 찌르기
+        animOY=-push;
+      }
+      const hx=h.col*CS+animOX,hy=h.row*CS+animOY;
       const gr=GC[h.grade]||"#6b7280";
       ctx.save();
       // 등급별 배경 글로우
@@ -980,7 +1107,12 @@ export default function App(){
           "돌진":  {clr:"#7c2d12",clrL:"#ea580c",emoji:"🐗"},
           "방패":  {clr:"#1e3a5f",clrL:"#0369a1",emoji:"🛡️"},
           "힐러":  {clr:"#14532d",clrL:"#16a34a",emoji:"💚"},
+          // 회전 모드 전용
+          "고속":  {clr:"#92400e",clrL:"#f59e0b",emoji:"💨"},
+          "투명":  {clr:"#1e1b4b",clrL:"#6366f1",emoji:"👁️"},
         };
+        // 회전 모드 투명 유닛 반투명 처리
+        if(e.isInvis&&!e.stunTimer&&!e.rootTimer)ctx.globalAlpha=0.25;
         const ts=typeStyle[e.type]||typeStyle["일반"];
 
         // 돌진 중 빠른 잔상
@@ -1018,8 +1150,16 @@ export default function App(){
 
         ctx.strokeStyle=ts.clrL;ctx.lineWidth=1;
         ctx.beginPath();ctx.arc(ex+CS/2,ey+CS/2,rad,0,Math.PI*2);ctx.stroke();
+        // 걷기 바운스
+        const bounce=Math.sin((g.gameTime||0)*8+(e.id||0))*2;
+        // 공중 유닛은 살짝 위로 띄움
+        const airOffset=e.isAir?-6:0;
         ctx.font="14px serif";ctx.textAlign="center";ctx.textBaseline="middle";
-        ctx.fillText(ts.emoji,ex+CS/2,ey+CS/2+1);
+        ctx.fillText(ts.emoji,ex+CS/2,ey+CS/2+1+bounce+airOffset);
+        if(e.isAir){
+          ctx.font="8px serif";ctx.fillStyle="#7dd3fc";
+          ctx.fillText("〜",ex+CS/2,ey+CS/2+8+bounce);
+        }
         ctx.textAlign="left";ctx.textBaseline="alphabetic";
       }
 
@@ -1115,6 +1255,15 @@ export default function App(){
       ctx.restore();
     }
 
+    // 죽음 파티클 렌더링
+    if(g&&g.particles)for(const p of g.particles){
+      const prog=1-(p.life/p.maxLife);
+      ctx.save();ctx.globalAlpha=(p.life/p.maxLife)*0.9;
+      ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*(1-prog*0.5),0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
     // 임팩트
     if(g&&g.impacts)for(const im of g.impacts){
       const prog=im.t/im.maxT;
@@ -1156,7 +1305,29 @@ export default function App(){
     // 무리 웨이브는 빠르게 스폰
     const spawnInterval=wt==='horde'?0.55:1.2;
     g.spawnT+=dt;
-    if(g.spawnT>spawnInterval&&g.spawnC<g.maxSpawn){
+
+    // ── 회전 모드 스폰
+    if(g.rotMode){
+      if(g.spawnT>spawnInterval&&g.spawnC<g.maxSpawn){
+        g.spawnT=0;g.spawnC++;
+        if(isBossRound&&!g.bossSpawned){
+          const bossInfo=makeBoss(g.round);g.currentBoss=bossInfo;
+          const boss=mkE('일반',g.round,true,false,'ROT',{});
+          boss.isRageReady=true;boss.bossInfo=bossInfo;
+          g.enemies.push(boss);g.bossSpawned=true;
+        } else if(isMidRound&&!g.midSpawned){
+          g.enemies.push(mkE('일반',g.round,false,true,'ROT',{}));g.midSpawned=true;
+        } else if(!isBossRound&&!isMidRound){
+          const rotPool=g.round<10
+            ?['일반','일반','고속']
+            :g.round<25
+            ?['일반','고속','공중','투명']
+            :['일반','고속','공중','투명','투명','공중'];
+          const type=rotPool[Math.floor(Math.random()*rotPool.length)];
+          g.enemies.push(mkE(type,g.round,false,false,'ROT',{}));
+        }
+      }
+    } else if(g.spawnT>spawnInterval&&g.spawnC<g.maxSpawn){
       g.spawnT=0;g.spawnC++;
       if(isBossRound&&!g.bossSpawned){
         const bossInfo=makeBoss(g.round);
@@ -1189,7 +1360,7 @@ export default function App(){
         }
         g.enemies.push(mkE(type,g.round,false,false,g.mapKey,waveOpts));
       }
-    }
+    } // end normal spawn
 
     // 적 이동 + 특수 행동
     const newEnemies=[];
@@ -1294,6 +1465,20 @@ export default function App(){
         }
       }
     }
+    // 죽는 파티클 생성
+    if(!g.particles)g.particles=[];
+    for(const e of g.enemies){
+      if((e.remove||e.hp<=0)&&!e.deathParticleDone){
+        e.deathParticleDone=true;
+        const cx=e.x+CS/2,cy=e.y+CS/2;
+        const clr=e.isBoss?"#ef4444":e.isMid?"#fb923c":"#f87171";
+        for(let i=0;i<6;i++){
+          const a=Math.random()*Math.PI*2;
+          const spd=30+Math.random()*50;
+          g.particles.push({x:cx,y:cy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:0.5+Math.random()*0.3,maxLife:0.5+Math.random()*0.3,r:2+Math.random()*3,color:clr});
+        }
+      }
+    }
     g.enemies=[...g.enemies.filter(e=>!e.remove&&e.hp>0),...newEnemies];
     g.total=g.enemies.length;
     if(g.total>=30){g.over=true;g.running=false;sync();draw();return;}
@@ -1323,9 +1508,18 @@ export default function App(){
         }
         continue;
       }
+      // 속성별 공격 가능 대상 (회전 모드)
+      const elB=elBase(h._isMorph&&h._morphEl?h._morphEl:h.element);
+      const canHitAir=g.rotMode?['전기','바람','소리','불','운석','얼음','시간','홍수','빛','독'].includes(elB):true;
+      const canHitInvis=g.rotMode?['불','운석','얼음','시간','홍수','빛','독'].includes(elB):true;
+
       let near=null,nd=Infinity;
       for(const e of g.enemies){
         if(e.remove)continue;
+        if(g.rotMode){
+          if(e.isAir&&!canHitAir)continue;
+          if(e.isInvis&&!canHitInvis)continue;
+        }
         const d=Math.sqrt((e.x+CS/2-hx)**2+(e.y+CS/2-hy)**2);
         if(d<rng&&d<nd){near=e;nd=d;}
       }
@@ -1342,6 +1536,7 @@ export default function App(){
         }
         const projEl=h._isMorph&&h._morphEl?h._morphEl:h.element;
         g.projs.push({x:hx,y:hy,tx:near.x+CS/2,ty:near.y+CS/2,tid:near.id,dmg:finalDmg,spd:300,color:EC[projEl]||"#ff0",elBase:elBase(projEl),grade:h.grade,sx:hx,sy:hy,age:0});
+        h.shootAnim=0.15; // 공격 모션 타이머
         // 연쇄공격 (번개신 히든영웅)
         if(buff.chain&&Math.random()<buff.chain){
           const chain2=g.enemies.filter(e=>e.id!==near.id&&!e.remove&&e.hp>0&&Math.sqrt((e.x+CS/2-hx)**2+(e.y+CS/2-hy)**2)<rng);
@@ -1466,9 +1661,13 @@ export default function App(){
     }
     g.projs=g.projs.filter(p=>!p.hit&&!p.isChainVfx);
     if(g.impacts){for(const im of g.impacts)im.t+=dt;g.impacts=g.impacts.filter(im=>im.t<im.maxT);}
+    if(g.particles){for(const p of g.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;p.life-=dt;}g.particles=g.particles.filter(p=>p.life>0);}
+    for(const h of g.heroes){if(h.shootAnim>0)h.shootAnim-=dt;}
 
     const spawnDone=(isBossRound&&g.bossSpawned)||(isMidRound&&g.midSpawned)||(!isBossRound&&!isMidRound&&g.spawnC>=g.maxSpawn);
-    if(spawnDone&&g.enemies.length===0&&!g.cleared){
+    // 회전 모드: 적 다 잡아도 타이머 끝날 때까지 대기
+    const canClear=spawnDone&&g.enemies.length===0&&!g.cleared&&(!g.rotMode||countdownValRef.current===0);
+    if(canClear){
       g.running=false;g.cleared=true;
       if(isMidRound||isBossRound)g.coins+=1;
       const goldMul=1+(getBuff().goldMul||0);
@@ -1529,10 +1728,10 @@ export default function App(){
       const waveLabels={normal:'',horde:'🐝 무리 웨이브!',fast:'⚡ 속도 웨이브!',armored:'🛡️ 장갑 웨이브!',healer:'💚 힐러 웨이브!',boss:'💀 보스!',mid:'⚡ 중간보스!'};
       g.waveLabel=waveLabels[newWt]||'';
       // 무리 웨이브는 적 많이
-      g.maxSpawn=nb?1:nm?1:newWt==='horde'?Math.floor((15+g.round)*1.8):15+g.round;
-      sync();setCountdown(30);let cd=30;
+      g.maxSpawn=nb?1:nm?1:newWt==='horde'?Math.floor((15+g.round)*1.8):g.rotMode?20:15+g.round;
+      sync();setCountdown(30);countdownValRef.current=30;let cd=30;
       if(countdownRef.current)clearInterval(countdownRef.current);
-      const iv=setInterval(()=>{cd--;setCountdown(cd);if(cd<=0){clearInterval(iv);countdownRef.current=null;if(!G.current.over){G.current.running=true;lt.current=performance.now();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));}}},1000);
+      const iv=setInterval(()=>{cd--;setCountdown(cd);countdownValRef.current=cd;if(cd<=0){clearInterval(iv);countdownRef.current=null;if(!G.current.over){G.current.running=true;lt.current=performance.now();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));}}},1000);
       countdownRef.current=iv;
       return;
     }
@@ -1546,13 +1745,13 @@ export default function App(){
   // 카운트다운 스킵
   const skipCountdown=()=>{
     if(countdownRef.current){clearInterval(countdownRef.current);countdownRef.current=null;}
-    setCountdown(0);
+    setCountdown(0);countdownValRef.current=0;
     if(!G.current.over) autoStart(G.current);
   };
 
   const autoStart=(g)=>{
     const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
-    g.maxSpawn=nb?1:nm?1:15+g.round;
+    g.maxSpawn=nb?1:nm?1:g.rotMode?20:15+g.round;
     g.running=true;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
     sync();lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
   };
@@ -1561,12 +1760,43 @@ export default function App(){
   const startGame=(mapOverride)=>{
     if(raf.current)cancelAnimationFrame(raf.current);
     hid=1;eid=1;
-    const keys=['A','B','C'];
-    const mk=mapOverride||keys[Math.floor(Math.random()*keys.length)];
+    setRotMode(false);
+    const keys=['B','C','D','E','F'];
+    let mk;
+    if(mapOverride) mk=mapOverride;
+    else if(mapMode==='pick') mk=selectedMap;
+    else mk=keys[Math.floor(Math.random()*keys.length)];
     buildMap(mk);
     setCurrentMapName(MAP_DEFS[mk].name);
     G.current=initGame(difficulty);
     G.current.mapKey=mk;
+    setSelH(null);setHeroes([]);setDrag(null);setModal(null);
+    setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
+    setSummonAnim(null);dragR.current=null;spR.current=1;
+    sync();
+    setPhase('hidden');
+  };
+
+  const startRotation=()=>{
+    if(raf.current)cancelAnimationFrame(raf.current);
+    hid=1;eid=1;
+    // 회전 모드: 외곽 네모 맵, TRACK을 외곽으로 설정
+    CURRENT_MAP='ROT';
+    SPAWN_TILE=[0,0];
+    GOAL_TILE=[0,0]; // 2바퀴 돌면 제거
+    FORK_PATHS=null;
+    TRACK=buildRotPath(1); // 대표용 1바퀴 (렌더링용)
+    TS=new Set(); // 회전 모드는 경로=외곽 전체, 배치 불가 타일은 외곽
+    for(let c=0;c<COLS;c++){TS.add(`${c},0`);TS.add(`${c},${ROWS-1}`);}
+    for(let r=0;r<ROWS;r++){TS.add(`0,${r}`);TS.add(`${COLS-1},${r}`);}
+    CX=4;CY=6;
+    setCurrentMapName('회전');
+    const g=initGame('hard');
+    g.mapKey='ROT';
+    g.diffMul=0.8;
+    g.rotMode=true;
+    G.current=g;
+    setRotMode(true);
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
@@ -1594,11 +1824,11 @@ export default function App(){
     // 캔버스 렌더 후 카운트다운 → 게임 시작
     setTimeout(()=>{
       draw();
-      setCountdown(30);
+      setCountdown(30);countdownValRef.current=30;
       let cd=30;
       if(countdownRef.current)clearInterval(countdownRef.current);
       const iv=setInterval(()=>{
-        cd--;setCountdown(cd);
+        cd--;setCountdown(cd);countdownValRef.current=cd;
         if(cd<=0){
           clearInterval(iv);countdownRef.current=null;
           if(!G.current.over) autoStart(G.current);
@@ -1614,10 +1844,20 @@ export default function App(){
     if(phase!=='game')return;
     const rect=cvs.current.getBoundingClientRect();
     const sx=(COLS*CS)/rect.width,sy=(ROWS*CS)/rect.height;
-    const col=Math.floor((e.clientX-rect.left)*sx/CS);
-    const row=Math.floor((e.clientY-rect.top)*sy/CS);
+    const px=(e.clientX-rect.left)*sx;
+    const py=(e.clientY-rect.top)*sy;
+    const col=Math.floor(px/CS);
+    const row=Math.floor(py/CS);
     if(col<0||col>=COLS||row<0||row>=ROWS)return;
     const g=G.current;
+    // 적 클릭 감지 (픽셀 기반)
+    const clickedEnemy=g.enemies.find(en=>{
+      if(en.remove||en.hp<=0)return false;
+      const ex=en.x+CS/2,ey=en.y+CS/2;
+      return Math.abs(px-ex)<CS*0.7&&Math.abs(py-ey)<CS*0.7;
+    });
+    if(clickedEnemy){setSelEnemy({...clickedEnemy});setSelHero(null);setDragBoth(null);return;}
+    setSelEnemy(null);
     const moveId=dragR.current||selHero;
     if(moveId){
       const clickedH=g.heroes.find(h=>h.col===col&&h.row===row);
@@ -1912,18 +2152,42 @@ export default function App(){
         <div style={{fontSize:30,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4,letterSpacing:3}}>랜덤 디펜스</div>
         <div style={{fontSize:12,color:"#374151",marginBottom:28,letterSpacing:4}}>RANDOM DEFENSE</div>
 
-        {/* 맵 미리보기 */}
-        <div style={{display:"flex",gap:8,marginBottom:28}}>
-          {[
-            {label:"지그재그",color:"#4af",icon:"⚡"},
-            {label:"S자",color:"#4f8",icon:"〰️"},
-            {label:"분기",color:"#fa0",icon:"🔀"},
-          ].map(m=>(
-            <div key={m.label} style={{background:"#161b22",border:`1px solid ${m.color}33`,borderRadius:10,padding:"8px 12px",textAlign:"center",flex:1}}>
-              <div style={{fontSize:18,marginBottom:2}}>{m.icon}</div>
-              <div style={{fontSize:11,color:m.color,fontWeight:"bold"}}>{m.label}</div>
+        {/* 맵 선택 */}
+        <div style={{width:"100%",maxWidth:340,marginBottom:20}}>
+          <div style={{fontSize:11,color:"#888",marginBottom:8,textAlign:"center"}}>🗺️ 맵 설정</div>
+          {/* 랜덤 / 선택 탭 */}
+          <div style={{display:"flex",gap:6,marginBottom:10}}>
+            {[{key:"random",label:"🎲 랜덤맵"},{key:"pick",label:"🗺️ 선택맵"}].map(m=>(
+              <button key={m.key} onClick={()=>setMapMode(m.key)}
+                style={{flex:1,background:mapMode===m.key?"linear-gradient(135deg,#1f6feb,#6e40c9)":"#161b22",border:`1px solid ${mapMode===m.key?"#3b82f6":"#30363d"}`,color:mapMode===m.key?"#fff":"#888",borderRadius:10,padding:"9px 0",cursor:"pointer",fontSize:13,fontWeight:mapMode===m.key?"bold":"normal",transition:"all 0.15s"}}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+          {/* 랜덤: 맵 미리보기만 표시 */}
+          {mapMode==='random'&&(
+            <div style={{display:"flex",gap:6}}>
+              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"대각선",color:"#fb923c",icon:"↗️"}].map(m=>(
+                <div key={m.key} style={{flex:1,background:"#161b22",border:`1px solid ${m.color}22`,borderRadius:10,padding:"8px 6px",textAlign:"center"}}>
+                  <div style={{fontSize:16,marginBottom:2}}>{m.icon}</div>
+                  <div style={{fontSize:10,color:m.color}}>{m.label}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+          {/* 선택: 클릭으로 선택 */}
+          {mapMode==='pick'&&(
+            <div style={{display:"flex",gap:6}}>
+              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"대각선",color:"#fb923c",icon:"↗️"}].map(m=>(
+                <button key={m.key} onClick={()=>setSelectedMap(m.key)}
+                  style={{flex:1,background:selectedMap===m.key?`${m.color}22`:"#161b22",border:`2px solid ${selectedMap===m.key?m.color:m.color+"22"}`,borderRadius:10,padding:"8px 6px",textAlign:"center",cursor:"pointer",transition:"all 0.15s"}}>
+                  <div style={{fontSize:16,marginBottom:2}}>{m.icon}</div>
+                  <div style={{fontSize:10,color:m.color,fontWeight:selectedMap===m.key?"bold":"normal"}}>{m.label}</div>
+                  {selectedMap===m.key&&<div style={{fontSize:9,color:m.color,marginTop:2}}>✓ 선택됨</div>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 닉네임 입력 */}
@@ -1938,10 +2202,16 @@ export default function App(){
           />
         </div>
 
-        <button onClick={()=>startGame(null)}
-          style={{background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 48px",cursor:"pointer",fontSize:18,fontWeight:"bold",letterSpacing:2,boxShadow:"0 4px 20px rgba(31,111,235,0.4)",marginBottom:10}}>
-          ⚔️ 게임 시작
-        </button>
+        <div style={{display:"flex",gap:8,marginBottom:10,width:"100%",maxWidth:340}}>
+          <button onClick={()=>startGame(null)}
+            style={{flex:2,background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:16,fontWeight:"bold",letterSpacing:1,boxShadow:"0 4px 20px rgba(31,111,235,0.4)"}}>
+            ⚔️ 게임 시작
+          </button>
+          <button onClick={()=>startRotation()}
+            style={{flex:1,background:"linear-gradient(135deg,#7c3aed,#dc2626)",border:"none",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:14,fontWeight:"bold",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>
+            🔄 회전
+          </button>
+        </div>
         <div style={{display:"flex",gap:8,marginBottom:8}}>
           <button onClick={()=>{setShowRanking(true);loadRanking();}}
             style={{background:"none",border:"1px solid #30363d",color:"#fd0",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
@@ -1956,7 +2226,7 @@ export default function App(){
             📋 패치노트
           </button>
         </div>
-        <div style={{fontSize:11,color:"#444",textAlign:"center"}}>매 게임 3종 맵 중 랜덤으로 시작</div>
+        <div style={{fontSize:11,color:"#444",textAlign:"center"}}>{mapMode==='random'?'매 게임 5종 맵 중 랜덤으로 시작':`${MAP_DEFS[selectedMap].name} 맵으로 시작`}</div>
       </div>
 
       {/* 랭킹 모달 */}
@@ -2091,8 +2361,12 @@ export default function App(){
             {/* 닫기 버튼 */}
             <div style={{padding:"12px 20px",borderTop:"1px solid #21262d",flexShrink:0}}>
               <button onClick={()=>setShowPatch(false)}
-                style={{width:"100%",background:"#1f6feb",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:14,fontWeight:"bold"}}>
+                style={{width:"100%",background:"#1f6feb",border:"none",color:"#fff",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:14,fontWeight:"bold",marginBottom:6}}>
                 확인
+              </button>
+              <button onClick={()=>{try{localStorage.setItem('patchSeenVersion',PATCH_NOTES[0].version);}catch{}setShowPatch(false);}}
+                style={{width:"100%",background:"transparent",border:"1px solid #30363d",color:"#555",borderRadius:10,padding:"8px",cursor:"pointer",fontSize:12}}>
+                다음 패치 전까지 보지않기
               </button>
             </div>
           </div>
@@ -2166,6 +2440,7 @@ export default function App(){
           <div style={{display:"flex",align:"center",gap:6,flex:1,flexWrap:"nowrap",overflow:"hidden"}}>
             <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontSize:12,flexShrink:0}}>🏠</button>
             <span style={{background:"#450a0a",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
+            {countdown>0&&<button onClick={skipCountdown} style={{background:"#1e3a5f",border:"1px solid #3b82f6",color:"#60a5fa",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>⏭️{countdown}s</button>}
             <span style={{background:"#1c1917",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
             <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 7px",fontSize:12,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
             <span style={{background:"#172554",borderRadius:6,padding:"2px 7px",fontSize:11,color:"#60a5fa",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{color:"#374151",fontWeight:"normal"}}>/100</span></span>
@@ -2176,6 +2451,7 @@ export default function App(){
               {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
             </span>
             <span style={{fontSize:10,color:"#60a5fa",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>{currentMapName}</span>
+            {rotMode&&<span style={{fontSize:10,color:"#c084fc",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>🔄회전</span>}
             <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>조합표</button>
           </div>
         </div>
@@ -2305,6 +2581,45 @@ export default function App(){
       )}
 
       {/* 선택 영웅 패널 */}
+      {selEnemy&&(
+        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:"1px solid #dc262644",borderRadius:12,padding:"10px 12px",marginTop:5}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:20}}>
+                {selEnemy.type==="은신"?"👻":selEnemy.type==="공중"?"🦅":selEnemy.type==="분열"?"🔀":selEnemy.type==="재생"?"💚":selEnemy.type==="방패"?"🛡️":selEnemy.type==="돌진"?"💨":selEnemy.isBoss?"💀":"👾"}
+              </span>
+              <div>
+                <span style={{color:"#f87171",fontWeight:"bold",fontSize:13}}>{selEnemy.isBoss?"보스":selEnemy.type} 적</span>
+                {selEnemy.isBoss&&selEnemy.isRaging&&<span style={{color:"#ff4500",fontSize:10,marginLeft:4}}>⚠️광폭화</span>}
+              </div>
+            </div>
+            <button onClick={()=>setSelEnemy(null)} style={{background:"transparent",border:"none",color:"#475569",cursor:"pointer",fontSize:16}}>✕</button>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+              <span style={{color:"#94a3b8"}}>HP </span>
+              <span style={{color:"#f87171",fontWeight:"bold"}}>{Math.max(0,Math.floor(selEnemy.hp))}</span>
+              <span style={{color:"#475569"}}> / {selEnemy.maxHp}</span>
+            </div>
+            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+              <span style={{color:"#94a3b8"}}>체력 </span>
+              <span style={{color:"#22c55e",fontWeight:"bold"}}>{Math.round((selEnemy.hp/selEnemy.maxHp)*100)}%</span>
+            </div>
+            {selEnemy.isBoss&&selEnemy.weak&&(
+              <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+                <span style={{color:"#94a3b8"}}>약점 </span>
+                {selEnemy.weak.map(w=><span key={w} style={{color:"#fbbf24",fontWeight:"bold",marginRight:3}}>{EE[w]||w}{EN[w]||w}</span>)}
+              </div>
+            )}
+            {selEnemy.stunTimer>0&&<span style={{background:"#78350f",color:"#fcd34d",borderRadius:6,padding:"3px 8px",fontSize:11}}>⚡스턴 {selEnemy.stunTimer.toFixed(1)}s</span>}
+            {selEnemy.rootTimer>0&&<span style={{background:"#14532d",color:"#86efac",borderRadius:6,padding:"3px 8px",fontSize:11}}>🌿속박 {selEnemy.rootTimer.toFixed(1)}s</span>}
+            {selEnemy.rootImmune>0&&<span style={{background:"#1e293b",color:"#64748b",borderRadius:6,padding:"3px 8px",fontSize:11}}>🛡속박면역 {selEnemy.rootImmune.toFixed(1)}s</span>}
+            {selEnemy.slowTimer>0&&<span style={{background:"#0c4a6e",color:"#7dd3fc",borderRadius:6,padding:"3px 8px",fontSize:11}}>❄️슬로우 {selEnemy.slowTimer.toFixed(1)}s</span>}
+            {selEnemy.dotTimer>0&&<span style={{background:"#14532d",color:"#4ade80",borderRadius:6,padding:"3px 8px",fontSize:11}}>☠️독 {selEnemy.dotTimer.toFixed(1)}s</span>}
+            {selEnemy.debuff&&selEnemy.debuffTimer>0&&<span style={{background:"#450a0a",color:"#fca5a5",borderRadius:6,padding:"3px 8px",fontSize:11}}>💧방어감소 {selEnemy.debuffTimer.toFixed(1)}s</span>}
+          </div>
+        </div>
+      )}
       {selHeroObj&&(
         <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:`1px solid ${GC[selHeroObj.grade]||"#fa0"}66`,borderRadius:12,padding:"10px 12px",marginTop:5,boxShadow:`0 0 12px ${GC[selHeroObj.grade]||"#fa0"}22`}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
