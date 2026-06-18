@@ -186,7 +186,34 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
-    version:"v1.3",
+    version:"v1.5",
+    date:"2025-06-17",
+    title:"인간 계열 유닛 추가",
+    changes:[
+      "🧑 노말 유닛 '인간' 추가 (무속성, 단일공격, 기본부터 뽑기 가능)",
+      "🧙 고급 14종: 인간+속성 → 화염마법사/수마법사/대지마법사 등",
+      "🔮 영웅 14종: 같은 마법사×2 → 홍염마법사/심해마법사/뇌전마법사 등",
+      "👸 전설 14종: 같은 영웅×2 → 화염마법왕/해왕마법사/번개마법왕 등",
+      "🌋 신화 14종: 같은 전설×2 → 화염마법신/해왕마법신/번개마법신 등",
+      "👑 불멸 1종: 원소마법황 (신화×4 + 전설×2 + 무속성)",
+      "📊 인간 계열 총 57종 추가로 조합표 대폭 확장",
+    ]
+  },
+  {
+    date:"2025-06-17",
+    title:"콘텐츠 개방 시스템 추가",
+    changes:[
+      "🏆 클리어 횟수 기반 콘텐츠 개방 시스템 도입",
+      "⚔️ 난이도 잠금: 쉬움(기본) → 보통(1클리어) → 어려움(5클리어)",
+      "🌿 속성 잠금: 불/물/땅/바람 기본 → 1클리어: 전기/얼음/빛/어둠 → 5클리어: 나머지 전체",
+      "💎 등급 잠금: 영웅까지 기본 → 1클리어: 전설 → 3클리어: 신화 → 5클리어: 불멸",
+      "🦸 히든영웅 잠금: 수호자(기본)→상인(1)→저격수(2)→시간술사(3)→번개신(4)→연금술사(5)→도박사(6)",
+      "🔒 잠긴 난이도/히든영웅은 해금 조건 표시",
+      "📊 타이틀 화면에 클리어 횟수 및 다음 개방 안내 표시",
+      "💾 클리어 횟수 로컬 저장 (재접속해도 유지)",
+    ]
+  },
+  {
     date:"2025-06-17",
     title:"회전 모드 & 맵 대규모 개편",
     changes:[
@@ -368,10 +395,53 @@ const PATCH_NOTES=[
   },
 ];
 
-const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","시간","홍수","운석"];
-const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",독:"#8bc34a",나무:"#4caf50",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",신성폭풍:"#fda",혼돈:"#628",맹독:"#6db33f",독안개:"#9ccc65",가시숲:"#388e3c",독폭풍:"#7cb342",맹독늪:"#558b2f",지진:"#a73",음파해일:"#08f",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef",성음:"#feb",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염불멸:"#f80",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",시간:"#c084fc",홍수:"#38bdf8",운석:"#fb923c",시간의눈보라:"#d8b4fe",홍수해일:"#7dd3fc",화염운석:"#fdba74",시간폭풍:"#a855f7",대홍수:"#0ea5e9",운석폭우:"#f97316",시간지배자:"#9333ea",해일왕:"#0284c7",운석신:"#ea580c",황금정령:"#ffd700",변신정령:"#e2e8f0"};
-const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",독:"☠️",나무:"🌿",맹독:"🐍",독안개:"🌫️",가시숲:"🌵",독폭풍:"💀",맹독늪:"🌑",용암:"👺",폭풍화염:"💣",빙하:"🧊",번개폭풍:"🦅",공허:"🧛",공명:"🦇",돌풍:"💨",화염폭풍:"😈",해일:"🧟",번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",용암폭풍:"🪓",냉기폭풍:"🥶",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",신성폭풍:"🪽",혼돈:"🌀",폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫",시간:"⏳",홍수:"🌊",운석:"☄️",시간의눈보라:"❄️",홍수해일:"🌊",화염운석:"🔥",시간폭풍:"⌛",대홍수:"🌀",운석폭우:"💥",시간지배자:"🕰️",해일왕:"🌊",운석신:"☄️",황금정령:"💰",변신정령:"🔄"};
-const EN={불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",독:"독정령",나무:"나무정령",맹독:"맹독정령",독안개:"독안개",가시숲:"가시숲정령",독폭풍:"독폭풍",맹독늪:"맹독늪",용암:"고블린",폭풍화염:"화염폭탄병",빙하:"빙하유령",번개폭풍:"폭풍매",공허:"뱀파이어",공명:"음파박쥐",돌풍:"돌풍조",화염폭풍:"임프",해일:"구울",번개신:"스켈레톤",절대영도:"코볼트",신성광:"하피",심연:"좀비",용암폭풍:"오크전사",냉기폭풍:"냉기마법사",태풍:"폭풍독수리",뇌신:"뇌신전사",빙하신:"빙하신수",빛의신:"신성폭격수",어둠신:"드레드로드",신성폭풍:"타락천사",혼돈:"혼돈술사",폭풍신화:"폭풍의신",번개신화:"번개의신",빙하신화:"빙하의신",광명신화:"광명의신",암흑신화:"암흑의신",창조신화:"창조신",용왕신화:"용왕",신성신화:"신성군주",혼돈신화:"혼돈신",폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",화염제왕:"화염제왕",파도왕:"파도왕",대지왕:"대지왕",폭풍왕:"폭풍왕",번개왕:"번개왕",빙하왕:"빙하왕",광명왕:"광명왕",암흑왕:"암흑왕",음파왕:"음파왕",혼돈왕:"혼돈왕",화염신화:"화염신화",파도신화:"파도신화",음파신화:"음파신화",화염불멸:"화염불멸",지진:"지진정령",음파해일:"음파해일",용암지진:"용암지진",음파폭풍:"음파폭풍",불의왕:"불의왕",빙설신:"빙설신",성음:"성음",시간:"시간정령",홍수:"홍수정령",운석:"운석정령",시간의눈보라:"시간의눈보라",홍수해일:"홍수해일",화염운석:"화염운석",시간폭풍:"시간폭풍술사",대홍수:"대홍수신",운석폭우:"운석술사",시간지배자:"시간지배자",해일왕:"해일왕",운석신:"운석신",황금정령:"황금정령",변신정령:"변신정령"};
+const BASE=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","시간","홍수","운석","인간"];
+// 클리어 횟수별 개방 속성
+const UNLOCK_ELEMENTS=(cc)=>{
+  const els=["불","물","땅","바람","인간"]; // 기본
+  if(cc>=1)els.push("전기","얼음","빛","어둠");
+  if(cc>=5)els.push("소리","독","나무","시간","홍수","운석");
+  return els;
+};
+// 클리어 횟수별 개방 등급
+const UNLOCK_GRADES=(cc)=>{
+  const grades=["노말","고급","영웅"];
+  if(cc>=1)grades.push("전설");
+  if(cc>=3)grades.push("신화");
+  if(cc>=5)grades.push("불멸");
+  return grades;
+};
+// 클리어 횟수별 개방 난이도
+const UNLOCK_DIFF=(cc)=>{
+  const diffs=["easy"];
+  if(cc>=1)diffs.push("normal");
+  if(cc>=5)diffs.push("hard");
+  return diffs;
+};
+const EC={불:"#f44",물:"#48f",땅:"#a73",바람:"#8d8",전기:"#fd0",얼음:"#8ef",빛:"#ffa",어둠:"#a4f",소리:"#f8c",무속성:"#ccc",독:"#8bc34a",나무:"#4caf50",용암:"#f60",폭풍화염:"#f30",빙하:"#0cf",번개폭풍:"#fa0",공허:"#84a",공명:"#f6f",돌풍:"#afd",화염폭풍:"#f80",해일:"#08f",태풍:"#4fa",번개신:"#ff4",절대영도:"#aef",신성광:"#ffc",심연:"#608",용암폭풍:"#f50",냉기폭풍:"#8df",뇌신:"#fe0",빙하신:"#0ef",빛의신:"#ffe",어둠신:"#404",신성폭풍:"#fda",혼돈:"#628",맹독:"#6db33f",독안개:"#9ccc65",가시숲:"#388e3c",독폭풍:"#7cb342",맹독늪:"#558b2f",지진:"#a73",음파해일:"#08f",용암지진:"#b52",음파폭풍:"#f4c",불의왕:"#f50",빙설신:"#8ef",성음:"#feb",화염제왕:"#f60",파도왕:"#06f",대지왕:"#a63",폭풍왕:"#6d6",번개왕:"#ff0",빙하왕:"#0cf",광명왕:"#ffd",암흑왕:"#a0c",음파왕:"#f9c",혼돈왕:"#c6c",화염신화:"#f40",파도신화:"#04c",폭풍신화:"#0ff",번개신화:"#ff0",빙하신화:"#aff",광명신화:"#ffa",암흑신화:"#609",음파신화:"#f6a",폭풍불멸:"#fff",번개불멸:"#ff8",빙하불멸:"#aff",광명불멸:"#ffd",암흑불멸:"#808",창조불멸:"#faf",용왕불멸:"#fa4",신성불멸:"#ffd",혼돈불멸:"#c0f",궁극불멸:"#fff",화염불멸:"#f80",창조신화:"#f4f",용왕신화:"#f80",신성신화:"#fea",혼돈신화:"#a0f",시간:"#c084fc",홍수:"#38bdf8",운석:"#fb923c",시간의눈보라:"#d8b4fe",홍수해일:"#7dd3fc",화염운석:"#fdba74",시간폭풍:"#a855f7",대홍수:"#0ea5e9",운석폭우:"#f97316",시간지배자:"#9333ea",해일왕:"#0284c7",운석신:"#ea580c",황금정령:"#ffd700",변신정령:"#e2e8f0",
+  인간:"#94a3b8",
+  화염마법사:"#f97316",수마법사:"#38bdf8",대지마법사:"#a78a5a",폭풍마법사:"#86efac",번개마법사:"#fde047",빙결마법사:"#bae6fd",성마법사:"#fef08a",흑마법사:"#c084fc",음파마법사:"#f9a8d4",독마법사:"#86efac",삼림마법사:"#4ade80",시간마법사:"#d8b4fe",홍수마법사:"#7dd3fc",운석마법사:"#fdba74",
+  홍염마법사:"#ef4444",심해마법사:"#0ea5e9",암석마법사:"#92400e",폭풍술사:"#22c55e",뇌전마법사:"#eab308",절빙마법사:"#93c5fd",신성마법사:"#fef9c3",심연마법사:"#7c3aed",공명마법사:"#ec4899",맹독마법사:"#65a30d",고목마법사:"#166534",시공마법사:"#9333ea",해일마법사:"#0284c7",천공마법사:"#ea580c",
+  화염마법왕:"#dc2626",해왕마법사:"#0369a1",대지마법왕:"#78350f",폭풍마법왕:"#15803d",번개마법왕:"#ca8a04",빙하마법왕:"#60a5fa",광명마법왕:"#fef08a",암흑마법왕:"#6d28d9",음파마법왕:"#db2777",독왕마법사:"#4d7c0f",삼림마법왕:"#14532d",시간마법왕:"#7e22ce",홍수마법왕:"#1d4ed8",운석마법왕:"#c2410c",
+  화염마법신:"#b91c1c",해왕마법신:"#1e40af",대지마법신:"#451a03",폭풍마법신:"#14532d",번개마법신:"#713f12",빙하마법신:"#1e3a5f",광명마법신:"#fef3c7",암흑마법신:"#3b0764",음파마법신:"#831843",독왕마법신:"#1a2e05",삼림마법신:"#052e16",시간마법신:"#2e1065",홍수마법신:"#172554",운석마법신:"#431407",
+  원소마법황:"#f0abfc",
+};
+const EE={불:"🔥",물:"💧",땅:"🪨",바람:"🌀",전기:"⚡",얼음:"❄️",빛:"✨",어둠:"🌑",소리:"🔊",무속성:"⭐",독:"☠️",나무:"🌿",맹독:"🐍",독안개:"🌫️",가시숲:"🌵",독폭풍:"💀",맹독늪:"🌑",용암:"👺",폭풍화염:"💣",빙하:"🧊",번개폭풍:"🦅",공허:"🧛",공명:"🦇",돌풍:"💨",화염폭풍:"😈",해일:"🧟",번개신:"💀",절대영도:"🐍",신성광:"🧝",심연:"🧟",용암폭풍:"🪓",냉기폭풍:"🥶",태풍:"🌪️",뇌신:"⚡",빙하신:"❄️",빛의신:"🌟",어둠신:"💀",신성폭풍:"🪽",혼돈:"🌀",폭풍신화:"👑",번개신화:"⚡",빙하신화:"❄️",광명신화:"🌟",암흑신화:"🌑",창조신화:"✨",용왕신화:"🐉",신성신화:"👑",혼돈신화:"🌀",폭풍불멸:"🌊",번개불멸:"⚡",빙하불멸:"❄️",광명불멸:"🌟",암흑불멸:"🌑",창조불멸:"✨",용왕불멸:"🐉",신성불멸:"👑",혼돈불멸:"🌀",궁극불멸:"💫",시간:"⏳",홍수:"🌊",운석:"☄️",시간의눈보라:"❄️",홍수해일:"🌊",화염운석:"🔥",시간폭풍:"⌛",대홍수:"🌀",운석폭우:"💥",시간지배자:"🕰️",해일왕:"🌊",운석신:"☄️",황금정령:"💰",변신정령:"🔄",
+  인간:"🧑",
+  화염마법사:"🧙",수마법사:"🧙",대지마법사:"🧙",폭풍마법사:"🧙",번개마법사:"🧙",빙결마법사:"🧙",성마법사:"🧙",흑마법사:"🧙",음파마법사:"🧙",독마법사:"🧙",삼림마법사:"🧙",시간마법사:"🧙",홍수마법사:"🧙",운석마법사:"🧙",
+  홍염마법사:"🔮",심해마법사:"🔮",암석마법사:"🔮",폭풍술사:"🔮",뇌전마법사:"🔮",절빙마법사:"🔮",신성마법사:"🔮",심연마법사:"🔮",공명마법사:"🔮",맹독마법사:"🔮",고목마법사:"🔮",시공마법사:"🔮",해일마법사:"🔮",천공마법사:"🔮",
+  화염마법왕:"👸",해왕마법사:"👸",대지마법왕:"👸",폭풍마법왕:"👸",번개마법왕:"👸",빙하마법왕:"👸",광명마법왕:"👸",암흑마법왕:"👸",음파마법왕:"👸",독왕마법사:"👸",삼림마법왕:"👸",시간마법왕:"👸",홍수마법왕:"👸",운석마법왕:"👸",
+  화염마법신:"🌋",해왕마법신:"🌊",대지마법신:"🗻",폭풍마법신:"🌪️",번개마법신:"⚡",빙하마법신:"❄️",광명마법신:"☀️",암흑마법신:"🌑",음파마법신:"🎵",독왕마법신:"☠️",삼림마법신:"🌳",시간마법신:"⏰",홍수마법신:"🌊",운석마법신:"☄️",
+  원소마법황:"👑",
+};
+const EN={불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람정령",전기:"번개정령",얼음:"서리정령",빛:"빛의정령",어둠:"어둠정령",소리:"음파정령",무속성:"무속성",독:"독정령",나무:"나무정령",맹독:"맹독정령",독안개:"독안개",가시숲:"가시숲정령",독폭풍:"독폭풍",맹독늪:"맹독늪",용암:"고블린",폭풍화염:"화염폭탄병",빙하:"빙하유령",번개폭풍:"폭풍매",공허:"뱀파이어",공명:"음파박쥐",돌풍:"돌풍조",화염폭풍:"임프",해일:"구울",번개신:"스켈레톤",절대영도:"코볼트",신성광:"하피",심연:"좀비",용암폭풍:"오크전사",냉기폭풍:"냉기마법사",태풍:"폭풍독수리",뇌신:"뇌신전사",빙하신:"빙하신수",빛의신:"신성폭격수",어둠신:"드레드로드",신성폭풍:"타락천사",혼돈:"혼돈술사",폭풍신화:"폭풍의신",번개신화:"번개의신",빙하신화:"빙하의신",광명신화:"광명의신",암흑신화:"암흑의신",창조신화:"창조신",용왕신화:"용왕",신성신화:"신성군주",혼돈신화:"혼돈신",폭풍불멸:"폭풍불멸",번개불멸:"번개불멸",빙하불멸:"빙하불멸",광명불멸:"광명불멸",암흑불멸:"암흑불멸",창조불멸:"창조불멸",용왕불멸:"용왕불멸",신성불멸:"신성불멸",혼돈불멸:"혼돈불멸",궁극불멸:"궁극불멸",화염제왕:"화염제왕",파도왕:"파도왕",대지왕:"대지왕",폭풍왕:"폭풍왕",번개왕:"번개왕",빙하왕:"빙하왕",광명왕:"광명왕",암흑왕:"암흑왕",음파왕:"음파왕",혼돈왕:"혼돈왕",화염신화:"화염신화",파도신화:"파도신화",음파신화:"음파신화",화염불멸:"화염불멸",지진:"지진정령",음파해일:"음파해일",용암지진:"용암지진",음파폭풍:"음파폭풍",불의왕:"불의왕",빙설신:"빙설신",성음:"성음",시간:"시간정령",홍수:"홍수정령",운석:"운석정령",시간의눈보라:"시간의눈보라",홍수해일:"홍수해일",화염운석:"화염운석",시간폭풍:"시간폭풍술사",대홍수:"대홍수신",운석폭우:"운석술사",시간지배자:"시간지배자",해일왕:"해일왕",운석신:"운석신",황금정령:"황금정령",변신정령:"변신정령",
+  인간:"인간",
+  화염마법사:"화염마법사",수마법사:"수마법사",대지마법사:"대지마법사",폭풍마법사:"폭풍마법사",번개마법사:"번개마법사",빙결마법사:"빙결마법사",성마법사:"성마법사",흑마법사:"흑마법사",음파마법사:"음파마법사",독마법사:"독마법사",삼림마법사:"삼림마법사",시간마법사:"시간마법사",홍수마법사:"홍수마법사",운석마법사:"운석마법사",
+  홍염마법사:"홍염마법사",심해마법사:"심해마법사",암석마법사:"암석마법사",폭풍술사:"폭풍술사",뇌전마법사:"뇌전마법사",절빙마법사:"절빙마법사",신성마법사:"신성마법사",심연마법사:"심연마법사",공명마법사:"공명마법사",맹독마법사:"맹독마법사",고목마법사:"고목마법사",시공마법사:"시공마법사",해일마법사:"해일마법사",천공마법사:"천공마법사",
+  화염마법왕:"화염마법왕",해왕마법사:"해왕마법사",대지마법왕:"대지마법왕",폭풍마법왕:"폭풍마법왕",번개마법왕:"번개마법왕",빙하마법왕:"빙하마법왕",광명마법왕:"광명마법왕",암흑마법왕:"암흑마법왕",음파마법왕:"음파마법왕",독왕마법사:"독왕마법사",삼림마법왕:"삼림마법왕",시간마법왕:"시간마법왕",홍수마법왕:"홍수마법왕",운석마법왕:"운석마법왕",
+  화염마법신:"화염마법신",해왕마법신:"해왕마법신",대지마법신:"대지마법신",폭풍마법신:"폭풍마법신",번개마법신:"번개마법신",빙하마법신:"빙하마법신",광명마법신:"광명마법신",암흑마법신:"암흑마법신",음파마법신:"음파마법신",독왕마법신:"독왕마법신",삼림마법신:"삼림마법신",시간마법신:"시간마법신",홍수마법신:"홍수마법신",운석마법신:"운석마법신",
+  원소마법황:"원소마법황",
+};
 const hr=(hex,a)=>{const h=hex.replace('#','');const l=h.length===3?h[0]+h[0]+h[1]+h[1]+h[2]+h[2]:h;return `rgba(${parseInt(l.slice(0,2),16)},${parseInt(l.slice(2,4),16)},${parseInt(l.slice(4,6),16)},${a})`;};
 const GC={노말:"#aaa",고급:"#4af",영웅:"#a4f",전설:"#fa0",신화:"#f44",불멸:"#f8f"};
 const ATK_MAP={노말:12,고급:22,영웅:42,전설:67,신화:97,불멸:167};
@@ -407,6 +477,22 @@ const COMBO=[
   {a:"시간폭풍",b:"운석폭우",r:"운석신",g:"영웅"},
   // 변신정령 (영웅)
   {a:"시간지배자",b:"해일왕",r:"변신정령",g:"영웅"},
+  // ── 인간 계열 고급 (인간 + 속성)
+  {a:"인간",b:"불",r:"화염마법사",g:"고급"},{a:"인간",b:"물",r:"수마법사",g:"고급"},
+  {a:"인간",b:"땅",r:"대지마법사",g:"고급"},{a:"인간",b:"바람",r:"폭풍마법사",g:"고급"},
+  {a:"인간",b:"전기",r:"번개마법사",g:"고급"},{a:"인간",b:"얼음",r:"빙결마법사",g:"고급"},
+  {a:"인간",b:"빛",r:"성마법사",g:"고급"},{a:"인간",b:"어둠",r:"흑마법사",g:"고급"},
+  {a:"인간",b:"소리",r:"음파마법사",g:"고급"},{a:"인간",b:"독",r:"독마법사",g:"고급"},
+  {a:"인간",b:"나무",r:"삼림마법사",g:"고급"},{a:"인간",b:"시간",r:"시간마법사",g:"고급"},
+  {a:"인간",b:"홍수",r:"홍수마법사",g:"고급"},{a:"인간",b:"운석",r:"운석마법사",g:"고급"},
+  // ── 인간 계열 영웅 (같은 마법사×2)
+  {a:"화염마법사",b:"화염마법사",r:"홍염마법사",g:"영웅"},{a:"수마법사",b:"수마법사",r:"심해마법사",g:"영웅"},
+  {a:"대지마법사",b:"대지마법사",r:"암석마법사",g:"영웅"},{a:"폭풍마법사",b:"폭풍마법사",r:"폭풍술사",g:"영웅"},
+  {a:"번개마법사",b:"번개마법사",r:"뇌전마법사",g:"영웅"},{a:"빙결마법사",b:"빙결마법사",r:"절빙마법사",g:"영웅"},
+  {a:"성마법사",b:"성마법사",r:"신성마법사",g:"영웅"},{a:"흑마법사",b:"흑마법사",r:"심연마법사",g:"영웅"},
+  {a:"음파마법사",b:"음파마법사",r:"공명마법사",g:"영웅"},{a:"독마법사",b:"독마법사",r:"맹독마법사",g:"영웅"},
+  {a:"삼림마법사",b:"삼림마법사",r:"고목마법사",g:"영웅"},{a:"시간마법사",b:"시간마법사",r:"시공마법사",g:"영웅"},
+  {a:"홍수마법사",b:"홍수마법사",r:"해일마법사",g:"영웅"},{a:"운석마법사",b:"운석마법사",r:"천공마법사",g:"영웅"},
 ];
 const RECIPES=[
   {r:"화염제왕",g:"전설",parts:[{u:"용암폭풍",n:1},{u:"불의왕",n:1},{u:"화염폭풍",n:1}]},
@@ -434,17 +520,49 @@ const RECIPES=[
   {r:"궁극불멸",g:"불멸",parts:[{u:"폭풍신화",n:1},{u:"빙하신화",n:1},{u:"광명신화",n:1},{u:"화염신화",n:1},{u:"혼돈왕",n:1},{u:"대지왕",n:1},{u:"음파왕",n:1},{u:"파도왕",n:1},{u:"무속성",n:1}]},
   // 돈유닛 (전설 히든 - 최종조합 없음)
   {r:"황금정령",g:"전설",isGoldUnit:true,parts:[{u:"시간지배자",n:1},{u:"해일왕",n:1},{u:"운석신",n:1},{u:"무속성",n:1}]},
+  // ── 인간 계열 전설 (영웅×2)
+  {r:"화염마법왕",g:"전설",parts:[{u:"홍염마법사",n:2}]},
+  {r:"해왕마법사",g:"전설",parts:[{u:"심해마법사",n:2}]},
+  {r:"대지마법왕",g:"전설",parts:[{u:"암석마법사",n:2}]},
+  {r:"폭풍마법왕",g:"전설",parts:[{u:"폭풍술사",n:2}]},
+  {r:"번개마법왕",g:"전설",parts:[{u:"뇌전마법사",n:2}]},
+  {r:"빙하마법왕",g:"전설",parts:[{u:"절빙마법사",n:2}]},
+  {r:"광명마법왕",g:"전설",parts:[{u:"신성마법사",n:2}]},
+  {r:"암흑마법왕",g:"전설",parts:[{u:"심연마법사",n:2}]},
+  {r:"음파마법왕",g:"전설",parts:[{u:"공명마법사",n:2}]},
+  {r:"독왕마법사",g:"전설",parts:[{u:"맹독마법사",n:2}]},
+  {r:"삼림마법왕",g:"전설",parts:[{u:"고목마법사",n:2}]},
+  {r:"시간마법왕",g:"전설",parts:[{u:"시공마법사",n:2}]},
+  {r:"홍수마법왕",g:"전설",parts:[{u:"해일마법사",n:2}]},
+  {r:"운석마법왕",g:"전설",parts:[{u:"천공마법사",n:2}]},
+  // ── 인간 계열 신화 (전설×2)
+  {r:"화염마법신",g:"신화",parts:[{u:"화염마법왕",n:2}]},
+  {r:"해왕마법신",g:"신화",parts:[{u:"해왕마법사",n:2}]},
+  {r:"대지마법신",g:"신화",parts:[{u:"대지마법왕",n:2}]},
+  {r:"폭풍마법신",g:"신화",parts:[{u:"폭풍마법왕",n:2}]},
+  {r:"번개마법신",g:"신화",parts:[{u:"번개마법왕",n:2}]},
+  {r:"빙하마법신",g:"신화",parts:[{u:"빙하마법왕",n:2}]},
+  {r:"광명마법신",g:"신화",parts:[{u:"광명마법왕",n:2}]},
+  {r:"암흑마법신",g:"신화",parts:[{u:"암흑마법왕",n:2}]},
+  {r:"음파마법신",g:"신화",parts:[{u:"음파마법왕",n:2}]},
+  {r:"독왕마법신",g:"신화",parts:[{u:"독왕마법사",n:2}]},
+  {r:"삼림마법신",g:"신화",parts:[{u:"삼림마법왕",n:2}]},
+  {r:"시간마법신",g:"신화",parts:[{u:"시간마법왕",n:2}]},
+  {r:"홍수마법신",g:"신화",parts:[{u:"홍수마법왕",n:2}]},
+  {r:"운석마법신",g:"신화",parts:[{u:"운석마법왕",n:2}]},
+  // ── 인간 계열 불멸 (신화×2 + 전설×2 + 무속성)
+  {r:"원소마법황",g:"불멸",parts:[{u:"화염마법신",n:1},{u:"해왕마법신",n:1},{u:"폭풍마법신",n:1},{u:"번개마법신",n:1},{u:"화염마법왕",n:1},{u:"해왕마법사",n:1},{u:"무속성",n:1}]},
   // 변신유닛 (영웅급) - 조합은 COMBO에서 처리
 ];
 
 const HH=[
-  {id:"merchant",name:"상인",emoji:"💰",color:"#eab308",desc:"골드 획득+30%",buff:{goldMul:0.3}},
-  {id:"sniper",name:"저격수",emoji:"🎯",color:"#06b6d4",desc:"사거리+2.0",buff:{rangeBonus:2.0}},
-  {id:"guardian",name:"수호자",emoji:"🛡️",color:"#6366f1",desc:"라이프+15",buff:{extraLife:15}},
-  {id:"thunder",name:"번개신",emoji:"⚡",color:"#fbbf24",desc:"10% 확률 연쇄공격",buff:{chain:0.10}},
-  {id:"chrono",name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"슬로우 효과+50%",buff:{slowBonus:0.5}},
-  {id:"alchemist",name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"상태이상 효과×1.5",buff:{statusMul:1.5}},
-  {id:"gambler",name:"도박사",emoji:"🎰",color:"#f43f5e",desc:"5라운드마다 주사위 굴리기",buff:{gambler:true}},
+  {id:"guardian",  name:"수호자",  emoji:"🛡️",color:"#6366f1",desc:"라이프+15",             buff:{extraLife:15},   unlockAt:0},
+  {id:"merchant",  name:"상인",    emoji:"💰",color:"#eab308",desc:"골드 획득+30%",         buff:{goldMul:0.3},    unlockAt:1},
+  {id:"sniper",    name:"저격수",  emoji:"🎯",color:"#06b6d4",desc:"사거리+2.0",            buff:{rangeBonus:2.0}, unlockAt:2},
+  {id:"chrono",    name:"시간술사",emoji:"🌀",color:"#a78bfa",desc:"슬로우 효과+50%",       buff:{slowBonus:0.5},  unlockAt:3},
+  {id:"thunder",   name:"번개신",  emoji:"⚡",color:"#fbbf24",desc:"10% 확률 연쇄공격",    buff:{chain:0.10},     unlockAt:4},
+  {id:"alchemist", name:"연금술사",emoji:"⚗️",color:"#34d399",desc:"상태이상 효과×1.5",    buff:{statusMul:1.5},  unlockAt:5},
+  {id:"gambler",   name:"도박사",  emoji:"🎰",color:"#f43f5e",desc:"5라운드마다 주사위 굴리기",buff:{gambler:true},unlockAt:6},
 ];
 // ══════════════════════════════════════════
 // 보스 테이블 (10라운드마다)
@@ -501,7 +619,15 @@ const GAMBLE_COIN=[
 ];
 
 let hid=1,eid=1;
-const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람","시간":"시간","홍수":"홍수","운석":"운석","시간의눈보라":"시간","홍수해일":"홍수","화염운석":"운석","시간폭풍":"시간","대홍수":"홍수","운석폭우":"운석","시간지배자":"시간","해일왕":"홍수","운석신":"운석","황금정령":"무속성","변신정령":"무속성"};
+const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람","시간":"시간","홍수":"홍수","운석":"운석","시간의눈보라":"시간","홍수해일":"홍수","화염운석":"운석","시간폭풍":"시간","대홍수":"홍수","운석폭우":"운석","시간지배자":"시간","해일왕":"홍수","운석신":"운석","황금정령":"무속성","변신정령":"무속성",
+  // 인간 계열
+  "인간":"무속성",
+  "화염마법사":"불","수마법사":"물","대지마법사":"땅","폭풍마법사":"바람","번개마법사":"전기","빙결마법사":"얼음","성마법사":"빛","흑마법사":"어둠","음파마법사":"소리","독마법사":"독","삼림마법사":"나무","시간마법사":"시간","홍수마법사":"홍수","운석마법사":"운석",
+  "홍염마법사":"불","심해마법사":"물","암석마법사":"땅","폭풍술사":"바람","뇌전마법사":"전기","절빙마법사":"얼음","신성마법사":"빛","심연마법사":"어둠","공명마법사":"소리","맹독마법사":"독","고목마법사":"나무","시공마법사":"시간","해일마법사":"홍수","천공마법사":"운석",
+  "화염마법왕":"불","해왕마법사":"물","대지마법왕":"땅","폭풍마법왕":"바람","번개마법왕":"전기","빙하마법왕":"얼음","광명마법왕":"빛","암흑마법왕":"어둠","음파마법왕":"소리","독왕마법사":"독","삼림마법왕":"나무","시간마법왕":"시간","홍수마법왕":"홍수","운석마법왕":"운석",
+  "화염마법신":"불","해왕마법신":"물","대지마법신":"땅","폭풍마법신":"바람","번개마법신":"전기","빙하마법신":"얼음","광명마법신":"빛","암흑마법신":"어둠","음파마법신":"소리","독왕마법신":"독","삼림마법신":"나무","시간마법신":"시간","홍수마법신":"홍수","운석마법신":"운석",
+  "원소마법황":"무속성",
+};
 const elBase=(el)=>EL_BASE[el]||el;
 const GRADE_FX={노말:{glow:0,trail:0},고급:{glow:4,trail:0},영웅:{glow:6,trail:3},전설:{glow:10,trail:5},신화:{glow:14,trail:8},불멸:{glow:20,trail:12}};
 // 속성별 기본 사거리 (타일 단위)
@@ -765,7 +891,8 @@ export default function App(){
 
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
-  const [difficulty,setDifficulty]=useState('hard');
+  const [difficulty,setDifficulty]=useState('easy');
+  const [clearCount,setClearCount]=useState(()=>{try{return parseInt(localStorage.getItem('clearCount')||'0');}catch{return 0;}});
   const [mapMode,setMapMode]=useState('random'); // 'random' | 'pick'
   const [selectedMap,setSelectedMap]=useState('B');
   const [showPatch,setShowPatch]=useState(()=>{
@@ -1683,14 +1810,16 @@ export default function App(){
           if(normals.length>0){const t=normals[Math.floor(Math.random()*normals.length)];t.col=null;t.row=null;diceMsg="🎲1 - 노말 유닛 1개 랜덤 삭제!";}
           else diceMsg="🎲1 - 삭제할 노말 유닛 없음";
         }else if(dice===2){
-          const el=BASE[Math.floor(Math.random()*BASE.length)];
+          const pool=g.unlockedEls||BASE;
+          const el=pool[Math.floor(Math.random()*pool.length)];
           const h=mkH(el,"노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
           if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg=`🎲2 - 노말 ${EN[el]||el} 생성!`;}
           else diceMsg="🎲2 - 빈 칸 없음";
         }else if(dice===3){
           g.gold+=50;diceMsg="🎲3 - 골드 +50!";
         }else if(dice===4){
-          const el=BASE[Math.floor(Math.random()*BASE.length)];
+          const pool=g.unlockedEls||BASE;
+          const el=pool[Math.floor(Math.random()*pool.length)];
           const h=mkH(el,"고급",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
           if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg=`🎲4 - 고급 ${EN[el]||el} 생성!`;}
           else diceMsg="🎲4 - 빈 칸 없음";
@@ -1770,6 +1899,9 @@ export default function App(){
     setCurrentMapName(MAP_DEFS[mk].name);
     G.current=initGame(difficulty);
     G.current.mapKey=mk;
+    G.current.clearCount=clearCount;
+    G.current.unlockedEls=UNLOCK_ELEMENTS(clearCount);
+    G.current.unlockedGrades=UNLOCK_GRADES(clearCount);
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
@@ -1793,6 +1925,9 @@ export default function App(){
     setCurrentMapName('회전');
     const g=initGame('hard');
     g.mapKey='ROT';
+    g.clearCount=clearCount;
+    g.unlockedEls=UNLOCK_ELEMENTS(clearCount);
+    g.unlockedGrades=UNLOCK_GRADES(clearCount);
     g.diffMul=0.8;
     g.rotMode=true;
     G.current=g;
@@ -2089,6 +2224,11 @@ export default function App(){
 
   // ── 랭킹 저장
   const saveRecord=async(isVictory)=>{
+    if(isVictory){
+      const newCount=clearCount+1;
+      setClearCount(newCount);
+      try{localStorage.setItem('clearCount',String(newCount));}catch{}
+    }
     if(!nickname.trim())return;
     const g=G.current;
     const record={
@@ -2150,7 +2290,14 @@ export default function App(){
       <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
         <div style={{fontSize:52,marginBottom:6,filter:"drop-shadow(0 0 20px #3b82f6)"}}>🗡️</div>
         <div style={{fontSize:30,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4,letterSpacing:3}}>랜덤 디펜스</div>
-        <div style={{fontSize:12,color:"#374151",marginBottom:28,letterSpacing:4}}>RANDOM DEFENSE</div>
+        <div style={{fontSize:12,color:"#374151",marginBottom:8,letterSpacing:4}}>RANDOM DEFENSE</div>
+        <div style={{display:"flex",gap:8,marginBottom:20,alignItems:"center"}}>
+          <span style={{background:"#1e293b",borderRadius:8,padding:"4px 10px",fontSize:12,color:"#fcd34d",fontWeight:"bold"}}>🏆 {clearCount}클리어</span>
+          {clearCount<1&&<span style={{fontSize:11,color:"#555"}}>쉬움 클리어 시 보통 난이도·전설 개방</span>}
+          {clearCount>=1&&clearCount<3&&<span style={{fontSize:11,color:"#555"}}>{3-clearCount}클리어 후 신화 개방</span>}
+          {clearCount>=3&&clearCount<5&&<span style={{fontSize:11,color:"#555"}}>{5-clearCount}클리어 후 불멸·어려움 개방</span>}
+          {clearCount>=5&&<span style={{fontSize:11,color:"#4ade80"}}>✅ 모든 콘텐츠 개방!</span>}
+        </div>
 
         {/* 맵 선택 */}
         <div style={{width:"100%",maxWidth:340,marginBottom:20}}>
@@ -2393,32 +2540,39 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×1.7',color:'#4f8',icon:'🌱'},
-                {key:'normal',label:'보통',desc:'공격력 ×1.3',color:'#4af',icon:'⚔️'},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀'},
-              ].map(d=>(
-                <button key={d.key} onClick={()=>setDifficulty(d.key)}
-                  style={{flex:1,background:difficulty===d.key?d.color+'22':'#21262d',
-                    border:`2px solid ${difficulty===d.key?d.color:'#30363d'}`,
-                    borderRadius:10,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
-                  <div style={{fontSize:18,marginBottom:2}}>{d.icon}</div>
-                  <div style={{fontSize:12,fontWeight:"bold",color:difficulty===d.key?d.color:'#aaa'}}>{d.label}</div>
-                  <div style={{fontSize:9,color:"#555",marginTop:1}}>{d.desc}</div>
-                </button>
-              ))}
+                {key:'easy',label:'쉬움',desc:'공격력 ×1.7',color:'#4f8',icon:'🌱',need:0},
+                {key:'normal',label:'보통',desc:'공격력 ×1.3',color:'#4af',icon:'⚔️',need:1},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀',need:5},
+              ].map(d=>{
+                const unlocked=clearCount>=d.need;
+                return(
+                  <button key={d.key} onClick={()=>unlocked&&setDifficulty(d.key)}
+                    style={{flex:1,background:difficulty===d.key&&unlocked?d.color+'22':'#21262d',
+                      border:`2px solid ${difficulty===d.key&&unlocked?d.color:'#30363d'}`,
+                      borderRadius:10,padding:"8px 4px",cursor:unlocked?"pointer":"not-allowed",textAlign:"center",opacity:unlocked?1:0.4}}>
+                    <div style={{fontSize:18,marginBottom:2}}>{unlocked?d.icon:"🔒"}</div>
+                    <div style={{fontSize:12,fontWeight:"bold",color:difficulty===d.key&&unlocked?d.color:'#aaa'}}>{unlocked?d.label:`${d.need}클리어`}</div>
+                    <div style={{fontSize:9,color:"#555",marginTop:1}}>{unlocked?d.desc:"잠김"}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {HH.map(h=>(
-              <button key={h.id} onClick={()=>pickHidden(h)}
-                style={{background:hr(h.color,0.1),border:`2px solid ${h.color}`,borderRadius:10,padding:"12px 16px",cursor:"pointer",color:"#eee",textAlign:"left",display:"flex",alignItems:"center",gap:12}}>
-                <span style={{fontSize:28}}>{h.emoji}</span>
-                <div>
-                  <div style={{fontWeight:"bold",fontSize:15,color:h.color}}>{h.name}</div>
-                  <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{h.desc}</div>
-                </div>
-              </button>
-            ))}
+            {HH.map(h=>{
+              const unlocked=clearCount>=h.unlockAt;
+              return(
+                <button key={h.id} onClick={()=>unlocked&&pickHidden(h)}
+                  style={{background:unlocked?`${h.color}18`:"#1a1a2e",border:`2px solid ${unlocked?h.color:"#333"}`,borderRadius:10,padding:"12px 16px",cursor:unlocked?"pointer":"not-allowed",color:unlocked?"#eee":"#555",textAlign:"left",display:"flex",alignItems:"center",gap:12,opacity:unlocked?1:0.5}}>
+                  <span style={{fontSize:28}}>{unlocked?h.emoji:"🔒"}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:"bold",fontSize:15,color:unlocked?h.color:"#444"}}>{unlocked?h.name:`${h.unlockAt}클리어 후 개방`}</div>
+                    <div style={{fontSize:11,color:unlocked?"#aaa":"#333",marginTop:2}}>{unlocked?h.desc:`${h.unlockAt}번 클리어하면 해금됩니다`}</div>
+                  </div>
+                  {unlocked&&<span style={{fontSize:10,color:h.color,background:`${h.color}22`,borderRadius:4,padding:"2px 6px"}}>선택</span>}
+                </button>
+              );
+            })}
           </div>
           <button onClick={()=>setPhase('title')} style={{marginTop:12,background:"#21262d",border:"1px solid #30363d",color:"#666",borderRadius:8,padding:"8px",cursor:"pointer",fontSize:12,width:"100%"}}>← 타이틀로</button>
         </div>
@@ -2557,7 +2711,7 @@ export default function App(){
         <button onClick={()=>{
           const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
           g.gold-=10;
-          const h=mkH(BASE[Math.floor(Math.random()*BASE.length)],"노말",g.gradeEnhLv||{});
+          const h=mkH(UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)],"노말",g.gradeEnhLv||{});
           const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
           g.heroes.push(h);sync();draw();
         }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
@@ -2938,7 +3092,9 @@ export default function App(){
       {showCombo&&(()=>{
         // 전설이상: 유닛 클릭 선택 방식
         const unitCnt={};for(const h of heroes)unitCnt[h.element]=(unitCnt[h.element]||0)+1;
-        const tabs=["고급","영웅","전설","신화","불멸"];
+        const allTabs=["고급","영웅","전설","신화","불멸"];
+        const unlockedGrades=G.current?.unlockedGrades||["노말","고급","영웅"];
+        const tabs=allTabs.filter(t=>unlockedGrades.includes(t));
         const isHighGrade=["전설","신화","불멸"].includes(comboFilter);
         const curRecipes=isHighGrade?RECIPES.filter(r=>r.g===comboFilter):[];
         const curCombos=!isHighGrade?fCombo:[];
