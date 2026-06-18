@@ -1439,7 +1439,7 @@ export default function App(){
 
       const path=e.path;
       if(!path||e.pathIdx>=path.length){
-        e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;continue;
+        e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;sync();continue;
       }
       const[tc,tr]=path[e.pathIdx];
       const tx=tc*CS,ty=tr*CS,dx=tx-e.x,dy=ty-e.y;
@@ -1447,7 +1447,7 @@ export default function App(){
       const dist=Math.sqrt(dx*dx+dy*dy),mv=CS*spd*dt*1.5;
       if(dist<mv){
         e.x=tx;e.y=ty;e.pathIdx++;
-        if(e.pathIdx>=path.length){e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;}
+        if(e.pathIdx>=path.length){e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;sync();}
       }else{e.x+=dx/dist*mv;e.y+=dy/dist*mv;}
     }
 
