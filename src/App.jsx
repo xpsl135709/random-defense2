@@ -186,6 +186,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v1.7",
+    date:"2025-06-17",
+    title:"난이도 재조정 (체감 난이도 완화)",
+    changes:[
+      "⚔️ 난이도 배율 상향: 쉬움 ×1.7→×2.5, 보통 ×1.3→×1.7, 어려움 ×1.0→×1.3",
+      "🔄 회전 모드 배율 ×0.8→×1.0 (고정 난이도)",
+    ]
+  },
+  {
     version:"v1.6",
     date:"2025-06-17",
     title:"난이도 밸런스 & UI 개선",
@@ -841,7 +850,7 @@ const initGame=(diff='hard')=>({
   mapKey:CURRENT_MAP||'B',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
-  diffMul:diff==='easy'?1.7:diff==='normal'?1.3:1.0,
+  diffMul:diff==='easy'?2.5:diff==='normal'?1.7:1.3,
 });
 
 // ══════════════════════════════════════════
@@ -1968,7 +1977,7 @@ export default function App(){
     g.clearCount=clearCount;
     g.unlockedEls=UNLOCK_ELEMENTS(clearCount);
     g.unlockedGrades=UNLOCK_GRADES(clearCount);
-    g.diffMul=0.8;
+    g.diffMul=1.0;
     g.rotMode=true;
     G.current=g;
     setRotMode(true);
@@ -1984,7 +1993,7 @@ export default function App(){
     g.hiddenHero={...h,id:h.id};
     // 난이도 최종 반영
     g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?1.7:difficulty==='normal'?1.3:1.0;
+    g.diffMul=difficulty==='easy'?2.5:difficulty==='normal'?1.7:1.3;
     // 수호자: 시작 라이프 +10
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
     // 미배치 유닛 자동 배치
@@ -2580,9 +2589,9 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×1.7',color:'#4f8',icon:'🌱',need:0},
-                {key:'normal',label:'보통',desc:'공격력 ×1.3',color:'#4af',icon:'⚔️',need:1},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.0',color:'#f44',icon:'💀',need:5},
+                {key:'easy',label:'쉬움',desc:'공격력 ×2.5',color:'#4f8',icon:'🌱',need:0},
+                {key:'normal',label:'보통',desc:'공격력 ×1.7',color:'#4af',icon:'⚔️',need:1},
+                {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀',need:5},
               ].map(d=>{
                 const unlocked=clearCount>=d.need;
                 return(
