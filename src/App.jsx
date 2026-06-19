@@ -186,6 +186,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v2.6",
+    date:"2025-06-17",
+    title:"글로벌 랭킹 시스템 전면 개편",
+    changes:[
+      "🌐 실제 글로벌 랭킹 연동 (Supabase 데이터베이스 사용, 기기/브라우저 무관하게 모두 같은 랭킹 공유)",
+      "📅 일간 / 📆 주간 / 🏆 누적 랭킹 탭 분리",
+      "🔄 같은 닉네임은 누적되지 않고 더 좋은 기록으로 갱신",
+      "👤 닉네임 미입력 시 '익명12345' 형식으로 자동 생성 (숫자 랜덤)",
+    ]
+  },
+  {
+    version:"v2.5",
+    date:"2025-06-17",
+    title:"랭킹 저장 버그 수정",
+    changes:[
+      "🐛 닉네임을 입력하지 않고 플레이한 경우 게임오버/클리어 시 랭킹에 전혀 저장되지 않던 버그 수정",
+      "👤 닉네임 미입력 시 '익명'으로 자동 저장",
+    ]
+  },
+  {
     version:"v2.4",
     date:"2025-06-17",
     title:"골드/코인 도박 확률 너프",
@@ -705,6 +725,10 @@ const GAMBLE_COIN=[
   {cost:10,label:"10코인 도박",results:[{prob:0.55,reward:"coin",val:0,desc:"꽝"},{prob:0.33,reward:"coin",val:14,desc:"+14코인"},{prob:0.08,reward:"coin",val:30,desc:"+30코인"},{prob:0.03,reward:"coin",val:60,desc:"+60코인"},{prob:0.01,reward:"coin",val:150,desc:"+150코인 🎉"}]},
 ];
 
+// Supabase 설정
+const SUPABASE_URL="https://qfsgylscrjmevqewgqrn.supabase.co";
+const SUPABASE_KEY="sb_publishable_fVoCA4WfdzLVwWeb0Rz0iA_IBetZ9Je";
+
 let hid=1,eid=1;
 const EL_BASE={"불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","얼음":"얼음","빛":"빛","어둠":"어둠","소리":"소리","무속성":"무속성","독":"독","나무":"나무","맹독":"독","독안개":"독","가시숲":"나무","독폭풍":"독","맹독늪":"나무","화염폭풍":"불","해일":"물","지진":"땅","돌풍":"바람","번개신":"전기","절대영도":"얼음","신성광":"빛","심연":"어둠","공명":"소리","용암":"불","빙하":"물","번개폭풍":"바람","공허":"빛","폭풍화염":"불","음파해일":"물","용암폭풍":"불","냉기폭풍":"물","뇌신":"전기","빙하신":"얼음","빛의신":"빛","어둠신":"어둠","성음":"소리","태풍":"바람","용암지진":"땅","음파폭풍":"물","불의왕":"불","빙설신":"물","신성폭풍":"빛","화염제왕":"불","파도왕":"물","대지왕":"땅","폭풍왕":"바람","번개왕":"전기","빙하왕":"얼음","광명왕":"빛","암흑왕":"어둠","음파왕":"소리","혼돈왕":"빛","화염신화":"불","파도신화":"물","폭풍신화":"바람","번개신화":"전기","빙하신화":"얼음","광명신화":"빛","암흑신화":"어둠","음파신화":"소리","폭풍불멸":"바람","빙하불멸":"얼음","광명불멸":"빛","화염불멸":"불","궁극불멸":"바람","시간":"시간","홍수":"홍수","운석":"운석","시간의눈보라":"시간","홍수해일":"홍수","화염운석":"운석","시간폭풍":"시간","대홍수":"홍수","운석폭우":"운석","시간지배자":"시간","해일왕":"홍수","운석신":"운석","황금정령":"무속성","변신정령":"무속성",
   // 인간 계열
@@ -995,6 +1019,7 @@ export default function App(){
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
   const [rankLoading,setRankLoading]=useState(false); // 첫 진입시 패치노트 표시 // easy/normal/hard
+  const [rankPeriod,setRankPeriod]=useState('all'); // 'daily'|'weekly'|'all'
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
@@ -2357,45 +2382,60 @@ export default function App(){
       setClearCount(newCount);
       try{localStorage.setItem('clearCount',String(newCount));}catch{}
     }
-    if(!nickname.trim())return;
+    const finalName=nickname.trim()||`익명${Math.floor(Math.random()*90000+10000)}`;
     const g=G.current;
     const record={
-      name:nickname.trim(),
+      name:finalName,
       difficulty:g.difficulty||'hard',
       round:g.round,
       gold:g.gold,
       coins:g.coins,
       map:currentMapName,
       victory:isVictory,
-      ts:Date.now(),
+      updated_at:new Date().toISOString(),
     };
     try{
-      // 기존 랭킹 불러오기
-      let list=[];
-      try{const res=await window.storage.get('ranking',true);if(res)list=JSON.parse(res.value);}catch(e){}
-      // 같은 닉네임 중 더 좋은 기록만 남기기 (라운드 기준)
-      const others=list.filter(r=>r.name!==record.name);
-      const mine=list.find(r=>r.name===record.name);
-      // 이전 기록보다 높을 때만 갱신 (라운드→골드→코인 순 비교)
+      // 기존 기록 조회 (같은 닉네임)
+      const getRes=await fetch(`${SUPABASE_URL}/rest/v1/rankings?name=eq.${encodeURIComponent(finalName)}&select=round,gold,coins`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+      });
+      const existing=await getRes.json();
+      const mine=existing&&existing[0];
       const isBetter=!mine
         ||(record.round>mine.round)
         ||(record.round===mine.round&&record.gold>mine.gold)
         ||(record.round===mine.round&&record.gold===mine.gold&&record.coins>mine.coins);
-      const best=isBetter?record:mine;
-      const newList=[...others,best]
-        .sort((a,b)=>b.round-a.round||b.gold-a.gold)
-        .slice(0,50);
-      await window.storage.set('ranking',JSON.stringify(newList),true);
+      if(!isBetter)return; // 이전 기록이 더 좋으면 갱신 안함
+      // upsert: 같은 이름 있으면 갱신, 없으면 삽입
+      await fetch(`${SUPABASE_URL}/rest/v1/rankings?on_conflict=name`,{
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${SUPABASE_KEY}`,
+          'Content-Type':'application/json',
+          Prefer:'resolution=merge-duplicates',
+        },
+        body:JSON.stringify(record),
+      });
     }catch(e){console.error('ranking save error',e);}
   };
 
-  // ── 랭킹 불러오기
-  const loadRanking=async()=>{
+  // ── 랭킹 불러오기 (일간/주간/누적)
+  const loadRanking=async(period)=>{
     setRankLoading(true);
     try{
-      const res=await window.storage.get('ranking',true);
-      if(res){setRanking(JSON.parse(res.value));}
-      else setRanking([]);
+      let query=`${SUPABASE_URL}/rest/v1/rankings?select=*&order=round.desc,gold.desc&limit=50`;
+      const p=period||rankPeriod;
+      if(p==='daily'){
+        const since=new Date();since.setHours(0,0,0,0);
+        query+=`&updated_at=gte.${since.toISOString()}`;
+      }else if(p==='weekly'){
+        const since=new Date();since.setDate(since.getDate()-7);
+        query+=`&updated_at=gte.${since.toISOString()}`;
+      }
+      const res=await fetch(query,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});
+      const data=await res.json();
+      setRanking(Array.isArray(data)?data:[]);
     }catch(e){setRanking([]);}
     setRankLoading(false);
   };
@@ -2518,6 +2558,14 @@ export default function App(){
                 </button>
                 <button onClick={()=>setShowRanking(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
               </div>
+            </div>
+            <div style={{display:"flex",gap:6,padding:"10px 16px 0",flexShrink:0}}>
+              {[{key:'daily',label:'📅 일간'},{key:'weekly',label:'📆 주간'},{key:'all',label:'🏆 누적'}].map(p=>(
+                <button key={p.key} onClick={()=>{setRankPeriod(p.key);loadRanking(p.key);}}
+                  style={{flex:1,background:rankPeriod===p.key?"#1f6feb":"#1e293b",border:`1px solid ${rankPeriod===p.key?"#3b82f6":"#334155"}`,color:rankPeriod===p.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:rankPeriod===p.key?"bold":"normal"}}>
+                  {p.label}
+                </button>
+              ))}
             </div>
             <div style={{overflowY:"auto",flex:1,padding:"12px 16px"}}>
               {rankLoading&&<div style={{textAlign:"center",color:"#555",padding:20}}>불러오는 중...</div>}
