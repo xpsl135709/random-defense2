@@ -186,6 +186,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v1.9",
+    date:"2025-06-17",
+    title:"화면 레이아웃 반전 & 뭉치기 버그 수정",
+    changes:[
+      "🔄 화면 레이아웃 상하 반전 (글자는 그대로, 배치 순서만 변경)",
+      "🐛 뭉치기 버그 수정: 보관함(미배치) 유닛으로 조합 시 결과 유닛이 사라지던 문제 해결",
+      "📍 뭉치기 결과 유닛 배치 로직 개선: 배치된 재료가 있으면 그 위치 사용, 없으면 자동 배치",
+    ]
+  },
+  {
+    version:"v1.8",
+    date:"2025-06-17",
+    title:"게임 멈춤 버그 수정",
+    changes:[
+      "🔧 라운드 클리어 후 카운트다운 처리 중 게임이 영구적으로 멈추는 버그 수정",
+      "🔧 게임 루프가 중단되지 않고 항상 다음 프레임을 요청하도록 구조 변경",
+      "🛡️ 카운트다운 종료 감지 안전장치 추가 (interval 실패 시에도 자동 복구)",
+    ]
+  },
+  {
     version:"v1.7",
     date:"2025-06-17",
     title:"난이도 재조정 (체감 난이도 완화)",
@@ -1445,7 +1465,15 @@ export default function App(){
     const raw=Math.min((t-lt.current)/1000,0.1);
     const dt=raw*spR.current;lt.current=t;
     const g=G.current;
-    if(!g||g.over||!g.running){draw();return;}
+    if(!g||g.over){draw();return;}
+    if(!g.running){
+      // 안전장치: 카운트다운이 끝났는데도 running이 false면 강제로 재개
+      if(countdownValRef.current<=0&&!countdownRef.current&&!g.cleared){
+        g.running=true;
+      } else {
+        draw();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));return;
+      }
+    }
     const isMidRound=g.round%5===0&&g.round%10!==0,isBossRound=g.round%10===0;
     const wt=g.waveType||'normal';
     const waveOpts={
@@ -2251,12 +2279,15 @@ export default function App(){
     const els=targets.map(h=>h.element);
     let result=null;
     for(const r of COMBO){if(els.includes(r.a)&&els.includes(r.b)){result=r;break;}}
-    const pos={col:targets[0].col,row:targets[0].row};
+    // 배치된 유닛 위치 우선 사용, 없으면 자동배치
+    const placedTarget=targets.find(t=>t.col!==null);
     let nh;
     if(result){nh=mkH(result.r,result.g,g.gradeEnhLv||{});}
     else{const pool=COMBO.filter(r=>r.g==="고급");const rnd=pool[Math.floor(Math.random()*pool.length)];nh=mkH(rnd.r,rnd.g,g.gradeEnhLv||{});}
-    nh.col=pos.col;nh.row=pos.row;
-    g.heroes=g.heroes.filter(x=>!picks.includes(x.id));g.heroes.push(nh);
+    const remaining=g.heroes.filter(x=>!picks.includes(x.id));
+    if(placedTarget){nh.col=placedTarget.col;nh.row=placedTarget.row;}
+    else{const pos=autoPlace(remaining);if(pos){nh.col=pos[0];nh.row=pos[1];}}
+    g.heroes=[...remaining,nh];
     randomPicksRef.current=[];setRandomPicks([]);setModal(null);setSelHero(null);sync();draw();
   };
 
@@ -2633,7 +2664,7 @@ export default function App(){
   // 게임 화면
   // ══════════════════════════════════════════
   return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column-reverse",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
       {/* HUD */}
