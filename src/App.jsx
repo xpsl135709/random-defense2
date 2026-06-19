@@ -186,6 +186,24 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v2.8",
+    date:"2025-06-17",
+    title:"카운트다운 스킵 버튼 위치 변경",
+    changes:[
+      "⏭️ 라이프 옆 스킵 버튼 제거, 배속 선택 줄 아래로 이동",
+      "💀 보스 라운드 정보(이름/약점)도 같이 표시되도록 통합",
+    ]
+  },
+  {
+    version:"v2.7",
+    date:"2025-06-17",
+    title:"레이아웃 원복",
+    changes:[
+      "🔄 화면 상하 반전 레이아웃을 원래대로 되돌림 (사용성 이슈)",
+      "📍 유닛/적 선택 정보 패널 위치도 원래대로 되돌림 (액션 버튼 아래)",
+    ]
+  },
+  {
     version:"v2.6",
     date:"2025-06-17",
     title:"글로벌 랭킹 시스템 전면 개편",
@@ -2760,7 +2778,7 @@ export default function App(){
   // 게임 화면
   // ══════════════════════════════════════════
   return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column-reverse",alignItems:"center",padding:"8px"}}>
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
       {/* HUD */}
@@ -2769,9 +2787,6 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:4,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 8px",border:"1px solid #1e293b",borderBottom:"none"}}>
           <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontSize:11,flexShrink:0}}>🏠</button>
           <span style={{background:"#450a0a",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
-          {countdown>0&&
-            <button onClick={skipCountdown} style={{background:"#1e3a5f",border:"1px solid #3b82f6",color:"#60a5fa",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontSize:10,fontWeight:"bold",flexShrink:0}}>⏭️{countdown}s</button>
-          }
           <span style={{flex:1}}/>
           <span style={{background:"#1c1917",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
           <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
@@ -2789,7 +2804,7 @@ export default function App(){
           <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 10px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 3줄: 배속 */}
-        <div style={{display:"flex",gap:3,background:"#0a0f1a",borderRadius:"0 0 10px 10px",padding:"4px 6px",border:"1px solid #1e293b",borderTop:"none"}}>
+        <div style={{display:"flex",gap:3,background:"#0a0f1a",borderRadius:countdown>0?0:"0 0 10px 10px",padding:"4px 6px",border:"1px solid #1e293b",borderTop:"none"}}>
           {[1,2,3,4].map(s=>(
             <button key={s} onClick={()=>changeSpeed(s)}
               style={{flex:1,background:speed===s?"#1d4ed8":"transparent",border:`1px solid ${speed===s?"#3b82f6":"#1e293b"}`,color:speed===s?"#fff":"#475569",borderRadius:6,padding:"4px 0",cursor:"pointer",fontSize:13,fontWeight:"bold",transition:"all 0.15s"}}>
@@ -2797,6 +2812,115 @@ export default function App(){
             </button>
           ))}
         </div>
+        {/* 4줄: 카운트다운 + 보스정보 + 스킵 */}
+        {countdown>0&&(()=>{
+          const nb=G.current?.round%10===0;
+          const bossInfo=nb?makeBoss(G.current?.round||10):null;
+          return(
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:bossInfo?"linear-gradient(135deg,#450a0a,#7f1d1d)":"linear-gradient(135deg,#052e16,#14532d)",padding:"6px 10px",border:`1px solid ${bossInfo?"#ef4444":"#166534"}`,borderTop:"none",borderRadius:bossInfo?0:"0 0 10px 10px",fontSize:14,color:bossInfo?"#fca5a5":"#4ade80",fontWeight:"bold"}}>
+                {G.current?.waveLabel&&<span style={{fontSize:12,marginRight:6,color:"#fcd34d"}}>{G.current.waveLabel}</span>}
+                <span>⏱ {countdown}초 후 시작</span>
+                <button onClick={skipCountdown}
+                  style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",marginLeft:8,flexShrink:0}}>
+                  ▶ 스킵
+                </button>
+              </div>
+              {bossInfo&&(
+                <div style={{background:"#1c0a0a",borderRadius:"0 0 10px 10px",padding:"5px 10px",border:"1px solid #7f1d1d",borderTop:"none",display:"flex",alignItems:"center",gap:8,fontSize:11}}>
+                  <span style={{fontSize:16}}>{bossInfo.emoji}</span>
+                  <span style={{color:"#fca5a5",fontWeight:"bold"}}>{bossInfo.name}</span>
+                  <span style={{color:"#888",flex:1}}>{bossInfo.desc}</span>
+                  <div style={{display:"flex",gap:3}}>
+                    {(bossInfo.weak||[]).map(w=>(
+                      <span key={w} style={{background:"#451a03",border:"1px solid #f97316",borderRadius:4,padding:"1px 4px",color:"#fb923c",fontSize:10}}>{EE[w]||w}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+
+
+      <canvas ref={cvs} width={COLS*CS} height={ROWS*CS} onClick={onCanvas}
+        style={{width:"100%",maxWidth:440,borderRadius:12,
+          border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
+          boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
+          cursor:drag||selHero?"crosshair":"default"}}/>
+
+      {/* 게임오버 */}
+      {ui.over&&(()=>{
+        const g=G.current;
+        const diff=g?.difficulty||'hard';
+        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        return(<Overlay>
+          <div style={{fontSize:40,textAlign:"center"}}>💀</div>
+          <div style={{fontSize:20,fontWeight:"bold",color:"#f44",margin:"8px 0",textAlign:"center"}}>게임 오버</div>
+          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>라운드</span><span style={{color:"#4af",fontWeight:"bold"}}>R{ui.round}/100</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
+            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:8}}>
+            <Btn bg="#c33" onClick={()=>{saveRecord(false);startGame(null);}}>다시 시작</Btn>
+            <Btn bg="#333" onClick={()=>{saveRecord(false);setPhase('title');}}>타이틀로</Btn>
+          </div>
+          <Btn bg="#21262d" onClick={()=>{saveRecord(false);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
+        </Overlay>);
+      })()}
+      {ui.victory&&(()=>{
+        const g=G.current;
+        const diff=g?.difficulty||'hard';
+        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        return(<Overlay>
+          <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
+          <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
+          <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다!</div>
+          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
+            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:8}}>
+            <Btn bg="#1f6feb" onClick={()=>{saveRecord(true);startGame(null);}}>다시 시작</Btn>
+            <Btn bg="#333" onClick={()=>{saveRecord(true);setPhase('title');}}>타이틀로</Btn>
+          </div>
+          <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={()=>{
+            const g=G.current;
+            g.victory=false;g.over=false;g.infiniteMode=true;
+            g.running=true;lt.current=performance.now();
+            raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
+            setUi(prev=>({...prev,victory:false,over:false}));
+          }} style={{width:"100%",marginBottom:6,border:"1px solid #7c3aed"}}>🌀 무한모드 계속하기</Btn>
+          <Btn bg="#21262d" onClick={()=>{saveRecord(true);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
+        </Overlay>);
+      })()}
+
+      {/* 액션 버튼 */}
+      <div style={{width:"100%",maxWidth:440,display:"flex",gap:5,marginTop:5}}>
+        <button onClick={()=>{
+          const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
+          g.gold-=10;
+          const h=mkH(UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)],"노말",g.gradeEnhLv||{});
+          const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
+          g.heroes.push(h);sync();draw();
+        }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
+          🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
+        </button>
+        <button onClick={()=>{setRandomPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
+          ✨<br/><span style={{fontSize:10,opacity:0.8}}>뭉치기</span>
+        </button>
+        <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(245,158,11,0.2)"}}>
+          ⬆️<br/><span style={{fontSize:10,opacity:0.8}}>강화</span>
+        </button>
+        <button onClick={()=>setModal("shop")} style={{flex:1,background:"linear-gradient(135deg,#4c1d95,#3b0764)",border:"1px solid #a78bfa",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(167,139,250,0.2)"}}>
+          🪙<br/><span style={{fontSize:10,opacity:0.8}}>{ui.coins}</span>
+        </button>
       </div>
 
       {/* 선택 영웅 패널 */}
@@ -2891,115 +3015,6 @@ export default function App(){
           {combOpts.length===0&&<div style={{fontSize:11,color:"#555"}}>조합 가능한 재료 없음</div>}
         </div>
       )}
-
-
-      {countdown>0&&(()=>{
-        const nb=G.current?.round%10===0;
-        const bossInfo=nb?makeBoss(G.current?.round||10):null;
-        return(
-        <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:bossInfo?"linear-gradient(135deg,#450a0a,#7f1d1d)":"linear-gradient(135deg,#052e16,#14532d)",borderRadius:bossInfo?"8px 8px 0 0":8,padding:"6px 10px",border:`1px solid ${bossInfo?"#ef4444":"#166534"}`,fontSize:15,color:bossInfo?"#fca5a5":"#4ade80",fontWeight:"bold"}}>
-            {G.current?.waveLabel&&<span style={{fontSize:13,marginRight:8,color:"#fcd34d"}}>{G.current.waveLabel}</span>}
-            <span>⏱ {countdown}초 후 시작</span>
-            <button onClick={skipCountdown}
-              style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",marginLeft:8,flexShrink:0}}>
-              ▶ 스킵
-            </button>
-          </div>
-          {bossInfo&&(
-            <div style={{background:"#1c0a0a",borderRadius:"0 0 8px 8px",padding:"5px 10px",border:"1px solid #7f1d1d",borderTop:"none",display:"flex",alignItems:"center",gap:8,fontSize:11}}>
-              <span style={{fontSize:16}}>{bossInfo.emoji}</span>
-              <span style={{color:"#fca5a5",fontWeight:"bold"}}>{bossInfo.name}</span>
-              <span style={{color:"#888",flex:1}}>{bossInfo.desc}</span>
-              <div style={{display:"flex",gap:3}}>
-                {(bossInfo.weak||[]).map(w=>(
-                  <span key={w} style={{background:"#451a03",border:"1px solid #f97316",borderRadius:4,padding:"1px 4px",color:"#fb923c",fontSize:10}}>{EE[w]||w}</span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        );
-      })()}
-
-      <canvas ref={cvs} width={COLS*CS} height={ROWS*CS} onClick={onCanvas}
-        style={{width:"100%",maxWidth:440,borderRadius:12,
-          border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
-          boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
-          cursor:drag||selHero?"crosshair":"default"}}/>
-
-      {/* 게임오버 */}
-      {ui.over&&(()=>{
-        const g=G.current;
-        const diff=g?.difficulty||'hard';
-        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
-        return(<Overlay>
-          <div style={{fontSize:40,textAlign:"center"}}>💀</div>
-          <div style={{fontSize:20,fontWeight:"bold",color:"#f44",margin:"8px 0",textAlign:"center"}}>게임 오버</div>
-          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>라운드</span><span style={{color:"#4af",fontWeight:"bold"}}>R{ui.round}/100</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
-            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
-          </div>
-          <div style={{display:"flex",gap:6,marginBottom:8}}>
-            <Btn bg="#c33" onClick={()=>{saveRecord(false);startGame(null);}}>다시 시작</Btn>
-            <Btn bg="#333" onClick={()=>{saveRecord(false);setPhase('title');}}>타이틀로</Btn>
-          </div>
-          <Btn bg="#21262d" onClick={()=>{saveRecord(false);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
-        </Overlay>);
-      })()}
-      {ui.victory&&(()=>{
-        const g=G.current;
-        const diff=g?.difficulty||'hard';
-        const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
-        return(<Overlay>
-          <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
-          <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
-          <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다!</div>
-          <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
-            <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
-          </div>
-          <div style={{display:"flex",gap:6,marginBottom:8}}>
-            <Btn bg="#1f6feb" onClick={()=>{saveRecord(true);startGame(null);}}>다시 시작</Btn>
-            <Btn bg="#333" onClick={()=>{saveRecord(true);setPhase('title');}}>타이틀로</Btn>
-          </div>
-          <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={()=>{
-            const g=G.current;
-            g.victory=false;g.over=false;g.infiniteMode=true;
-            g.running=true;lt.current=performance.now();
-            raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
-            setUi(prev=>({...prev,victory:false,over:false}));
-          }} style={{width:"100%",marginBottom:6,border:"1px solid #7c3aed"}}>🌀 무한모드 계속하기</Btn>
-          <Btn bg="#21262d" onClick={()=>{saveRecord(true);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
-        </Overlay>);
-      })()}
-
-      {/* 액션 버튼 */}
-      <div style={{width:"100%",maxWidth:440,display:"flex",gap:5,marginTop:5}}>
-        <button onClick={()=>{
-          const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
-          g.gold-=10;
-          const h=mkH(UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)],"노말",g.gradeEnhLv||{});
-          const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
-          g.heroes.push(h);sync();draw();
-        }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
-          🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
-        </button>
-        <button onClick={()=>{setRandomPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
-          ✨<br/><span style={{fontSize:10,opacity:0.8}}>뭉치기</span>
-        </button>
-        <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(245,158,11,0.2)"}}>
-          ⬆️<br/><span style={{fontSize:10,opacity:0.8}}>강화</span>
-        </button>
-        <button onClick={()=>setModal("shop")} style={{flex:1,background:"linear-gradient(135deg,#4c1d95,#3b0764)",border:"1px solid #a78bfa",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(167,139,250,0.2)"}}>
-          🪙<br/><span style={{fontSize:10,opacity:0.8}}>{ui.coins}</span>
-        </button>
-      </div>
 
       {(drag||selHero)&&(
         <div style={{width:"100%",maxWidth:440,fontSize:11,color:"#fbbf24",marginTop:4,padding:"4px 10px",background:"rgba(251,191,36,0.08)",borderRadius:7,border:"1px solid rgba(251,191,36,0.2)",textAlign:"center"}}>
