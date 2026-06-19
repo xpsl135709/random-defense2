@@ -186,6 +186,32 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v2.2",
+    date:"2025-06-17",
+    title:"유닛 선택 패널 위치 변경",
+    changes:[
+      "📍 유닛/적 선택 정보 패널을 라이프 HUD 바로 아래로 이동 (기존: 하단 → 변경: 상단)",
+    ]
+  },
+  {
+    version:"v2.1",
+    date:"2025-06-17",
+    title:"유닛 설명 UI 개선",
+    changes:[
+      "📱 유닛 상세정보(롱프레스)를 화면 중앙 모달 → 하단 시트 방식으로 변경",
+    ]
+  },
+  {
+    version:"v2.0",
+    date:"2025-06-17",
+    title:"난이도 재조정 & 도박장 잠금 버그 수정",
+    changes:[
+      "⚔️ 난이도 배율 조정: 쉬움 ×2.5→×2.2, 보통 ×1.7→×1.5, 어려움 ×1.3 유지, 회전 ×1.0 유지",
+      "🐛 도박장(코인 도박) 등급 잠금 버그 수정: 클리어 안 한 상태에서 전설/신화가 나오던 문제 해결",
+      "🔒 미개방 등급 당첨 시 현재 개방된 가장 높은 등급으로 자동 대체",
+    ]
+  },
+  {
     version:"v1.9",
     date:"2025-06-17",
     title:"화면 레이아웃 반전 & 뭉치기 버그 수정",
@@ -870,7 +896,7 @@ const initGame=(diff='hard')=>({
   mapKey:CURRENT_MAP||'B',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
-  diffMul:diff==='easy'?2.5:diff==='normal'?1.7:1.3,
+  diffMul:diff==='easy'?2.2:diff==='normal'?1.5:1.3,
 });
 
 // ══════════════════════════════════════════
@@ -2021,7 +2047,7 @@ export default function App(){
     g.hiddenHero={...h,id:h.id};
     // 난이도 최종 반영
     g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?2.5:difficulty==='normal'?1.7:1.3;
+    g.diffMul=difficulty==='easy'?2.2:difficulty==='normal'?1.5:1.3;
     // 수호자: 시작 라이프 +10
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
     // 미배치 유닛 자동 배치
@@ -2620,8 +2646,8 @@ export default function App(){
             <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
             <div style={{display:"flex",gap:6}}>
               {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×2.5',color:'#4f8',icon:'🌱',need:0},
-                {key:'normal',label:'보통',desc:'공격력 ×1.7',color:'#4af',icon:'⚔️',need:1},
+                {key:'easy',label:'쉬움',desc:'공격력 ×2.2',color:'#4f8',icon:'🌱',need:0},
+                {key:'normal',label:'보통',desc:'공격력 ×1.5',color:'#4af',icon:'⚔️',need:1},
                 {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀',need:5},
               ].map(d=>{
                 const unlocked=clearCount>=d.need;
@@ -2702,6 +2728,100 @@ export default function App(){
           ))}
         </div>
       </div>
+
+      {/* 선택 영웅 패널 */}
+      {selEnemy&&(
+        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:"1px solid #dc262644",borderRadius:12,padding:"10px 12px",marginTop:5}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:20}}>
+                {selEnemy.type==="은신"?"👻":selEnemy.type==="공중"?"🦅":selEnemy.type==="분열"?"🔀":selEnemy.type==="재생"?"💚":selEnemy.type==="방패"?"🛡️":selEnemy.type==="돌진"?"💨":selEnemy.isBoss?"💀":"👾"}
+              </span>
+              <div>
+                <span style={{color:"#f87171",fontWeight:"bold",fontSize:13}}>{selEnemy.isBoss?"보스":selEnemy.type} 적</span>
+                {selEnemy.isBoss&&selEnemy.isRaging&&<span style={{color:"#ff4500",fontSize:10,marginLeft:4}}>⚠️광폭화</span>}
+              </div>
+            </div>
+            <button onClick={()=>setSelEnemy(null)} style={{background:"transparent",border:"none",color:"#475569",cursor:"pointer",fontSize:16}}>✕</button>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+              <span style={{color:"#94a3b8"}}>HP </span>
+              <span style={{color:"#f87171",fontWeight:"bold"}}>{Math.max(0,Math.floor(selEnemy.hp))}</span>
+              <span style={{color:"#475569"}}> / {selEnemy.maxHp}</span>
+            </div>
+            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+              <span style={{color:"#94a3b8"}}>체력 </span>
+              <span style={{color:"#22c55e",fontWeight:"bold"}}>{Math.round((selEnemy.hp/selEnemy.maxHp)*100)}%</span>
+            </div>
+            {selEnemy.isBoss&&selEnemy.weak&&(
+              <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
+                <span style={{color:"#94a3b8"}}>약점 </span>
+                {selEnemy.weak.map(w=><span key={w} style={{color:"#fbbf24",fontWeight:"bold",marginRight:3}}>{EE[w]||w}{EN[w]||w}</span>)}
+              </div>
+            )}
+            {selEnemy.stunTimer>0&&<span style={{background:"#78350f",color:"#fcd34d",borderRadius:6,padding:"3px 8px",fontSize:11}}>⚡스턴 {selEnemy.stunTimer.toFixed(1)}s</span>}
+            {selEnemy.rootTimer>0&&<span style={{background:"#14532d",color:"#86efac",borderRadius:6,padding:"3px 8px",fontSize:11}}>🌿속박 {selEnemy.rootTimer.toFixed(1)}s</span>}
+            {selEnemy.rootImmune>0&&<span style={{background:"#1e293b",color:"#64748b",borderRadius:6,padding:"3px 8px",fontSize:11}}>🛡속박면역 {selEnemy.rootImmune.toFixed(1)}s</span>}
+            {selEnemy.slowTimer>0&&<span style={{background:"#0c4a6e",color:"#7dd3fc",borderRadius:6,padding:"3px 8px",fontSize:11}}>❄️슬로우 {selEnemy.slowTimer.toFixed(1)}s</span>}
+            {selEnemy.dotTimer>0&&<span style={{background:"#14532d",color:"#4ade80",borderRadius:6,padding:"3px 8px",fontSize:11}}>☠️독 {selEnemy.dotTimer.toFixed(1)}s</span>}
+            {selEnemy.debuff&&selEnemy.debuffTimer>0&&<span style={{background:"#450a0a",color:"#fca5a5",borderRadius:6,padding:"3px 8px",fontSize:11}}>💧방어감소 {selEnemy.debuffTimer.toFixed(1)}s</span>}
+          </div>
+        </div>
+      )}
+      {selHeroObj&&(
+        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:`1px solid ${GC[selHeroObj.grade]||"#fa0"}66`,borderRadius:12,padding:"10px 12px",marginTop:5,boxShadow:`0 0 12px ${GC[selHeroObj.grade]||"#fa0"}22`}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <div style={{width:40,height:40,borderRadius:10,background:`${GC[selHeroObj.grade]||"#aaa"}22`,border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
+              {EE[selHeroObj.element]||"?"}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{color:GC[selHeroObj.grade],fontWeight:"bold",fontSize:13}}>{EN[selHeroObj.element]||selHeroObj.element}</span>
+                <span style={{background:`${GC[selHeroObj.grade]||"#aaa"}22`,color:GC[selHeroObj.grade],fontSize:10,borderRadius:4,padding:"1px 5px",border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}44`}}>{selHeroObj.grade}</span>
+                {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:11,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:2,fontSize:10,color:"#64748b"}}>
+                <span>⚔️{Math.floor((selHeroObj.atk+(selHeroObj.enhLv||0)*5))}</span>
+                <span>💨{((selHeroObj.spd||1)*100).toFixed(0)}%</span>
+                <span>🎯{(selHeroObj.range||3.0).toFixed(1)}</span>
+              </div>
+              {(()=>{
+                const trait=getElTrait(elBase(selHeroObj.element));
+                const traitColor={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";
+                return(
+                  <div style={{marginTop:4,display:"flex",gap:4,flexWrap:"wrap"}}>
+                    <span style={{background:traitColor+"22",border:`1px solid ${traitColor}55`,borderRadius:5,padding:"1px 6px",fontSize:10,color:traitColor,fontWeight:"bold"}}>
+                      {trait.desc}
+                    </span>
+                    <span style={{fontSize:10,color:"#475569"}}>{trait.detail}</span>
+                  </div>
+                );
+              })()}
+            </div>
+            <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontSize:13}}>✕</button>
+          </div>
+          <div style={{display:"flex",gap:5,marginBottom:8}}>
+            <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>📍 이동</button>
+            {canEnhance(selHeroObj)?
+              <button onClick={()=>doEnhance(selHeroObj.id)} style={{flex:1,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>⬆️ {enhCost(selHeroObj)}G <span style={{fontSize:9,opacity:0.7}}>({selHeroObj.enhLv||0}/{maxEnh(selHeroObj)})</span></button>
+              :<div style={{flex:1,background:"#1e293b",border:"1px solid #334155",color:"#475569",borderRadius:8,padding:"6px",fontSize:11,textAlign:"center"}}>{ENHANCE_GRADES.includes(selHeroObj.grade)?"최대강화":"강화불가"}</div>
+            }
+            <button onClick={()=>doSell(selHeroObj.id)} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>💰+{SELL_PRICE[selHeroObj.grade]||5}G</button>
+          </div>
+          {combOpts.length>0&&(<><div style={{fontSize:11,color:"#aaa",marginBottom:5}}>⚗️ 조합 가능</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {combOpts.map((r,i)=>(
+                <button key={i} onClick={()=>doCombine(selHero,r)}
+                  style={{background:hr(GC[r.g]||"#888",0.13),border:`1px solid ${GC[r.g]||"#888"}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#eee",fontSize:11}}>
+                  {EE[r.r]||""} {EN[r.r]||r.r} <span style={{color:GC[r.g],fontSize:10}}>[{r.g}]</span>
+                </button>
+              ))}
+            </div></>)}
+          {combOpts.length===0&&<div style={{fontSize:11,color:"#555"}}>조합 가능한 재료 없음</div>}
+        </div>
+      )}
+
 
       {countdown>0&&(()=>{
         const nb=G.current?.round%10===0;
@@ -2817,99 +2937,6 @@ export default function App(){
         </div>
       )}
 
-      {/* 선택 영웅 패널 */}
-      {selEnemy&&(
-        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:"1px solid #dc262644",borderRadius:12,padding:"10px 12px",marginTop:5}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:20}}>
-                {selEnemy.type==="은신"?"👻":selEnemy.type==="공중"?"🦅":selEnemy.type==="분열"?"🔀":selEnemy.type==="재생"?"💚":selEnemy.type==="방패"?"🛡️":selEnemy.type==="돌진"?"💨":selEnemy.isBoss?"💀":"👾"}
-              </span>
-              <div>
-                <span style={{color:"#f87171",fontWeight:"bold",fontSize:13}}>{selEnemy.isBoss?"보스":selEnemy.type} 적</span>
-                {selEnemy.isBoss&&selEnemy.isRaging&&<span style={{color:"#ff4500",fontSize:10,marginLeft:4}}>⚠️광폭화</span>}
-              </div>
-            </div>
-            <button onClick={()=>setSelEnemy(null)} style={{background:"transparent",border:"none",color:"#475569",cursor:"pointer",fontSize:16}}>✕</button>
-          </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
-              <span style={{color:"#94a3b8"}}>HP </span>
-              <span style={{color:"#f87171",fontWeight:"bold"}}>{Math.max(0,Math.floor(selEnemy.hp))}</span>
-              <span style={{color:"#475569"}}> / {selEnemy.maxHp}</span>
-            </div>
-            <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
-              <span style={{color:"#94a3b8"}}>체력 </span>
-              <span style={{color:"#22c55e",fontWeight:"bold"}}>{Math.round((selEnemy.hp/selEnemy.maxHp)*100)}%</span>
-            </div>
-            {selEnemy.isBoss&&selEnemy.weak&&(
-              <div style={{background:"#1e293b",borderRadius:8,padding:"5px 10px",fontSize:12}}>
-                <span style={{color:"#94a3b8"}}>약점 </span>
-                {selEnemy.weak.map(w=><span key={w} style={{color:"#fbbf24",fontWeight:"bold",marginRight:3}}>{EE[w]||w}{EN[w]||w}</span>)}
-              </div>
-            )}
-            {selEnemy.stunTimer>0&&<span style={{background:"#78350f",color:"#fcd34d",borderRadius:6,padding:"3px 8px",fontSize:11}}>⚡스턴 {selEnemy.stunTimer.toFixed(1)}s</span>}
-            {selEnemy.rootTimer>0&&<span style={{background:"#14532d",color:"#86efac",borderRadius:6,padding:"3px 8px",fontSize:11}}>🌿속박 {selEnemy.rootTimer.toFixed(1)}s</span>}
-            {selEnemy.rootImmune>0&&<span style={{background:"#1e293b",color:"#64748b",borderRadius:6,padding:"3px 8px",fontSize:11}}>🛡속박면역 {selEnemy.rootImmune.toFixed(1)}s</span>}
-            {selEnemy.slowTimer>0&&<span style={{background:"#0c4a6e",color:"#7dd3fc",borderRadius:6,padding:"3px 8px",fontSize:11}}>❄️슬로우 {selEnemy.slowTimer.toFixed(1)}s</span>}
-            {selEnemy.dotTimer>0&&<span style={{background:"#14532d",color:"#4ade80",borderRadius:6,padding:"3px 8px",fontSize:11}}>☠️독 {selEnemy.dotTimer.toFixed(1)}s</span>}
-            {selEnemy.debuff&&selEnemy.debuffTimer>0&&<span style={{background:"#450a0a",color:"#fca5a5",borderRadius:6,padding:"3px 8px",fontSize:11}}>💧방어감소 {selEnemy.debuffTimer.toFixed(1)}s</span>}
-          </div>
-        </div>
-      )}
-      {selHeroObj&&(
-        <div style={{width:"100%",maxWidth:440,background:"#0f172a",border:`1px solid ${GC[selHeroObj.grade]||"#fa0"}66`,borderRadius:12,padding:"10px 12px",marginTop:5,boxShadow:`0 0 12px ${GC[selHeroObj.grade]||"#fa0"}22`}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-            <div style={{width:40,height:40,borderRadius:10,background:`${GC[selHeroObj.grade]||"#aaa"}22`,border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
-              {EE[selHeroObj.element]||"?"}
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",alignItems:"center",gap:5}}>
-                <span style={{color:GC[selHeroObj.grade],fontWeight:"bold",fontSize:13}}>{EN[selHeroObj.element]||selHeroObj.element}</span>
-                <span style={{background:`${GC[selHeroObj.grade]||"#aaa"}22`,color:GC[selHeroObj.grade],fontSize:10,borderRadius:4,padding:"1px 5px",border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}44`}}>{selHeroObj.grade}</span>
-                {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:11,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
-              </div>
-              <div style={{display:"flex",gap:8,marginTop:2,fontSize:10,color:"#64748b"}}>
-                <span>⚔️{Math.floor((selHeroObj.atk+(selHeroObj.enhLv||0)*5))}</span>
-                <span>💨{((selHeroObj.spd||1)*100).toFixed(0)}%</span>
-                <span>🎯{(selHeroObj.range||3.0).toFixed(1)}</span>
-              </div>
-              {(()=>{
-                const trait=getElTrait(elBase(selHeroObj.element));
-                const traitColor={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";
-                return(
-                  <div style={{marginTop:4,display:"flex",gap:4,flexWrap:"wrap"}}>
-                    <span style={{background:traitColor+"22",border:`1px solid ${traitColor}55`,borderRadius:5,padding:"1px 6px",fontSize:10,color:traitColor,fontWeight:"bold"}}>
-                      {trait.desc}
-                    </span>
-                    <span style={{fontSize:10,color:"#475569"}}>{trait.detail}</span>
-                  </div>
-                );
-              })()}
-            </div>
-            <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:7,padding:"3px 9px",cursor:"pointer",fontSize:13}}>✕</button>
-          </div>
-          <div style={{display:"flex",gap:5,marginBottom:8}}>
-            <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>📍 이동</button>
-            {canEnhance(selHeroObj)?
-              <button onClick={()=>doEnhance(selHeroObj.id)} style={{flex:1,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>⬆️ {enhCost(selHeroObj)}G <span style={{fontSize:9,opacity:0.7}}>({selHeroObj.enhLv||0}/{maxEnh(selHeroObj)})</span></button>
-              :<div style={{flex:1,background:"#1e293b",border:"1px solid #334155",color:"#475569",borderRadius:8,padding:"6px",fontSize:11,textAlign:"center"}}>{ENHANCE_GRADES.includes(selHeroObj.grade)?"최대강화":"강화불가"}</div>
-            }
-            <button onClick={()=>doSell(selHeroObj.id)} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:8,padding:"6px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>💰+{SELL_PRICE[selHeroObj.grade]||5}G</button>
-          </div>
-          {combOpts.length>0&&(<><div style={{fontSize:11,color:"#aaa",marginBottom:5}}>⚗️ 조합 가능</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-              {combOpts.map((r,i)=>(
-                <button key={i} onClick={()=>doCombine(selHero,r)}
-                  style={{background:hr(GC[r.g]||"#888",0.13),border:`1px solid ${GC[r.g]||"#888"}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#eee",fontSize:11}}>
-                  {EE[r.r]||""} {EN[r.r]||r.r} <span style={{color:GC[r.g],fontSize:10}}>[{r.g}]</span>
-                </button>
-              ))}
-            </div></>)}
-          {combOpts.length===0&&<div style={{fontSize:11,color:"#555"}}>조합 가능한 재료 없음</div>}
-        </div>
-      )}
-
       {/* 영웅 목록 */}
       <div style={{width:"100%",maxWidth:440,display:"flex",gap:4,flexWrap:"wrap",marginTop:5,paddingBottom:4}}>
         {heroes.map(h=>{
@@ -2955,9 +2982,9 @@ export default function App(){
         const rngVal=((dh.range||3.0)+(buff.rangeBonus||0)).toFixed(1);
         return(
           <div onClick={()=>setDetailHero(null)}
-            style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:20}}>
+            style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:500}}>
             <div onClick={e=>e.stopPropagation()}
-              style={{background:"#0f172a",border:`2px solid ${gc2}`,borderRadius:16,padding:20,width:"100%",maxWidth:320,boxShadow:`0 0 30px ${gc2}44`}}>
+              style={{background:"#0f172a",border:`2px solid ${gc2}`,borderBottom:"none",borderRadius:"16px 16px 0 0",padding:20,paddingBottom:"max(20px, env(safe-area-inset-bottom))",width:"100%",maxWidth:440,boxShadow:`0 -4px 30px ${gc2}44`}}>
               {/* 헤더 */}
               <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
                 <div style={{width:56,height:56,borderRadius:12,background:`${gc2}22`,border:`2px solid ${gc2}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>
@@ -3150,17 +3177,30 @@ export default function App(){
           <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
             {[
               {cost:1,label:"🪙1 — 고급~영웅",desc:"고급60%/영웅30%/꽝10%",fn:()=>{
-                const g=G.current;if(g.coins<1){alert("코인 부족!");return;}g.coins-=1;const r=Math.random();
+                const g=G.current;if(g.coins<1){alert("코인 부족!");return;}
+                const unlocked=g.unlockedGrades||["노말","고급","영웅"];
+                g.coins-=1;const r=Math.random();
                 let grade=null;if(r>=0.10&&r<0.70)grade="고급";else if(r>=0.70)grade="영웅";
+                if(grade&&!unlocked.includes(grade))grade=unlocked.includes("고급")?"고급":null;
                 if(grade){const pool=grade==="고급"?[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))];const el=pool[Math.floor(Math.random()*pool.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
               }},
               {cost:3,label:"🪙3 — 영웅~신화",desc:"영웅50%/전설35%/신화10%/꽝5%",fn:()=>{
-                const g=G.current;if(g.coins<3){alert("코인 부족!");return;}g.coins-=3;const r=Math.random();
+                const g=G.current;if(g.coins<3){alert("코인 부족!");return;}
+                const unlocked=g.unlockedGrades||["노말","고급","영웅"];
+                g.coins-=3;const r=Math.random();
                 let grade=null;if(r>=0.05&&r<0.55)grade="영웅";else if(r>=0.55&&r<0.90)grade="전설";else if(r>=0.90)grade=g.round>=20?"신화":"전설";
+                if(grade&&!unlocked.includes(grade)){
+                  // 미개방 등급이면 개방된 등급 중 가장 높은 걸로 대체
+                  const fallbackOrder=["신화","전설","영웅","고급"];
+                  grade=fallbackOrder.find(gr=>unlocked.includes(gr))||"고급";
+                }
                 if(grade){const pool=grade==="신화"?[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))]:grade==="전설"?[...new Set(RECIPES.filter(x=>x.g==="전설").map(x=>x.r))]:grade==="영웅"?[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,grade);if(!["전설","신화","불멸"].includes(grade))alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
               }},
               {cost:5,label:"🪙5 — 신화 (35R↑)",desc:"신화60%/무속성30%/꽝10%",fn:()=>{
-                const g=G.current;if(g.coins<5){alert("코인 부족!");return;}if(g.round<35){alert("35라운드 이후 해금!");return;}g.coins-=5;const r=Math.random();
+                const g=G.current;if(g.coins<5){alert("코인 부족!");return;}if(g.round<35){alert("35라운드 이후 해금!");return;}
+                const unlocked=g.unlockedGrades||["노말","고급","영웅"];
+                if(!unlocked.includes("신화")){alert("신화 등급이 아직 개방되지 않았습니다! (3클리어 필요)");return;}
+                g.coins-=5;const r=Math.random();
                 if(r<0.10){sync();alert("😢 꽝...");return;}
                 if(r<0.70){const pool=[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[0];const h=mkH(el,"신화",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,"신화");}
                 else{const h=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert("⭐ 무속성 유닛 획득!");}
