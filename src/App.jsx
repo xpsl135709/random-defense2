@@ -186,6 +186,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v2.4",
+    date:"2025-06-17",
+    title:"골드/코인 도박 확률 너프",
+    changes:[
+      "🎲 골드·코인 도박 확률 조정: 꽝 55% / 결과1 33% / 결과2 8% / 결과3 3% / 잭팟 1%",
+      "📉 기존보다 당첨 확률 전반적으로 하향 (꽝 비중 상향)",
+    ]
+  },
+  {
+    version:"v2.3",
+    date:"2025-06-17",
+    title:"도박장 & 코인상점 등급 잠금 수정",
+    changes:[
+      "🔒 도박장 3코인 도박: 전설 등급 미개방(0클리어) 시 잠금 처리, 라벨 '영웅~신화'→'영웅~전설'로 수정",
+      "🔒 도박장 5코인 도박: 신화 등급 미개방(3클리어 미만) 시 잠금 처리",
+      "🔒 코인상점 고급/영웅/전설 유닛 선택: 라운드 조건 외 등급 개방 여부도 함께 체크",
+      "🛡️ 모든 구매/도박 함수에 등급 잠금 안전장치 추가 (UI 우회 방지)",
+    ]
+  },
+  {
     version:"v2.2",
     date:"2025-06-17",
     title:"유닛 선택 패널 위치 변경",
@@ -675,14 +695,14 @@ const SHOP_ITEMS=[
   {id:"neutral",label:"무속성 유닛",cost:10,grade:"노말",element:"무속성",color:"#ccc",unlockRound:20},
 ];
 const GAMBLE_GOLD=[
-  {cost:10,label:"10G 도박",results:[{prob:0.45,reward:"gold",val:0,desc:"꽝"},{prob:0.30,reward:"gold",val:15,desc:"+15G"},{prob:0.15,reward:"gold",val:30,desc:"+30G"},{prob:0.07,reward:"gold",val:60,desc:"+60G"},{prob:0.03,reward:"gold",val:150,desc:"+150G 🎉"}]},
-  {cost:50,label:"50G 도박",results:[{prob:0.40,reward:"gold",val:0,desc:"꽝"},{prob:0.30,reward:"gold",val:70,desc:"+70G"},{prob:0.18,reward:"gold",val:150,desc:"+150G"},{prob:0.09,reward:"gold",val:300,desc:"+300G"},{prob:0.03,reward:"gold",val:800,desc:"+800G 🎉"}]},
-  {cost:100,label:"100G 도박",results:[{prob:0.38,reward:"gold",val:0,desc:"꽝"},{prob:0.30,reward:"gold",val:140,desc:"+140G"},{prob:0.18,reward:"gold",val:300,desc:"+300G"},{prob:0.10,reward:"gold",val:600,desc:"+600G"},{prob:0.04,reward:"gold",val:2000,desc:"+2000G 🎉"}]},
+  {cost:10,label:"10G 도박",results:[{prob:0.55,reward:"gold",val:0,desc:"꽝"},{prob:0.33,reward:"gold",val:15,desc:"+15G"},{prob:0.08,reward:"gold",val:30,desc:"+30G"},{prob:0.03,reward:"gold",val:60,desc:"+60G"},{prob:0.01,reward:"gold",val:150,desc:"+150G 🎉"}]},
+  {cost:50,label:"50G 도박",results:[{prob:0.55,reward:"gold",val:0,desc:"꽝"},{prob:0.33,reward:"gold",val:70,desc:"+70G"},{prob:0.08,reward:"gold",val:150,desc:"+150G"},{prob:0.03,reward:"gold",val:300,desc:"+300G"},{prob:0.01,reward:"gold",val:800,desc:"+800G 🎉"}]},
+  {cost:100,label:"100G 도박",results:[{prob:0.55,reward:"gold",val:0,desc:"꽝"},{prob:0.33,reward:"gold",val:140,desc:"+140G"},{prob:0.08,reward:"gold",val:300,desc:"+300G"},{prob:0.03,reward:"gold",val:600,desc:"+600G"},{prob:0.01,reward:"gold",val:2000,desc:"+2000G 🎉"}]},
 ];
 const GAMBLE_COIN=[
-  {cost:1,label:"1코인 도박",results:[{prob:0.45,reward:"coin",val:0,desc:"꽝"},{prob:0.30,reward:"coin",val:2,desc:"+2코인"},{prob:0.15,reward:"coin",val:4,desc:"+4코인"},{prob:0.07,reward:"coin",val:8,desc:"+8코인"},{prob:0.03,reward:"coin",val:20,desc:"+20코인 🎉"}]},
-  {cost:5,label:"5코인 도박",results:[{prob:0.40,reward:"coin",val:0,desc:"꽝"},{prob:0.30,reward:"coin",val:7,desc:"+7코인"},{prob:0.18,reward:"coin",val:15,desc:"+15코인"},{prob:0.09,reward:"coin",val:30,desc:"+30코인"},{prob:0.03,reward:"coin",val:80,desc:"+80코인 🎉"}]},
-  {cost:10,label:"10코인 도박",results:[{prob:0.38,reward:"coin",val:0,desc:"꽝"},{prob:0.30,reward:"coin",val:14,desc:"+14코인"},{prob:0.18,reward:"coin",val:30,desc:"+30코인"},{prob:0.10,reward:"coin",val:60,desc:"+60코인"},{prob:0.04,reward:"coin",val:150,desc:"+150코인 🎉"}]},
+  {cost:1,label:"1코인 도박",results:[{prob:0.55,reward:"coin",val:0,desc:"꽝"},{prob:0.33,reward:"coin",val:2,desc:"+2코인"},{prob:0.08,reward:"coin",val:4,desc:"+4코인"},{prob:0.03,reward:"coin",val:8,desc:"+8코인"},{prob:0.01,reward:"coin",val:20,desc:"+20코인 🎉"}]},
+  {cost:5,label:"5코인 도박",results:[{prob:0.55,reward:"coin",val:0,desc:"꽝"},{prob:0.33,reward:"coin",val:7,desc:"+7코인"},{prob:0.08,reward:"coin",val:15,desc:"+15코인"},{prob:0.03,reward:"coin",val:30,desc:"+30코인"},{prob:0.01,reward:"coin",val:80,desc:"+80코인 🎉"}]},
+  {cost:10,label:"10코인 도박",results:[{prob:0.55,reward:"coin",val:0,desc:"꽝"},{prob:0.33,reward:"coin",val:14,desc:"+14코인"},{prob:0.08,reward:"coin",val:30,desc:"+30코인"},{prob:0.03,reward:"coin",val:60,desc:"+60코인"},{prob:0.01,reward:"coin",val:150,desc:"+150코인 🎉"}]},
 ];
 
 let hid=1,eid=1;
@@ -2319,6 +2339,8 @@ export default function App(){
 
   const buyWithCoin=(item)=>{
     const g=G.current;if(g.coins<item.cost){alert(`코인 부족! (${item.cost}개 필요)`);return;}
+    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    if(item.grade&&!unlockedG.includes(item.grade)){alert(`${item.grade} 등급이 아직 개방되지 않았습니다!`);return;}
     if(item.element){g.coins-=item.cost;const h=mkH(item.element,item.grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes.push(h);setModal(null);sync();draw();triggerSummon(item.element,item.grade);return;}
     setModal({type:"coinPick",item});
   };
@@ -3143,7 +3165,12 @@ export default function App(){
         <div style={{fontSize:15,fontWeight:"bold",color:"#a78bfa",marginBottom:4,textAlign:"center"}}>🪙 코인 상점</div>
         <div style={{color:"#fd0",fontSize:13,marginBottom:10,textAlign:"center"}}>보유: {ui.coins}개 | {ui.round}라운드</div>
         <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
-          {SHOP_ITEMS.map(item=>{const locked=ui.round<item.unlockRound;return(<button key={item.id} onClick={()=>!locked&&buyWithCoin(item)} disabled={ui.coins<item.cost||locked} style={{background:locked?"#21262d":ui.coins>=item.cost?item.color+"22":"#21262d",border:`1px solid ${locked?"#333":ui.coins>=item.cost?item.color:"#333"}`,borderRadius:8,padding:"9px 14px",cursor:locked||ui.coins<item.cost?"not-allowed":"pointer",color:locked?"#444":ui.coins>=item.cost?"#eee":"#555",fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{color:locked?"#444":item.color,fontWeight:"bold"}}>{locked?`🔒 ${item.label} (${item.unlockRound}R~)`:item.label}</span><span style={{color:locked?"#444":"#a78bfa",fontWeight:"bold"}}>🪙 {item.cost}</span></button>);})}
+          {SHOP_ITEMS.map(item=>{
+            const unlockedG=G.current?.unlockedGrades||["노말","고급","영웅"];
+            const gradeLocked=item.grade&&!unlockedG.includes(item.grade);
+            const locked=ui.round<item.unlockRound||gradeLocked;
+            const lockLabel=gradeLocked?`🔒 ${item.label} (등급 미개방)`:`🔒 ${item.label} (${item.unlockRound}R~)`;
+            return(<button key={item.id} onClick={()=>!locked&&buyWithCoin(item)} disabled={ui.coins<item.cost||locked} style={{background:locked?"#21262d":ui.coins>=item.cost?item.color+"22":"#21262d",border:`1px solid ${locked?"#333":ui.coins>=item.cost?item.color:"#333"}`,borderRadius:8,padding:"9px 14px",cursor:locked||ui.coins<item.cost?"not-allowed":"pointer",color:locked?"#444":ui.coins>=item.cost?"#eee":"#555",fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{color:locked?"#444":item.color,fontWeight:"bold"}}>{locked?lockLabel:item.label}</span><span style={{color:locked?"#444":"#a78bfa",fontWeight:"bold"}}>🪙 {item.cost}</span></button>);})}
         </div>
         <div style={{display:"flex",gap:6}}>
           <Btn bg={ui.round>=10?"#1a3a2a":"#21262d"} onClick={()=>{if(ui.round<10){alert("도박장은 10라운드 이후!");return;}setModal("gamble");}} style={{flex:1,color:ui.round>=10?undefined:"#555"}}>{ui.round>=10?"🎲 도박장":"🔒 도박장(10R~)"}</Btn>
@@ -3175,8 +3202,13 @@ export default function App(){
           </div>
           <div style={{fontSize:12,color:"#4f8",marginBottom:6,fontWeight:"bold",borderTop:"1px solid #30363d",paddingTop:10}}>⚔️ 유닛 도박</div>
           <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
-            {[
-              {cost:1,label:"🪙1 — 고급~영웅",desc:"고급60%/영웅30%/꽝10%",fn:()=>{
+            {(()=>{
+              const g0=G.current;
+              const unlocked0=g0?.unlockedGrades||["노말","고급","영웅"];
+              const need3=!unlocked0.includes("전설"); // 3코인 도박은 전설 포함 -> 1클리어 필요
+              const need5=!unlocked0.includes("신화"); // 5코인 도박은 신화 포함 -> 3클리어 필요
+              return[
+              {cost:1,label:"🪙1 — 고급~영웅",desc:"고급60%/영웅30%/꽝10%",locked:false,lockMsg:"",fn:()=>{
                 const g=G.current;if(g.coins<1){alert("코인 부족!");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
                 g.coins-=1;const r=Math.random();
@@ -3184,19 +3216,19 @@ export default function App(){
                 if(grade&&!unlocked.includes(grade))grade=unlocked.includes("고급")?"고급":null;
                 if(grade){const pool=grade==="고급"?[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))];const el=pool[Math.floor(Math.random()*pool.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
               }},
-              {cost:3,label:"🪙3 — 영웅~신화",desc:"영웅50%/전설35%/신화10%/꽝5%",fn:()=>{
+              {cost:3,label:"🪙3 — 영웅~전설",desc:"영웅50%/전설35%/신화10%/꽝5%",locked:need3,lockMsg:"전설 등급 개방 필요 (1클리어)",fn:()=>{
                 const g=G.current;if(g.coins<3){alert("코인 부족!");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
+                if(!unlocked.includes("전설")){alert("전설 등급이 아직 개방되지 않았습니다! (1클리어 필요)");return;}
                 g.coins-=3;const r=Math.random();
                 let grade=null;if(r>=0.05&&r<0.55)grade="영웅";else if(r>=0.55&&r<0.90)grade="전설";else if(r>=0.90)grade=g.round>=20?"신화":"전설";
                 if(grade&&!unlocked.includes(grade)){
-                  // 미개방 등급이면 개방된 등급 중 가장 높은 걸로 대체
                   const fallbackOrder=["신화","전설","영웅","고급"];
                   grade=fallbackOrder.find(gr=>unlocked.includes(gr))||"고급";
                 }
                 if(grade){const pool=grade==="신화"?[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))]:grade==="전설"?[...new Set(RECIPES.filter(x=>x.g==="전설").map(x=>x.r))]:grade==="영웅"?[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,grade);if(!["전설","신화","불멸"].includes(grade))alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
               }},
-              {cost:5,label:"🪙5 — 신화 (35R↑)",desc:"신화60%/무속성30%/꽝10%",fn:()=>{
+              {cost:5,label:"🪙5 — 신화 (35R↑)",desc:"신화60%/무속성30%/꽝10%",locked:need5,lockMsg:"신화 등급 개방 필요 (3클리어)",fn:()=>{
                 const g=G.current;if(g.coins<5){alert("코인 부족!");return;}if(g.round<35){alert("35라운드 이후 해금!");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
                 if(!unlocked.includes("신화")){alert("신화 등급이 아직 개방되지 않았습니다! (3클리어 필요)");return;}
@@ -3205,7 +3237,13 @@ export default function App(){
                 if(r<0.70){const pool=[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[0];const h=mkH(el,"신화",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,"신화");}
                 else{const h=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert("⭐ 무속성 유닛 획득!");}
               }},
-            ].map(item=>(<button key={item.cost} onClick={item.fn} disabled={ui.coins<item.cost||(item.cost===5&&ui.round<35)} style={{background:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#0a2a1a":"#21262d",border:`1px solid ${ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#4f8":"#333"}`,borderRadius:8,padding:"8px 12px",cursor:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"pointer":"not-allowed",color:ui.coins>=item.cost&&!(item.cost===5&&ui.round<35)?"#eee":"#555",fontSize:12,textAlign:"left"}}><div style={{fontWeight:"bold",color:item.cost===5?"#f44":item.cost===3?"#fa0":"#4af"}}>{item.label}</div><div style={{fontSize:10,color:"#888",marginTop:2}}>{item.desc}</div></button>))}
+            ];})().map(item=>{
+              const disabled=ui.coins<item.cost||(item.cost===5&&ui.round<35)||item.locked;
+              return(<button key={item.cost} onClick={item.fn} disabled={disabled} style={{background:!disabled?"#0a2a1a":"#21262d",border:`1px solid ${!disabled?"#4f8":"#333"}`,borderRadius:8,padding:"8px 12px",cursor:!disabled?"pointer":"not-allowed",color:!disabled?"#eee":"#555",fontSize:12,textAlign:"left"}}>
+                <div style={{fontWeight:"bold",color:item.locked?"#555":item.cost===5?"#f44":item.cost===3?"#fa0":"#4af"}}>{item.locked?"🔒 ":""}{item.label}</div>
+                <div style={{fontSize:10,color:"#888",marginTop:2}}>{item.locked?item.lockMsg:item.desc}</div>
+              </button>);
+            })}
           </div>
           <Btn bg="#444" onClick={()=>setModal("shop")} style={{width:"100%"}}>← 뒤로</Btn>
         </Overlay>);
