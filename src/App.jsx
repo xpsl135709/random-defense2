@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.1",
+    date:"2025-06-17",
+    title:"채팅창 동작 안 하는 버그 수정",
+    changes:[
+      "🐛 채팅 모달이 타이틀 화면 코드 안에 잘못 위치해 게임 중 버튼을 눌러도 열리지 않던 버그 수정",
+      "💬 게임 화면에서 💬 버튼을 누르면 정상적으로 채팅창이 열림",
+    ]
+  },
+  {
     version:"v4.0",
     date:"2025-06-17",
     title:"대각선 맵 → X자 듀얼 경로로 개편",
@@ -2882,63 +2891,6 @@ export default function App(){
         <div style={{fontSize:11,color:"#444",textAlign:"center"}}>{mapMode==='random'?'매 게임 5종 맵 중 랜덤으로 시작':`${MAP_DEFS[selectedMap].name} 맵으로 시작`}</div>
       </div>
 
-      {/* 채팅 모달 */}
-      {showChat&&(
-        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
-          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"82vh",display:"flex",flexDirection:"column"}}>
-            <div style={{padding:"14px 18px 10px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-              <div style={{fontSize:15,fontWeight:"bold"}}>💬 채팅</div>
-              <button onClick={()=>setShowChat(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
-            </div>
-            <div style={{display:"flex",gap:6,padding:"10px 14px 0",flexShrink:0}}>
-              {[{key:'chat',label:'💬 전체채팅'},{key:'log',label:'📜 내 기록'}].map(tb=>(
-                <button key={tb.key} onClick={()=>{setChatTab(tb.key);if(tb.key==='chat')loadChatMessages();}}
-                  style={{flex:1,background:chatTab===tb.key?"#1f6feb":"#1e293b",border:`1px solid ${chatTab===tb.key?"#3b82f6":"#334155"}`,color:chatTab===tb.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:chatTab===tb.key?"bold":"normal"}}>
-                  {tb.label}
-                </button>
-              ))}
-            </div>
-
-            {chatTab==='chat'&&(<>
-              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
-                {chatLoading&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>불러오는 중...</div>}
-                {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
-                {!chatLoading&&chatMessages.map(m=>{
-                  const isMe=m.name===(nickname.trim()||G.current?.anonName);
-                  return(
-                    <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
-                      <div style={{fontSize:10,color:isMe?"#60a5fa":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{m.name}</div>
-                      <div style={{background:isMe?"#1d4ed8":"#21262d",color:"#eee",borderRadius:10,padding:"6px 10px",fontSize:13,wordBreak:"break-word"}}>{m.message}</div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{display:"flex",gap:6,padding:"10px 14px",borderTop:"1px solid #21262d",flexShrink:0}}>
-                <input value={chatInput} onChange={e=>setChatInput(e.target.value)}
-                  onKeyDown={e=>{if(e.key==='Enter')sendChatMessage();}}
-                  placeholder="메시지 입력..." maxLength={200}
-                  style={{flex:1,background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"8px 10px",color:"#eee",fontSize:13,outline:"none"}}/>
-                <button onClick={sendChatMessage} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>전송</button>
-              </div>
-            </>)}
-
-            {chatTab==='log'&&(
-              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200,maxHeight:400}}>
-                {pullLog.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 뽑기/조합 기록이 없습니다.</div>}
-                {pullLog.map(log=>(
-                  <div key={log.id} style={{display:"flex",alignItems:"center",gap:8,background:"#1c1f26",borderRadius:8,padding:"6px 10px",fontSize:12}}>
-                    <span style={{color:"#888",fontSize:10,flexShrink:0,minWidth:34}}>{log.ts.getHours().toString().padStart(2,'0')}:{log.ts.getMinutes().toString().padStart(2,'0')}</span>
-                    <span style={{color:"#60a5fa",flexShrink:0}}>{log.action}</span>
-                    <span style={{flex:1}}>{EE[log.el]||""} {EN[log.el]||log.el}</span>
-                    <span style={{color:GC[log.grade]||"#888",fontWeight:"bold",flexShrink:0}}>[{log.grade}]</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* 랭킹 모달 */}
       {showRanking&&(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
@@ -3177,6 +3129,63 @@ export default function App(){
   return(
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
+
+      {showChat&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"82vh",display:"flex",flexDirection:"column"}}>
+            <div style={{padding:"14px 18px 10px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:"bold"}}>💬 채팅</div>
+              <button onClick={()=>setShowChat(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{display:"flex",gap:6,padding:"10px 14px 0",flexShrink:0}}>
+              {[{key:'chat',label:'💬 전체채팅'},{key:'log',label:'📜 내 기록'}].map(tb=>(
+                <button key={tb.key} onClick={()=>{setChatTab(tb.key);if(tb.key==='chat')loadChatMessages();}}
+                  style={{flex:1,background:chatTab===tb.key?"#1f6feb":"#1e293b",border:`1px solid ${chatTab===tb.key?"#3b82f6":"#334155"}`,color:chatTab===tb.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:chatTab===tb.key?"bold":"normal"}}>
+                  {tb.label}
+                </button>
+              ))}
+            </div>
+
+            {chatTab==='chat'&&(<>
+              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
+                {chatLoading&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>불러오는 중...</div>}
+                {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
+                {!chatLoading&&chatMessages.map(m=>{
+                  const isMe=m.name===(nickname.trim()||G.current?.anonName);
+                  return(
+                    <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
+                      <div style={{fontSize:10,color:isMe?"#60a5fa":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{m.name}</div>
+                      <div style={{background:isMe?"#1d4ed8":"#21262d",color:"#eee",borderRadius:10,padding:"6px 10px",fontSize:13,wordBreak:"break-word"}}>{m.message}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:6,padding:"10px 14px",borderTop:"1px solid #21262d",flexShrink:0}}>
+                <input value={chatInput} onChange={e=>setChatInput(e.target.value)}
+                  onKeyDown={e=>{if(e.key==='Enter')sendChatMessage();}}
+                  placeholder="메시지 입력..." maxLength={200}
+                  style={{flex:1,background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"8px 10px",color:"#eee",fontSize:13,outline:"none"}}/>
+                <button onClick={sendChatMessage} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>전송</button>
+              </div>
+            </>)}
+
+            {chatTab==='log'&&(
+              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200,maxHeight:400}}>
+                {pullLog.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 뽑기/조합 기록이 없습니다.</div>}
+                {pullLog.map(log=>(
+                  <div key={log.id} style={{display:"flex",alignItems:"center",gap:8,background:"#1c1f26",borderRadius:8,padding:"6px 10px",fontSize:12}}>
+                    <span style={{color:"#888",fontSize:10,flexShrink:0,minWidth:34}}>{log.ts.getHours().toString().padStart(2,'0')}:{log.ts.getMinutes().toString().padStart(2,'0')}</span>
+                    <span style={{color:"#60a5fa",flexShrink:0}}>{log.action}</span>
+                    <span style={{flex:1}}>{EE[log.el]||""} {EN[log.el]||log.el}</span>
+                    <span style={{color:GC[log.grade]||"#888",fontWeight:"bold",flexShrink:0}}>[{log.grade}]</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* 토스트 알림 (우측 상단, 3초 후 사라짐) */}
       <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
