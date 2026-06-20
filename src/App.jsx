@@ -186,6 +186,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v3.2",
+    date:"2025-06-17",
+    title:"난이도별 클리어 라운드 차등",
+    changes:[
+      "🏁 쉬움: 50라운드 클리어 / 보통: 70라운드 클리어 / 어려움: 100라운드 클리어",
+      "📊 HUD 라운드 표시도 난이도별 목표 라운드에 맞게 변경 (R30/50, R30/70 등)",
+      "🔄 클리어 후 무한모드 진입은 기존과 동일하게 유지",
+    ]
+  },
+  {
+    version:"v3.1",
+    date:"2025-06-17",
+    title:"랭킹 중복 저장 버그 수정",
+    changes:[
+      "🐛 게임오버 화면에서 버튼을 여러 번 누르면 같은 플레이가 다른 익명 닉네임으로 중복 저장되던 버그 수정",
+      "🐛 클리어 카운트가 중복 저장으로 인해 한 번에 여러 번 올라가던 문제 동시 해결",
+      "🎲 익명 닉네임을 게임 시작 시점에 1회 생성하여 같은 플레이 내 일관성 유지",
+    ]
+  },
+  {
     version:"v3.0",
     date:"2025-06-17",
     title:"체력 증가 완화 & 골드 차등 지급",
@@ -1043,6 +1063,7 @@ export default function App(){
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('easy');
   const [clearCount,setClearCount]=useState(()=>{try{return parseInt(localStorage.getItem('clearCount')||'0');}catch{return 0;}});
+  const savedThisGameRef=useRef(false);
   const [mapMode,setMapMode]=useState('random'); // 'random' | 'pick'
   const [selectedMap,setSelectedMap]=useState('B');
   const [showPatch,setShowPatch]=useState(()=>{
@@ -1993,11 +2014,12 @@ export default function App(){
         }
         sync();draw();alert(`🎰 도박사 주사위!\n${diceMsg}`);
       }
-      if(g.round===100&&!g.infiniteMode){
+      const targetRound=g.difficulty==='easy'?50:g.difficulty==='normal'?70:100;
+      if(g.round===targetRound&&!g.infiniteMode){
         // 무한모드 여부 물어보기 (victory 대신 특별 처리)
         g.victory=true;g.running=false;sync();draw();return;
       }
-      if(g.round>100){
+      if(g.round>targetRound){
         // 무한모드: 난이도 점점 올라감
         g.diffMul=Math.min((g.diffMul||1.3)*0.95,0.5); // 점점 어려워짐(배율 감소=유닛 약해짐)
       }
@@ -2089,6 +2111,8 @@ export default function App(){
     G.current.clearCount=clearCount;
     G.current.unlockedEls=UNLOCK_ELEMENTS(clearCount);
     G.current.unlockedGrades=UNLOCK_GRADES(clearCount);
+    G.current.anonName=`익명${Math.floor(Math.random()*90000+10000)}`;
+    savedThisGameRef.current=false;
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
@@ -2117,6 +2141,8 @@ export default function App(){
     g.unlockedGrades=UNLOCK_GRADES(clearCount);
     g.diffMul=1.0;
     g.rotMode=true;
+    g.anonName=`익명${Math.floor(Math.random()*90000+10000)}`;
+    savedThisGameRef.current=false;
     G.current=g;
     setRotMode(true);
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
@@ -2425,12 +2451,14 @@ export default function App(){
 
   // ── 랭킹 저장
   const saveRecord=async(isVictory)=>{
+    if(savedThisGameRef.current)return; // 같은 게임에서 중복 저장 방지
+    savedThisGameRef.current=true;
     if(isVictory){
       const newCount=clearCount+1;
       setClearCount(newCount);
       try{localStorage.setItem('clearCount',String(newCount));}catch{}
     }
-    const finalName=nickname.trim()||`익명${Math.floor(Math.random()*90000+10000)}`;
+    const finalName=nickname.trim()||G.current.anonName||`익명${Math.floor(Math.random()*90000+10000)}`;
     const g=G.current;
     const record={
       name:finalName,
@@ -2824,7 +2852,7 @@ export default function App(){
         </div>
         {/* 2줄: 라운드 / 지형 / 조합표 */}
         <div style={{display:"flex",alignItems:"center",gap:4,background:"#0a0f1a",padding:"4px 8px",border:"1px solid #1e293b",borderTop:"none",borderBottom:"none"}}>
-          <span style={{background:"#172554",borderRadius:6,padding:"2px 8px",fontSize:12,color:"#93c5fd",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{fontSize:10,color:"#374151"}}>/100</span></span>
+          <span style={{background:"#172554",borderRadius:6,padding:"2px 8px",fontSize:12,color:"#93c5fd",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{fontSize:10,color:"#374151"}}>/{G.current?.difficulty==='easy'?50:G.current?.difficulty==='normal'?70:100}</span></span>
           <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:"#60a5fa",flexShrink:0}}>{currentMapName}{rotMode?" 🔄":""}</span>
           <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
             {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
