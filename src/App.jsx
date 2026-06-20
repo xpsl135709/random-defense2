@@ -199,6 +199,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.4",
+    date:"2025-06-17",
+    title:"닉네임 필수 입력으로 변경",
+    changes:[
+      "👤 익명 자동생성 제거: 게임 시작 시 닉네임 미입력이면 입력 요청 팝업 표시",
+      "🧹 채팅·접속자 목록이 '익명12345' 같은 임시 이름 없이 실제 닉네임으로만 깔끔하게 표시됨",
+    ]
+  },
+  {
+    version:"v4.3",
+    date:"2025-06-17",
+    title:"실시간 접속자 목록 추가",
+    changes:[
+      "👥 타이틀 화면에 실시간 접속자 닉네임 목록 표시",
+      "🎮 게임 진행 중인 사람과 ⭐ 타이틀 화면에 있는 사람 구분 표시",
+      "💓 20초마다 접속 상태 갱신, 1분간 활동 없으면 목록에서 자동 제외",
+      "⚠️ Supabase에 online_users 테이블 추가 필요",
+    ]
+  },
+  {
     version:"v4.2",
     date:"2025-06-17",
     title:"채팅 실시간 갱신 추가",
@@ -1181,6 +1201,7 @@ export default function App(){
   const [difficulty,setDifficulty]=useState('easy');
   const [clearCount,setClearCount]=useState(()=>{try{return parseInt(localStorage.getItem('clearCount')||'0');}catch{return 0;}});
   const [showCheatModal,setShowCheatModal]=useState(false);
+  const [showNicknamePrompt,setShowNicknamePrompt]=useState(false);
   const [cheatInput,setCheatInput]=useState('');
   const cheatPressTimer=useRef(null);
   const savedThisGameRef=useRef(false);
@@ -1207,6 +1228,7 @@ export default function App(){
   const [showCombo,setShowCombo]=useState(false);
   const [showChat,setShowChat]=useState(false);
   const chatScrollRef=useRef(null);
+  const [onlineUsers,setOnlineUsers]=useState([]);
   const [chatTab,setChatTab]=useState('chat'); // 'chat' | 'log'
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
@@ -2266,6 +2288,7 @@ export default function App(){
 
   // 게임 시작: 맵 결정 → 히든영웅 화면
   const startGame=(mapOverride)=>{
+    if(!nickname.trim()){setShowNicknamePrompt(true);return;}
     if(raf.current)cancelAnimationFrame(raf.current);
     hid=1;eid=1;
     setRotMode(false);
@@ -2281,7 +2304,6 @@ export default function App(){
     G.current.clearCount=clearCount;
     G.current.unlockedEls=UNLOCK_ELEMENTS(clearCount);
     G.current.unlockedGrades=UNLOCK_GRADES(clearCount);
-    G.current.anonName=`익명${Math.floor(Math.random()*90000+10000)}`;
     savedThisGameRef.current=false;
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setTransformPicks([]);setStacks({});
@@ -2291,6 +2313,7 @@ export default function App(){
   };
 
   const startRotation=()=>{
+    if(!nickname.trim()){setShowNicknamePrompt(true);return;}
     if(raf.current)cancelAnimationFrame(raf.current);
     hid=1;eid=1;
     // 회전 모드: 외곽 네모 맵, TRACK을 외곽으로 설정
@@ -2311,7 +2334,6 @@ export default function App(){
     g.unlockedGrades=UNLOCK_GRADES(clearCount);
     g.diffMul=1.0;
     g.rotMode=true;
-    g.anonName=`익명${Math.floor(Math.random()*90000+10000)}`;
     savedThisGameRef.current=false;
     G.current=g;
     setRotMode(true);
@@ -2700,7 +2722,7 @@ export default function App(){
       setClearCount(newCount);
       try{localStorage.setItem('clearCount',String(newCount));}catch{}
     }
-    const finalName=nickname.trim()||G.current.anonName||`익명${Math.floor(Math.random()*90000+10000)}`;
+    const finalName=nickname.trim();
     const g=G.current;
     const record={
       name:finalName,
@@ -2782,6 +2804,46 @@ export default function App(){
     }catch(e){}
   };
 
+  // ── 접속자 presence: 하트비트 전송 (20초마다)
+  const sendHeartbeat=async()=>{
+    const finalName=nickname.trim();
+    if(!finalName)return;
+    const inGame=phase==='game';
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/online_users?on_conflict=name`,{
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${SUPABASE_KEY}`,
+          'Content-Type':'application/json',
+          Prefer:'resolution=merge-duplicates',
+        },
+        body:JSON.stringify({name:finalName,in_game:inGame,last_seen:new Date().toISOString()}),
+      });
+    }catch(e){}
+  };
+
+  // ── 접속자 목록 불러오기 (1분 이내 활동한 사람만)
+  const loadOnlineUsers=async()=>{
+    try{
+      const since=new Date(Date.now()-60000).toISOString();
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/online_users?select=*&last_seen=gte.${since}&order=name.asc`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+      });
+      const data=await res.json();
+      setOnlineUsers(Array.isArray(data)?data:[]);
+    }catch(e){setOnlineUsers([]);}
+  };
+
+  // 하트비트: 20초마다 전송, 목록은 25초마다 갱신
+  useEffect(()=>{
+    sendHeartbeat();
+    loadOnlineUsers();
+    const hb=setInterval(sendHeartbeat,20000);
+    const lu=setInterval(loadOnlineUsers,25000);
+    return ()=>{clearInterval(hb);clearInterval(lu);};
+  },[phase,nickname]);
+
   // 채팅창 열려있고 '전체채팅' 탭일 때 3초마다 자동 새로고침
   useEffect(()=>{
     if(!showChat||chatTab!=='chat')return;
@@ -2800,7 +2862,8 @@ export default function App(){
     const text=chatInput.trim();
     if(!text)return;
     if(text.length>200){alert("메시지는 200자 이하로 입력해주세요!");return;}
-    const finalName=nickname.trim()||G.current?.anonName||`익명${Math.floor(Math.random()*90000+10000)}`;
+    const finalName=nickname.trim();
+    if(!finalName){alert("닉네임을 먼저 입력해주세요!");return;}
     setChatInput('');
     try{
       await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`,{
@@ -2847,6 +2910,23 @@ export default function App(){
           {clearCount>=1&&clearCount<3&&<span style={{fontSize:11,color:"#555"}}>{3-clearCount}클리어 후 신화 개방</span>}
           {clearCount>=3&&clearCount<5&&<span style={{fontSize:11,color:"#555"}}>{5-clearCount}클리어 후 불멸·어려움 개방</span>}
           {clearCount>=5&&<span style={{fontSize:11,color:"#4ade80"}}>✅ 모든 콘텐츠 개방!</span>}
+        </div>
+
+        {/* 접속자 목록 */}
+        <div style={{width:"100%",maxWidth:340,marginBottom:18,background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"8px 12px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:onlineUsers.length>0?6:0}}>
+            <span style={{width:6,height:6,borderRadius:3,background:"#4ade80",boxShadow:"0 0 6px #4ade80"}}/>
+            <span style={{fontSize:11,color:"#94a3b8",fontWeight:"bold"}}>접속자 {onlineUsers.length}명</span>
+          </div>
+          {onlineUsers.length>0&&(
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {onlineUsers.map(u=>(
+                <span key={u.name} style={{display:"flex",alignItems:"center",gap:3,background:u.in_game?"#1e3a2e":"#1e293b",border:`1px solid ${u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:u.in_game?"#4ade80":"#94a3b8"}}>
+                  {u.in_game?"🎮":"⭐"}{u.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 맵 선택 */}
@@ -3097,6 +3177,24 @@ export default function App(){
           </div>
         </div>
       )}
+      {showNicknamePrompt&&(
+        <div onClick={()=>setShowNicknamePrompt(false)}
+          style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:700,padding:20}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#161b22",borderRadius:16,border:"1px solid #3b82f6",padding:20,width:"100%",maxWidth:320}}>
+            <div style={{fontSize:32,textAlign:"center",marginBottom:6}}>👤</div>
+            <div style={{fontSize:15,fontWeight:"bold",color:"#60a5fa",marginBottom:4,textAlign:"center"}}>닉네임을 먼저 입력해주세요!</div>
+            <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>채팅과 랭킹에 사용될 닉네임이에요. (최대 12자)</div>
+            <input value={nickname} onChange={e=>setNickname(e.target.value.slice(0,12))}
+              onKeyDown={e=>{if(e.key==='Enter'&&nickname.trim())setShowNicknamePrompt(false);}}
+              placeholder="닉네임 입력" autoFocus
+              style={{width:"100%",background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#eee",fontSize:16,textAlign:"center",outline:"none",marginBottom:12}}/>
+            <button onClick={()=>{if(nickname.trim())setShowNicknamePrompt(false);}} disabled={!nickname.trim()}
+              style={{width:"100%",background:nickname.trim()?"#1f6feb":"#21262d",border:"none",color:nickname.trim()?"#fff":"#555",borderRadius:8,padding:"10px",cursor:nickname.trim()?"pointer":"not-allowed",fontSize:14,fontWeight:"bold"}}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
       </>
     );
   }
@@ -3186,7 +3284,7 @@ export default function App(){
                 {chatLoading&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>불러오는 중...</div>}
                 {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
                 {!chatLoading&&chatMessages.map(m=>{
-                  const isMe=m.name===(nickname.trim()||G.current?.anonName);
+                  const isMe=m.name===nickname.trim();
                   return(
                     <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
                       <div style={{fontSize:10,color:isMe?"#60a5fa":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{m.name}</div>
