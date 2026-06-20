@@ -186,6 +186,25 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v3.0",
+    date:"2025-06-17",
+    title:"체력 증가 완화 & 골드 차등 지급",
+    changes:[
+      "📉 적 HP 증가율 완화: 라운드당 +50→+40, 10R 구간 배율 ×1.3→×1.2",
+      "💰 라운드 클리어 골드 차등: 쉬움/보통 30G, 어려움 20G (보스/중간보스 보너스는 동일)",
+      "🔄 회전 모드는 난이도 선택 무관하게 항상 어려움(약간 어려움) 고정 확인",
+    ]
+  },
+  {
+    version:"v2.9",
+    date:"2025-06-17",
+    title:"조합 실행 시 등급 잠금 재검증 추가",
+    changes:[
+      "🔒 유닛 조합(개별/뭉치기) 실행 시점에 등급 개방 여부 재검증 추가",
+      "🐛 표시상으로는 고급만 보였지만 실제로는 미개방 등급(전설 등)이 만들어지던 문제 차단",
+    ]
+  },
+  {
     version:"v2.8",
     date:"2025-06-17",
     title:"카운트다운 스킵 버튼 위치 변경",
@@ -843,7 +862,7 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
 // ── 적 생성
 const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='B',waveOpts={})=>{
   const tier=Math.floor((rnd-1)/10); // 0=1~10R, 1=11~20R, ...
-  const perRound=Math.floor(50*Math.pow(1.3,tier));
+  const perRound=Math.floor(40*Math.pow(1.2,tier));
   const base=isBoss?2500+rnd*220:isMid?1200+rnd*120:150+rnd*perRound;
   // 타입별 HP
   let hp=Math.floor(
@@ -1939,7 +1958,8 @@ export default function App(){
       g.running=false;g.cleared=true;
       if(isMidRound||isBossRound)g.coins+=1;
       const goldMul=1+(getBuff().goldMul||0);
-      const clearGold=Math.floor((isBossRound?80:isMidRound?50:20)*goldMul);
+      const baseGold=g.difficulty==='hard'?20:30;
+      const clearGold=Math.floor((isBossRound?80:isMidRound?50:baseGold)*goldMul);
       g.gold+=clearGold;
       if(g.round%20===0){const nu=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){nu.col=pos[0];nu.row=pos[1];}g.heroes.push(nu);}
       // 도박사 히든영웅: 5라운드마다 주사위
@@ -2026,7 +2046,8 @@ export default function App(){
     // 현재 라운드 클리어 골드 지급
     const isBossRound=g.round%10===0,isMidRound=g.round%5===0&&g.round%10!==0;
     const goldMul=1+(getBuff().goldMul||0);
-    g.gold+=Math.floor((isBossRound?80:isMidRound?50:20)*goldMul);
+    const baseGold=g.difficulty==='hard'?20:30;
+    g.gold+=Math.floor((isBossRound?80:isMidRound?50:baseGold)*goldMul);
     if(isBossRound||isMidRound)g.coins+=1;
     // 다음 라운드 설정 (스폰은 게임루프가 1.2초 간격으로 처리)
     g.round++;
@@ -2196,9 +2217,11 @@ export default function App(){
     // 같은 속성 조합 체크용 (선택한 유닛 제외한 카운트)
     const myElsCntEx={};
     for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
+    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
 
     // 고급/영웅: COMBO 방식
     const comboOpts=COMBO.filter(r=>{
+      if(!unlockedG.includes(r.g))return false;
       const isSame=r.a===r.b;
       // 동속성: 내가 그 속성이고 + 나머지에 1개 더 있어야
       // 이속성: 내가 a면 나머지에 b, 내가 b면 나머지에 a
@@ -2215,6 +2238,7 @@ export default function App(){
 
     // 전설/신화/불멸: RECIPES 방식 - 선택 유닛이 재료 중 하나라도 포함되면 표시
     const recipeOpts=RECIPES.filter(recipe=>{
+      if(!unlockedG.includes(recipe.g))return false;
       // 선택 유닛이 재료에 포함되는지
       const usesMe=recipe.parts.some(p=>p.u===h.element);
       if(!usesMe)return false;
@@ -2227,6 +2251,8 @@ export default function App(){
 
   const doCombine=(heroId,opt)=>{
     const g=G.current;
+    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    if(!unlockedG.includes(opt.g)){alert(`${opt.g} 등급이 아직 개방되지 않았습니다!`);setSelHero(null);return;}
     if(opt.isRecipe){
       // RECIPES 방식
       doRecipe(opt.recipe);
@@ -2328,6 +2354,8 @@ export default function App(){
 
   const doRecipe=(recipe)=>{
     const g=G.current;if(!canRecipe(recipe)){alert("재료 부족!");return;}
+    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    if(!unlockedG.includes(recipe.g)){alert(`${recipe.g} 등급이 아직 개방되지 않았습니다!`);return;}
     // 황금정령은 1개만 보유 가능
     if(recipe.r==="황금정령"&&g.heroes.some(h=>h.element==="황금정령")){
       alert("황금정령은 1개만 보유할 수 있습니다!");return;
@@ -2368,6 +2396,8 @@ export default function App(){
     const els=targets.map(h=>h.element);
     let result=null;
     for(const r of COMBO){if(els.includes(r.a)&&els.includes(r.b)){result=r;break;}}
+    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    if(result&&!unlockedG.includes(result.g))result=null;
     // 배치된 유닛 위치 우선 사용, 없으면 자동배치
     const placedTarget=targets.find(t=>t.col!==null);
     let nh;
