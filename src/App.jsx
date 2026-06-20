@@ -106,24 +106,29 @@ const MAP_DEFS={
     fork:false,
   },
   F:{
-    name:"대각선",
-    spawn:[0,0],
-    goal:[8,13],
-    buildTrack:()=>{
-      const p=[];
-      // 대각 ↘
-      for(let i=0;i<=5;i++)p.push([i,i]);
-      // 오른쪽으로
-      for(let c=6;c<=8;c++)p.push([c,5]);
-      // 대각 ↙
-      for(let i=1;i<=6;i++)p.push([8-i,5+i]);
-      // 왼쪽으로
-      for(let c=1;c>=0;c--)p.push([c,11]);
-      // 아래로
-      for(let r=12;r<=13;r++)p.push([0,r]);
-      // 오른쪽으로 골까지
-      for(let c=1;c<=8;c++)p.push([c,13]);
-      return p;
+    name:"X자",
+    spawn:[0,0], // 표시용 (실제는 spawnA/spawnB)
+    goal:[8,13], // 표시용 (실제는 goalA/goalB)
+    buildTrack:()=>null,
+    dual:true,
+    buildDualPaths:()=>{
+      // 경로 A: 좌상단(0,0) → 우하단(8,13) 대각선
+      const pathA=[];
+      for(let i=0;i<=13;i++){
+        const c=Math.min(8,Math.round(i*8/13));
+        pathA.push([c,i]);
+      }
+      // 경로 B: 우상단(8,0) → 좌하단(0,13) 대각선
+      const pathB=[];
+      for(let i=0;i<=13;i++){
+        const c=Math.max(0,8-Math.round(i*8/13));
+        pathB.push([c,i]);
+      }
+      return{
+        pathA,pathB,
+        spawnA:pathA[0],spawnB:pathB[0],
+        goalA:pathA[pathA.length-1],goalB:pathB[pathB.length-1],
+      };
     },
     fork:false,
   },
@@ -146,6 +151,7 @@ function buildRotPath(laps){
 }
 let TRACK=[];
 let FORK_PATHS=null;
+let DUAL_PATHS=null; // X자 맵: {pathA, pathB, spawnA, spawnB, goalA, goalB}
 let SPAWN_TILE=[0,0];
 let GOAL_TILE=[8,13];
 let TS=new Set();
@@ -155,7 +161,14 @@ function buildMap(mapKey){
   const def=MAP_DEFS[mapKey];
   SPAWN_TILE=[...def.spawn];
   GOAL_TILE=[...def.goal];
-  if(def.fork){
+  DUAL_PATHS=null;
+  if(def.dual){
+    DUAL_PATHS=def.buildDualPaths();
+    const allTiles=[...DUAL_PATHS.pathA,...DUAL_PATHS.pathB];
+    TRACK=allTiles;
+    FORK_PATHS=null;
+    TS=new Set(allTiles.map(([c,r])=>`${c},${r}`));
+  } else if(def.fork){
     FORK_PATHS=def.buildPaths();
     const allTiles=[
       ...FORK_PATHS.main,
@@ -176,7 +189,7 @@ function buildMap(mapKey){
   if(mapKey==='C'){CX=4;CY=5;}
   else if(mapKey==='D'){CX=4;CY=6;}
   else if(mapKey==='E'){CX=4;CY=9;}
-  else if(mapKey==='F'){CX=4;CY=7;}
+  else if(mapKey==='F'){CX=4;CY=6;}
   else{CX=4;CY=6;}
   CURRENT_MAP=mapKey;
 }
@@ -185,6 +198,26 @@ function buildMap(mapKey){
 // 패치노트
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
+  {
+    version:"v4.0",
+    date:"2025-06-17",
+    title:"대각선 맵 → X자 듀얼 경로로 개편",
+    changes:[
+      "❌ 대각선 맵을 X자 모양으로 전면 개편",
+      "🔀 좌상단→우하단, 우상단→좌하단 두 대각선이 중앙에서 교차",
+      "🎲 적마다 두 스폰 지점(좌상단/우상단) 중 랜덤으로 출발",
+      "🏁 골 지점도 2개(우하단/좌하단)로 분리, 각자 자기 대각선 끝에서 라이프 차감",
+    ]
+  },
+  {
+    version:"v3.9",
+    date:"2025-06-17",
+    title:"클리어 횟수 복구 도구 추가",
+    changes:[
+      "🔧 타이틀 화면의 '🏆 N클리어' 표시를 2.5초간 길게 누르면 클리어 횟수를 직접 입력해 수정 가능",
+      "🛠️ 과거 버그(무한모드 미저장)로 누락된 클리어 기록을 수동 복구할 수 있는 임시 도구",
+    ]
+  },
   {
     version:"v3.8",
     date:"2025-06-17",
@@ -992,6 +1025,12 @@ const mkE=(type,rnd=1,isBoss=false,isMid=false,mapKey='B',waveOpts={})=>{
       isInvis:type==='투명',
     };
   }
+  if(mapKey==='F'&&DUAL_PATHS){
+    // X자 맵: 좌상단/우상단 중 랜덤 스폰
+    const useA=Math.random()<0.5;
+    const path=useA?DUAL_PATHS.pathA:DUAL_PATHS.pathB;
+    return{...base_e,x:path[0][0]*CS,y:path[0][1]*CS,path};
+  }
   if(mapKey==='C'&&FORK_PATHS){
     // 1차 분기: 랜덤 좌/우
     const branch1=Math.random()<0.5?'left1':'right1';
@@ -1123,6 +1162,9 @@ export default function App(){
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('easy');
   const [clearCount,setClearCount]=useState(()=>{try{return parseInt(localStorage.getItem('clearCount')||'0');}catch{return 0;}});
+  const [showCheatModal,setShowCheatModal]=useState(false);
+  const [cheatInput,setCheatInput]=useState('');
+  const cheatPressTimer=useRef(null);
   const savedThisGameRef=useRef(false);
   const [mapMode,setMapMode]=useState('random'); // 'random' | 'pick'
   const [selectedMap,setSelectedMap]=useState('B');
@@ -1215,8 +1257,12 @@ export default function App(){
     // ── 타일 배경
     for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
       const isT=TS.has(`${col},${r}`),isC=col===CX&&r===CY;
-      const isSpawn=col===SPAWN_TILE[0]&&r===SPAWN_TILE[1];
-      const isGoal=col===GOAL_TILE[0]&&r===GOAL_TILE[1];
+      const isSpawn=DUAL_PATHS
+        ?((col===DUAL_PATHS.spawnA[0]&&r===DUAL_PATHS.spawnA[1])||(col===DUAL_PATHS.spawnB[0]&&r===DUAL_PATHS.spawnB[1]))
+        :(col===SPAWN_TILE[0]&&r===SPAWN_TILE[1]);
+      const isGoal=DUAL_PATHS
+        ?((col===DUAL_PATHS.goalA[0]&&r===DUAL_PATHS.goalA[1])||(col===DUAL_PATHS.goalB[0]&&r===DUAL_PATHS.goalB[1]))
+        :(col===GOAL_TILE[0]&&r===GOAL_TILE[1]);
       if(isSpawn||isGoal){
         // 스폰/골은 나중에 별도 처리
         ctx.fillStyle="#111827";ctx.fillRect(col*CS,r*CS,CS,CS);
@@ -1254,6 +1300,16 @@ export default function App(){
         ctx.fillRect((COLS-1)*CS,r*CS,CS,CS);
       }
       ctx.restore();
+    }
+
+    // ── X자 맵 경로 색상
+    if(DUAL_PATHS){
+      DUAL_PATHS.pathA.forEach(([col,r])=>{
+        ctx.fillStyle="rgba(59,130,246,0.13)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
+      });
+      DUAL_PATHS.pathB.forEach(([col,r])=>{
+        ctx.fillStyle="rgba(168,85,247,0.13)";ctx.fillRect(col*CS+1,r*CS+1,CS-2,CS-2);
+      });
     }
 
     // ── 분기맵 경로 색상
@@ -1311,7 +1367,7 @@ export default function App(){
     }
 
     // ── 스폰 타일
-    {const[sc,sr]=SPAWN_TILE;
+    const drawSpawnTile=(sc,sr)=>{
       const t=Date.now()/1000;
       const pulse=Math.sin(t*2)*0.15+0.25;
       ctx.save();
@@ -1322,10 +1378,9 @@ export default function App(){
       ctx.textAlign="center";ctx.textBaseline="middle";
       ctx.font="bold 8px sans-serif";ctx.fillStyle="#4ade80";ctx.fillText("SPAWN",sc*CS+CS/2,sr*CS+14);
       ctx.font="bold 16px sans-serif";ctx.fillStyle="#4ade80";ctx.fillText("▶",sc*CS+CS/2,sr*CS+33);
-      ctx.textAlign="left";ctx.textBaseline="alphabetic";}
-
-    // ── 골 타일
-    {const[gc2,gr]=GOAL_TILE;
+      ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    };
+    const drawGoalTile=(gc2,gr)=>{
       const t=Date.now()/1000;
       const pulse=Math.sin(t*2+1)*0.15+0.25;
       ctx.save();
@@ -1336,7 +1391,17 @@ export default function App(){
       ctx.textAlign="center";ctx.textBaseline="middle";
       ctx.font="bold 8px sans-serif";ctx.fillStyle="#f87171";ctx.fillText("GOAL",gc2*CS+CS/2,gr*CS+14);
       ctx.font="bold 16px sans-serif";ctx.fillStyle="#f87171";ctx.fillText("🏁",gc2*CS+CS/2,gr*CS+33);
-      ctx.textAlign="left";ctx.textBaseline="alphabetic";}
+      ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    };
+    if(DUAL_PATHS){
+      drawSpawnTile(DUAL_PATHS.spawnA[0],DUAL_PATHS.spawnA[1]);
+      drawSpawnTile(DUAL_PATHS.spawnB[0],DUAL_PATHS.spawnB[1]);
+      drawGoalTile(DUAL_PATHS.goalA[0],DUAL_PATHS.goalA[1]);
+      drawGoalTile(DUAL_PATHS.goalB[0],DUAL_PATHS.goalB[1]);
+    } else {
+      drawSpawnTile(SPAWN_TILE[0],SPAWN_TILE[1]);
+      drawGoalTile(GOAL_TILE[0],GOAL_TILE[1]);
+    }
 
     // 배치 가이드
     if(dragR.current||selHero){
@@ -2728,7 +2793,12 @@ export default function App(){
         <div style={{fontSize:30,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4,letterSpacing:3}}>랜덤 디펜스</div>
         <div style={{fontSize:12,color:"#374151",marginBottom:8,letterSpacing:4}}>RANDOM DEFENSE</div>
         <div style={{display:"flex",gap:8,marginBottom:20,alignItems:"center"}}>
-          <span style={{background:"#1e293b",borderRadius:8,padding:"4px 10px",fontSize:12,color:"#fcd34d",fontWeight:"bold"}}>🏆 {clearCount}클리어</span>
+          <span
+            onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+            onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+            onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+            onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+            style={{background:"#1e293b",borderRadius:8,padding:"4px 10px",fontSize:12,color:"#fcd34d",fontWeight:"bold",userSelect:"none"}}>🏆 {clearCount}클리어</span>
           {clearCount<1&&<span style={{fontSize:11,color:"#555"}}>쉬움 클리어 시 보통 난이도·전설 개방</span>}
           {clearCount>=1&&clearCount<3&&<span style={{fontSize:11,color:"#555"}}>{3-clearCount}클리어 후 신화 개방</span>}
           {clearCount>=3&&clearCount<5&&<span style={{fontSize:11,color:"#555"}}>{5-clearCount}클리어 후 불멸·어려움 개방</span>}
@@ -2750,7 +2820,7 @@ export default function App(){
           {/* 랜덤: 맵 미리보기만 표시 */}
           {mapMode==='random'&&(
             <div style={{display:"flex",gap:6}}>
-              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"대각선",color:"#fb923c",icon:"↗️"}].map(m=>(
+              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"X자",color:"#fb923c",icon:"❌"}].map(m=>(
                 <div key={m.key} style={{flex:1,background:"#161b22",border:`1px solid ${m.color}22`,borderRadius:10,padding:"8px 6px",textAlign:"center"}}>
                   <div style={{fontSize:16,marginBottom:2}}>{m.icon}</div>
                   <div style={{fontSize:10,color:m.color}}>{m.label}</div>
@@ -2761,7 +2831,7 @@ export default function App(){
           {/* 선택: 클릭으로 선택 */}
           {mapMode==='pick'&&(
             <div style={{display:"flex",gap:6}}>
-              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"대각선",color:"#fb923c",icon:"↗️"}].map(m=>(
+              {[{key:"B",label:"S자",color:"#4f8",icon:"〰️"},{key:"C",label:"이중분기",color:"#fa0",icon:"🔀"},{key:"D",label:"나선형",color:"#c084fc",icon:"🌀"},{key:"E",label:"역방향",color:"#f87171",icon:"⬆️"},{key:"F",label:"X자",color:"#fb923c",icon:"❌"}].map(m=>(
                 <button key={m.key} onClick={()=>setSelectedMap(m.key)}
                   style={{flex:1,background:selectedMap===m.key?`${m.color}22`:"#161b22",border:`2px solid ${selectedMap===m.key?m.color:m.color+"22"}`,borderRadius:10,padding:"8px 6px",textAlign:"center",cursor:"pointer",transition:"all 0.15s"}}>
                   <div style={{fontSize:16,marginBottom:2}}>{m.icon}</div>
@@ -3016,6 +3086,26 @@ export default function App(){
                 style={{width:"100%",background:"transparent",border:"1px solid #30363d",color:"#555",borderRadius:10,padding:"8px",cursor:"pointer",fontSize:12}}>
                 다음 패치 전까지 보지않기
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCheatModal&&(
+        <div onClick={()=>setShowCheatModal(false)}
+          style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:700,padding:20}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#161b22",borderRadius:16,border:"1px solid #f59e0b",padding:20,width:"100%",maxWidth:320}}>
+            <div style={{fontSize:15,fontWeight:"bold",color:"#fbbf24",marginBottom:4,textAlign:"center"}}>🔧 클리어 횟수 직접 설정</div>
+            <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>버그로 누락된 클리어 기록을 복구할 때만 사용하세요.</div>
+            <input type="number" min="0" max="999" value={cheatInput} onChange={e=>setCheatInput(e.target.value)}
+              style={{width:"100%",background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#eee",fontSize:16,textAlign:"center",outline:"none",marginBottom:12}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setShowCheatModal(false)} style={{flex:1,background:"#21262d",border:"1px solid #30363d",color:"#aaa",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13}}>취소</button>
+              <button onClick={()=>{
+                const n=Math.max(0,Math.min(999,parseInt(cheatInput)||0));
+                setClearCount(n);
+                try{localStorage.setItem('clearCount',String(n));}catch{}
+                setShowCheatModal(false);
+              }} style={{flex:1,background:"#f59e0b",border:"none",color:"#000",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>적용</button>
             </div>
           </div>
         </div>
