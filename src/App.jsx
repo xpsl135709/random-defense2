@@ -186,6 +186,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v3.8",
+    date:"2025-06-17",
+    title:"무한모드 진입 시 랭킹 미저장 버그 수정",
+    changes:[
+      "🐛 클리어 후 '무한모드 계속하기'를 누르면 클리어 기록이 랭킹에 저장되지 않던 버그 수정",
+      "🏆 이제 무한모드 진입 시에도 클리어 시점 기록(라운드/골드/코인)이 먼저 저장된 후 진행됨",
+    ]
+  },
+  {
     version:"v3.7",
     date:"2025-06-17",
     title:"무한모드 진행 안되는 버그 수정",
@@ -3201,7 +3210,8 @@ export default function App(){
             <Btn bg="#1f6feb" onClick={()=>{saveRecord(true);startGame(null);}}>다시 시작</Btn>
             <Btn bg="#333" onClick={()=>{saveRecord(true);setPhase('title');}}>타이틀로</Btn>
           </div>
-          <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={()=>{
+          <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={async()=>{
+            await saveRecord(true);
             const g=G.current;
             g.victory=false;g.over=false;g.infiniteMode=true;
             g.round++;g.cleared=false;g.total=0;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
