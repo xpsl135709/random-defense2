@@ -186,6 +186,35 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v3.5",
+    date:"2025-06-17",
+    title:"클리어 화면 표시 버그 수정",
+    changes:[
+      "🐛 쉬움(50R)/보통(70R) 클리어 시 '100층 클리어!'로 잘못 표시되던 버그 수정",
+      "📊 클리어/게임오버 화면, 랭킹 목록의 라운드 표시를 난이도별 실제 목표 라운드 기준으로 수정",
+    ]
+  },
+  {
+    version:"v3.4",
+    date:"2025-06-17",
+    title:"무작위 조합 → 진짜 등급 업그레이드로 변경 & 변환 기능 추가",
+    changes:[
+      "🎲 무작위 뭉치기 수정: 같은 등급 3개 선택 시 한 단계 위 등급으로 업그레이드 (노말→고급, 고급→영웅, 영웅→전설 등)",
+      "🔒 등급 업그레이드도 클리어 횟수에 따른 등급 잠금 적용 (미개방 등급은 조합 불가)",
+      "🚫 서로 다른 등급을 섞어서 무작위 조합 시도 시 차단",
+      "🔄 신규 '변환' 기능 추가: 같은 등급 2개 선택 → 같은 등급 내 다른 유닛으로 무작위 변환 (등급 변화 없음, 속성 갱신용)",
+    ]
+  },
+  {
+    version:"v3.3",
+    date:"2025-06-17",
+    title:"무작위 뭉치기 전면 랜덤화",
+    changes:[
+      "🎲 무작위 뭉치기는 재료 속성과 완전히 무관해짐: 노말 3개 소모 시 고급 등급 유닛 중 완전 랜덤으로 결과 결정",
+      "🐛 기존에는 재료 속성에 따라 동일 결과(예: 땅 위주 선택 시 무조건 지진)만 나오던 문제 해결",
+    ]
+  },
+  {
     version:"v3.2",
     date:"2025-06-17",
     title:"난이도별 클리어 라운드 차등",
@@ -608,6 +637,7 @@ const EN={불:"화염정령",물:"물정령",땅:"대지정령",바람:"바람�
 };
 const hr=(hex,a)=>{const h=hex.replace('#','');const l=h.length===3?h[0]+h[0]+h[1]+h[1]+h[2]+h[2]:h;return `rgba(${parseInt(l.slice(0,2),16)},${parseInt(l.slice(2,4),16)},${parseInt(l.slice(4,6),16)},${a})`;};
 const GC={노말:"#aaa",고급:"#4af",영웅:"#a4f",전설:"#fa0",신화:"#f44",불멸:"#f8f"};
+const NEXT_GRADE={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
 const ATK_MAP={노말:12,고급:22,영웅:42,전설:67,신화:97,불멸:167};
 const SELL_PRICE={노말:5,고급:10,영웅:20,전설:35,신화:50,불멸:75};
 
@@ -1058,6 +1088,7 @@ export default function App(){
   const spR=useRef(1);
   const gameLoopRef=useRef(null);
   const randomPicksRef=useRef([]);
+  const transformPicksRef=useRef([]);
 
   // 게임 화면 단계: 'title' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
@@ -1092,6 +1123,7 @@ export default function App(){
   const countdownRef=useRef(null);
   const countdownValRef=useRef(0);
   const [randomPicks,setRandomPicks]=useState([]);
+  const [transformPicks,setTransformPicks]=useState([]);
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
   const [detailHero,setDetailHero]=useState(null); // 상세정보 모달
@@ -2114,7 +2146,7 @@ export default function App(){
     G.current.anonName=`익명${Math.floor(Math.random()*90000+10000)}`;
     savedThisGameRef.current=false;
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
-    setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
+    setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setTransformPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
     sync();
     setPhase('hidden');
@@ -2146,7 +2178,7 @@ export default function App(){
     G.current=g;
     setRotMode(true);
     setSelH(null);setHeroes([]);setDrag(null);setModal(null);
-    setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setStacks({});
+    setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setTransformPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
     sync();
     setPhase('hidden');
@@ -2405,13 +2437,34 @@ export default function App(){
   };
 
   const toggleRandomPick=(heroId)=>{
+    const g=G.current;
     setRandomPicks(prev=>{
       let next;
-      if(prev.includes(heroId))next=prev.filter(x=>x!==heroId);
-      else if(prev.length>=3)next=prev;
-      else next=[...prev,heroId];
+      if(prev.includes(heroId)){
+        next=prev.filter(x=>x!==heroId);
+      }else if(prev.length>=3){
+        next=prev;
+      }else{
+        // 같은 등급만 선택 가능
+        if(prev.length>0){
+          const firstHero=g.heroes.find(h=>h.id===prev[0]);
+          const thisHero=g.heroes.find(h=>h.id===heroId);
+          if(firstHero&&thisHero&&firstHero.grade!==thisHero.grade){
+            alert(`같은 등급끼리만 선택 가능합니다! (${firstHero.grade})`);
+            return prev;
+          }
+        }
+        next=[...prev,heroId];
+      }
       randomPicksRef.current=next;return next;
     });
+  };
+
+  // 등급별 결과 풀 (이름만 추출, 중복 제거)
+  const getPoolByGrade=(grade)=>{
+    const fromCombo=COMBO.filter(r=>r.g===grade).map(r=>r.r);
+    const fromRecipes=RECIPES.filter(r=>r.g===grade).map(r=>r.r);
+    return [...new Set([...fromCombo,...fromRecipes])];
   };
 
   const doRandomMerge=()=>{
@@ -2419,21 +2472,72 @@ export default function App(){
     if(picks.length!==3){alert("3개를 선택하세요!");return;}
     const targets=picks.map(id=>g.heroes.find(h=>h.id===id)).filter(Boolean);
     if(targets.length!==3){alert("선택한 유닛을 찾을 수 없습니다.");return;}
-    const els=targets.map(h=>h.element);
-    let result=null;
-    for(const r of COMBO){if(els.includes(r.a)&&els.includes(r.b)){result=r;break;}}
+    const grades=targets.map(t=>t.grade);
+    if(new Set(grades).size>1){alert("같은 등급끼리만 조합 가능합니다!");return;}
+    const fromGrade=grades[0];
+    const nextGrade=NEXT_GRADE[fromGrade];
+    if(!nextGrade){alert("더 이상 조합할 수 없는 최고 등급입니다!");return;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
-    if(result&&!unlockedG.includes(result.g))result=null;
+    if(!unlockedG.includes(nextGrade)){alert(`${nextGrade} 등급이 아직 개방되지 않았습니다!`);return;}
+    const pool=getPoolByGrade(nextGrade);
+    const result=pool.length?{r:pool[Math.floor(Math.random()*pool.length)],g:nextGrade}:null;
+    if(!result){alert("조합 가능한 결과가 없습니다!");return;}
     // 배치된 유닛 위치 우선 사용, 없으면 자동배치
     const placedTarget=targets.find(t=>t.col!==null);
-    let nh;
-    if(result){nh=mkH(result.r,result.g,g.gradeEnhLv||{});}
-    else{const pool=COMBO.filter(r=>r.g==="고급");const rnd=pool[Math.floor(Math.random()*pool.length)];nh=mkH(rnd.r,rnd.g,g.gradeEnhLv||{});}
+    const nh=mkH(result.r,result.g,g.gradeEnhLv||{});
     const remaining=g.heroes.filter(x=>!picks.includes(x.id));
     if(placedTarget){nh.col=placedTarget.col;nh.row=placedTarget.row;}
     else{const pos=autoPlace(remaining);if(pos){nh.col=pos[0];nh.row=pos[1];}}
     g.heroes=[...remaining,nh];
     randomPicksRef.current=[];setRandomPicks([]);setModal(null);setSelHero(null);sync();draw();
+    triggerSummon(result.r,result.g);
+  };
+
+  const toggleTransformPick=(heroId)=>{
+    const g=G.current;
+    setTransformPicks(prev=>{
+      let next;
+      if(prev.includes(heroId)){
+        next=prev.filter(x=>x!==heroId);
+      }else if(prev.length>=2){
+        next=prev;
+      }else{
+        if(prev.length>0){
+          const firstHero=g.heroes.find(h=>h.id===prev[0]);
+          const thisHero=g.heroes.find(h=>h.id===heroId);
+          if(firstHero&&thisHero&&firstHero.grade!==thisHero.grade){
+            alert(`같은 등급끼리만 선택 가능합니다! (${firstHero.grade})`);
+            return prev;
+          }
+        }
+        next=[...prev,heroId];
+      }
+      transformPicksRef.current=next;return next;
+    });
+  };
+
+  // 변환: 같은 등급 2개 선택 → 같은 등급 내 무작위 다른 유닛 1개로 변환
+  const doTransform=()=>{
+    const g=G.current;const picks=transformPicksRef.current;
+    if(picks.length!==2){alert("2개를 선택하세요!");return;}
+    const targets=picks.map(id=>g.heroes.find(h=>h.id===id)).filter(Boolean);
+    if(targets.length!==2){alert("선택한 유닛을 찾을 수 없습니다.");return;}
+    const grades=targets.map(t=>t.grade);
+    if(grades[0]!==grades[1]){alert("같은 등급끼리만 변환 가능합니다!");return;}
+    const grade=grades[0];
+    const fullPool=getPoolByGrade(grade);
+    // 가능하면 보유한 2개와 다른 유닛으로, 풀이 부족하면 전체 풀에서
+    const diffPool=fullPool.filter(name=>!targets.some(t=>t.element===name));
+    const finalPool=diffPool.length?diffPool:fullPool;
+    const result=finalPool[Math.floor(Math.random()*finalPool.length)];
+    const placedTarget=targets.find(t=>t.col!==null);
+    const nh=mkH(result,grade,g.gradeEnhLv||{});
+    const remaining=g.heroes.filter(x=>!picks.includes(x.id));
+    if(placedTarget){nh.col=placedTarget.col;nh.row=placedTarget.row;}
+    else{const pos=autoPlace(remaining);if(pos){nh.col=pos[0];nh.row=pos[1];}}
+    g.heroes=[...remaining,nh];
+    transformPicksRef.current=[];setTransformPicks([]);setModal(null);setSelHero(null);sync();draw();
+    triggerSummon(result,grade);
   };
 
   const buyWithCoin=(item)=>{
@@ -2663,7 +2767,7 @@ export default function App(){
                       </div>
                       <div style={{display:"flex",gap:8,fontSize:11,color:"#888",flexWrap:"wrap"}}>
                         <span style={{color:diffColor}}>{diffLabel}</span>
-                        <span style={{color:"#4af"}}>R{r.round}/100</span>
+                        <span style={{color:"#4af"}}>R{r.round}/{r.difficulty==='easy'?50:r.difficulty==='normal'?70:100}</span>
                         <span style={{color:"#fd0"}}>💰{r.gold}G</span>
                         <span style={{color:"#a78bfa"}}>🪙{r.coins}</span>
                         <span style={{color:"#555"}}>{r.map}</span>
@@ -2913,13 +3017,14 @@ export default function App(){
         const g=G.current;
         const diff=g?.difficulty||'hard';
         const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        const targetRound=diff==='easy'?50:diff==='normal'?70:100;
         return(<Overlay>
           <div style={{fontSize:40,textAlign:"center"}}>💀</div>
           <div style={{fontSize:20,fontWeight:"bold",color:"#f44",margin:"8px 0",textAlign:"center"}}>게임 오버</div>
           <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>난이도</span><span>{diffLabel}</span></div>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>라운드</span><span style={{color:"#4af",fontWeight:"bold"}}>R{ui.round}/100</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>라운드</span><span style={{color:"#4af",fontWeight:"bold"}}>R{ui.round}/{targetRound}</span></div>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>골드</span><span style={{color:"#fd0"}}>💰{ui.gold}G</span></div>
             <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"#888"}}>코인</span><span style={{color:"#a78bfa"}}>🪙{ui.coins}</span></div>
           </div>
@@ -2934,9 +3039,10 @@ export default function App(){
         const g=G.current;
         const diff=g?.difficulty||'hard';
         const diffLabel=diff==='easy'?'🌱쉬움':diff==='normal'?'⚔️보통':'💀어려움';
+        const targetRound=diff==='easy'?50:diff==='normal'?70:100;
         return(<Overlay>
           <div style={{fontSize:44,textAlign:"center"}}>🏆</div>
-          <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>100층 클리어!</div>
+          <div style={{fontSize:22,fontWeight:"bold",color:"#fd0",margin:"8px 0",textAlign:"center"}}>{targetRound}층 클리어!</div>
           <div style={{color:"#4f8",fontSize:14,marginBottom:6,textAlign:"center"}}>축하합니다!</div>
           <div style={{background:"#21262d",borderRadius:10,padding:"10px 14px",marginBottom:10,fontSize:13}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#888"}}>닉네임</span><span style={{color:"#eee",fontWeight:"bold"}}>{nickname||'익명'}</span></div>
@@ -2970,7 +3076,7 @@ export default function App(){
         }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
           🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
         </button>
-        <button onClick={()=>{setRandomPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
+        <button onClick={()=>{setRandomPicks([]);setTransformPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
           ✨<br/><span style={{fontSize:10,opacity:0.8}}>뭉치기</span>
         </button>
         <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(245,158,11,0.2)"}}>
@@ -3243,7 +3349,7 @@ export default function App(){
       {modal==="merge"&&(()=>{
         const sameGroups=getSameElementGroups();const stackEntries=Object.entries(stacks).filter(([,n])=>n>0);
         return(<Overlay>
-          <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];}} style={{width:"100%",marginBottom:10}}>닫기</Btn>
+          <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];setTransformPicks([]);transformPicksRef.current=[];}} style={{width:"100%",marginBottom:10}}>닫기</Btn>
           <div style={{fontSize:15,fontWeight:"bold",color:"#4f8",marginBottom:10,textAlign:"center"}}>✨ 뭉치기</div>
           {stackEntries.length>0&&(<div style={{marginBottom:12}}>
             <div style={{fontSize:12,color:"#4f8",marginBottom:6}}>📦 보관함</div>
@@ -3273,11 +3379,20 @@ export default function App(){
             </div>
           </div>
           <div style={{borderTop:"1px solid #30363d",paddingTop:10}}>
-            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🎲 무작위 3개 조합 <span style={{color:"#fd0"}}>({randomPicks.length}/3)</span></div>
+            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🎲 무작위 3개 조합 (등급 업그레이드) <span style={{color:"#fd0"}}>({randomPicks.length}/3)</span></div>
+            <div style={{fontSize:10,color:"#666",marginBottom:6}}>같은 등급 3개를 선택해 소모하면, 한 단계 위 등급의 유닛 중 하나가 완전 랜덤으로 나옵니다. (속성은 무관)</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
               {heroes.map(h=>{const isPicked=randomPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleRandomPick(h.id)} style={{background:isPicked?"rgba(80,200,80,0.2)":"#21262d",border:`2px solid ${isPicked?"#4f8":GC[h.grade]||"#444"}`,borderRadius:7,padding:"4px 6px",cursor:"pointer",textAlign:"center",minWidth:44}}><div style={{fontSize:16}}>{EE[h.element]||"?"}</div><div style={{fontSize:8,color:GC[h.grade]}}>{h.grade}</div></div>);})}
             </div>
             <Btn bg={randomPicks.length===3?"#1a5c2a":"#333"} onClick={doRandomMerge} disabled={randomPicks.length!==3} style={{width:"100%",marginBottom:8}}>🎲 조합하기 {randomPicks.length===3?"":"(3개 선택)"}</Btn>
+          </div>
+          <div style={{borderTop:"1px solid #30363d",paddingTop:10,marginTop:10}}>
+            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🔄 변환 (같은 등급 내 무작위 교체) <span style={{color:"#fd0"}}>({transformPicks.length}/2)</span></div>
+            <div style={{fontSize:10,color:"#666",marginBottom:6}}>같은 등급 2개를 선택해 소모하면, 같은 등급 내 다른 유닛 하나로 무작위 변환됩니다. (등급 변화 없음)</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
+              {heroes.map(h=>{const isPicked=transformPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleTransformPick(h.id)} style={{background:isPicked?"rgba(168,85,247,0.2)":"#21262d",border:`2px solid ${isPicked?"#a855f7":GC[h.grade]||"#444"}`,borderRadius:7,padding:"4px 6px",cursor:"pointer",textAlign:"center",minWidth:44}}><div style={{fontSize:16}}>{EE[h.element]||"?"}</div><div style={{fontSize:8,color:GC[h.grade]}}>{h.grade}</div></div>);})}
+            </div>
+            <Btn bg={transformPicks.length===2?"#5b2a8a":"#333"} onClick={doTransform} disabled={transformPicks.length!==2} style={{width:"100%",marginBottom:8}}>🔄 변환하기 {transformPicks.length===2?"":"(2개 선택)"}</Btn>
           </div>
         </Overlay>);
       })()}
