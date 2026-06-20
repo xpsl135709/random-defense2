@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.2",
+    date:"2025-06-17",
+    title:"채팅 실시간 갱신 추가",
+    changes:[
+      "🔄 채팅창을 열어두면 3초마다 자동으로 새 메시지 확인 (실시간처럼 동작)",
+      "📜 새 메시지 도착 시 채팅창이 자동으로 맨 아래로 스크롤",
+    ]
+  },
+  {
     version:"v4.1",
     date:"2025-06-17",
     title:"채팅창 동작 안 하는 버그 수정",
@@ -1197,6 +1206,7 @@ export default function App(){
   const [modal,setModal]=useState(null);
   const [showCombo,setShowCombo]=useState(false);
   const [showChat,setShowChat]=useState(false);
+  const chatScrollRef=useRef(null);
   const [chatTab,setChatTab]=useState('chat'); // 'chat' | 'log'
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
@@ -2761,6 +2771,31 @@ export default function App(){
     setChatLoading(false);
   };
 
+  // 조용한 새로고침 (로딩 스피너 없이, 폴링용)
+  const refreshChatSilently=async()=>{
+    try{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+      });
+      const data=await res.json();
+      if(Array.isArray(data))setChatMessages(data.reverse());
+    }catch(e){}
+  };
+
+  // 채팅창 열려있고 '전체채팅' 탭일 때 3초마다 자동 새로고침
+  useEffect(()=>{
+    if(!showChat||chatTab!=='chat')return;
+    const iv=setInterval(refreshChatSilently,3000);
+    return ()=>clearInterval(iv);
+  },[showChat,chatTab]);
+
+  // 새 메시지 도착 시 자동 스크롤
+  useEffect(()=>{
+    if(chatScrollRef.current){
+      chatScrollRef.current.scrollTop=chatScrollRef.current.scrollHeight;
+    }
+  },[chatMessages]);
+
   const sendChatMessage=async()=>{
     const text=chatInput.trim();
     if(!text)return;
@@ -2778,7 +2813,7 @@ export default function App(){
         },
         body:JSON.stringify({name:finalName,message:text}),
       });
-      loadChatMessages();
+      refreshChatSilently();
     }catch(e){console.error('chat send error',e);}
   };
 
@@ -3147,7 +3182,7 @@ export default function App(){
             </div>
 
             {chatTab==='chat'&&(<>
-              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
+              <div ref={chatScrollRef} style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
                 {chatLoading&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>불러오는 중...</div>}
                 {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
                 {!chatLoading&&chatMessages.map(m=>{
