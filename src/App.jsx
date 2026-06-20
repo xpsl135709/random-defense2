@@ -186,6 +186,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v3.7",
+    date:"2025-06-17",
+    title:"무한모드 진행 안되는 버그 수정",
+    changes:[
+      "🐛 클리어 후 '무한모드 계속하기'를 눌러도 다음 라운드 적이 스폰되지 않던 버그 수정",
+      "🔄 무한모드 진입 시 라운드 증가 및 스폰 상태 초기화 로직 누락 보완",
+    ]
+  },
+  {
+    version:"v3.6",
+    date:"2025-06-17",
+    title:"토스트 알림 & 채팅창 추가",
+    changes:[
+      "🔔 뽑기/조합/변환 시 우측 상단에 결과 토스트 알림 표시 (3초 후 자동 소멸)",
+      "💬 실시간 전체 채팅창 추가 (HUD 조합표 왼쪽 버튼)",
+      "📜 개인 뽑기/조합 기록 탭 추가 (채팅창 내 '내 기록' 탭)",
+      "⚠️ 채팅을 사용하려면 Supabase에 chat_messages 테이블 추가 필요",
+    ]
+  },
+  {
     version:"v3.5",
     date:"2025-06-17",
     title:"클리어 화면 표시 버그 수정",
@@ -1116,6 +1136,11 @@ export default function App(){
   const [drag,setDrag]=useState(null);
   const [modal,setModal]=useState(null);
   const [showCombo,setShowCombo]=useState(false);
+  const [showChat,setShowChat]=useState(false);
+  const [chatTab,setChatTab]=useState('chat'); // 'chat' | 'log'
+  const [chatMessages,setChatMessages]=useState([]);
+  const [chatInput,setChatInput]=useState('');
+  const [chatLoading,setChatLoading]=useState(false);
   const [comboFilter,setComboFilter]=useState("고급");
   const [speed,setSpeedState]=useState(1);
   const [selHero,setSelHero]=useState(null);
@@ -1126,6 +1151,8 @@ export default function App(){
   const [transformPicks,setTransformPicks]=useState([]);
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
+  const [toasts,setToasts]=useState([]);
+  const toastIdRef=useRef(1);
   const [detailHero,setDetailHero]=useState(null); // 상세정보 모달
   const longPressTimer=useRef(null);
   const [currentMapName,setCurrentMapName]=useState('');
@@ -1134,6 +1161,24 @@ export default function App(){
   const triggerSummon=(el,grade)=>{
     if(!["전설","신화","불멸"].includes(grade))return;
     setSummonAnim({element:el,grade});
+  };
+
+  // 토스트 알림: 우측에 3초간 표시
+  const pushToast=(text,color)=>{
+    const id=toastIdRef.current++;
+    setToasts(prev=>[...prev,{id,text,color:color||"#94a3b8"}]);
+    setTimeout(()=>{
+      setToasts(prev=>prev.filter(t=>t.id!==id));
+    },3000);
+  };
+  // 개인 뽑기/조합 로그
+  const [pullLog,setPullLog]=useState([]);
+  const logPull=(action,el,grade)=>{
+    setPullLog(prev=>[{id:Date.now()+Math.random(),action,el,grade,ts:new Date()},...prev].slice(0,100));
+  };
+  const notifyResult=(action,el,grade)=>{
+    pushToast(`${action} ${EE[el]||""} ${EN[el]||el} [${grade}]`,GC[grade]||"#94a3b8");
+    logPull(action,el,grade);
   };
 
   const sync=useCallback(()=>{
@@ -2327,7 +2372,7 @@ export default function App(){
     nh.col=pos.col;nh.row=pos.row;
     g.heroes=g.heroes.filter(x=>x.id!==h1.id&&x.id!==h2.id);
     g.heroes.push(nh);
-    setSelHero(null);sync();draw();triggerSummon(opt.r,opt.g);
+    setSelHero(null);sync();draw();triggerSummon(opt.r,opt.g);notifyResult("⚗️ 조합",opt.r,opt.g);
   };
 
   const GRADE_ENH_COST={노말:10,고급:15,영웅:25,전설:30,신화:40,불멸:50};
@@ -2422,7 +2467,7 @@ export default function App(){
     for(const part of recipe.parts){let removed=0;for(let i=remaining.length-1;i>=0&&removed<part.n;i--){if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}}}
     const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});const pos=autoPlace(remaining);
     if(pos){h.col=pos[0];h.row=pos[1];}
-    g.heroes=[...remaining,h];setModal(null);sync();draw();triggerSummon(recipe.r,recipe.g);
+    g.heroes=[...remaining,h];setModal(null);sync();draw();triggerSummon(recipe.r,recipe.g);notifyResult("⚗️ 조합",recipe.r,recipe.g);
   };
 
   const stackCombine=(el)=>{
@@ -2490,7 +2535,7 @@ export default function App(){
     else{const pos=autoPlace(remaining);if(pos){nh.col=pos[0];nh.row=pos[1];}}
     g.heroes=[...remaining,nh];
     randomPicksRef.current=[];setRandomPicks([]);setModal(null);setSelHero(null);sync();draw();
-    triggerSummon(result.r,result.g);
+    triggerSummon(result.r,result.g);notifyResult("🎲 조합",result.r,result.g);
   };
 
   const toggleTransformPick=(heroId)=>{
@@ -2537,7 +2582,7 @@ export default function App(){
     else{const pos=autoPlace(remaining);if(pos){nh.col=pos[0];nh.row=pos[1];}}
     g.heroes=[...remaining,nh];
     transformPicksRef.current=[];setTransformPicks([]);setModal(null);setSelHero(null);sync();draw();
-    triggerSummon(result,grade);
+    triggerSummon(result,grade);notifyResult("🔄 변환",result,grade);
   };
 
   const buyWithCoin=(item)=>{
@@ -2618,6 +2663,40 @@ export default function App(){
       setRanking(Array.isArray(data)?data:[]);
     }catch(e){setRanking([]);}
     setRankLoading(false);
+  };
+
+  // ── 채팅 불러오기/보내기
+  const loadChatMessages=async()=>{
+    setChatLoading(true);
+    try{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+      });
+      const data=await res.json();
+      setChatMessages(Array.isArray(data)?data.reverse():[]);
+    }catch(e){setChatMessages([]);}
+    setChatLoading(false);
+  };
+
+  const sendChatMessage=async()=>{
+    const text=chatInput.trim();
+    if(!text)return;
+    if(text.length>200){alert("메시지는 200자 이하로 입력해주세요!");return;}
+    const finalName=nickname.trim()||G.current?.anonName||`익명${Math.floor(Math.random()*90000+10000)}`;
+    setChatInput('');
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`,{
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${SUPABASE_KEY}`,
+          'Content-Type':'application/json',
+          Prefer:'return=minimal',
+        },
+        body:JSON.stringify({name:finalName,message:text}),
+      });
+      loadChatMessages();
+    }catch(e){console.error('chat send error',e);}
   };
 
   const changeSpeed=(s)=>{spR.current=s;setSpeedState(s);};
@@ -2723,6 +2802,63 @@ export default function App(){
         </div>
         <div style={{fontSize:11,color:"#444",textAlign:"center"}}>{mapMode==='random'?'매 게임 5종 맵 중 랜덤으로 시작':`${MAP_DEFS[selectedMap].name} 맵으로 시작`}</div>
       </div>
+
+      {/* 채팅 모달 */}
+      {showChat&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"82vh",display:"flex",flexDirection:"column"}}>
+            <div style={{padding:"14px 18px 10px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:"bold"}}>💬 채팅</div>
+              <button onClick={()=>setShowChat(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{display:"flex",gap:6,padding:"10px 14px 0",flexShrink:0}}>
+              {[{key:'chat',label:'💬 전체채팅'},{key:'log',label:'📜 내 기록'}].map(tb=>(
+                <button key={tb.key} onClick={()=>{setChatTab(tb.key);if(tb.key==='chat')loadChatMessages();}}
+                  style={{flex:1,background:chatTab===tb.key?"#1f6feb":"#1e293b",border:`1px solid ${chatTab===tb.key?"#3b82f6":"#334155"}`,color:chatTab===tb.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:chatTab===tb.key?"bold":"normal"}}>
+                  {tb.label}
+                </button>
+              ))}
+            </div>
+
+            {chatTab==='chat'&&(<>
+              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
+                {chatLoading&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>불러오는 중...</div>}
+                {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
+                {!chatLoading&&chatMessages.map(m=>{
+                  const isMe=m.name===(nickname.trim()||G.current?.anonName);
+                  return(
+                    <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
+                      <div style={{fontSize:10,color:isMe?"#60a5fa":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{m.name}</div>
+                      <div style={{background:isMe?"#1d4ed8":"#21262d",color:"#eee",borderRadius:10,padding:"6px 10px",fontSize:13,wordBreak:"break-word"}}>{m.message}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:6,padding:"10px 14px",borderTop:"1px solid #21262d",flexShrink:0}}>
+                <input value={chatInput} onChange={e=>setChatInput(e.target.value)}
+                  onKeyDown={e=>{if(e.key==='Enter')sendChatMessage();}}
+                  placeholder="메시지 입력..." maxLength={200}
+                  style={{flex:1,background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"8px 10px",color:"#eee",fontSize:13,outline:"none"}}/>
+                <button onClick={sendChatMessage} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>전송</button>
+              </div>
+            </>)}
+
+            {chatTab==='log'&&(
+              <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200,maxHeight:400}}>
+                {pullLog.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 뽑기/조합 기록이 없습니다.</div>}
+                {pullLog.map(log=>(
+                  <div key={log.id} style={{display:"flex",alignItems:"center",gap:8,background:"#1c1f26",borderRadius:8,padding:"6px 10px",fontSize:12}}>
+                    <span style={{color:"#888",fontSize:10,flexShrink:0,minWidth:34}}>{log.ts.getHours().toString().padStart(2,'0')}:{log.ts.getMinutes().toString().padStart(2,'0')}</span>
+                    <span style={{color:"#60a5fa",flexShrink:0}}>{log.action}</span>
+                    <span style={{flex:1}}>{EE[log.el]||""} {EN[log.el]||log.el}</span>
+                    <span style={{color:GC[log.grade]||"#888",fontWeight:"bold",flexShrink:0}}>[{log.grade}]</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 랭킹 모달 */}
       {showRanking&&(
@@ -2943,6 +3079,16 @@ export default function App(){
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",minHeight:"100vh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"8px"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
+      {/* 토스트 알림 (우측 상단, 3초 후 사라짐) */}
+      <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
+      <div style={{position:"fixed",top:60,right:8,zIndex:600,display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end",pointerEvents:"none"}}>
+        {toasts.map(t=>(
+          <div key={t.id} style={{background:"#0f172a",border:`1px solid ${t.color}`,borderRadius:8,padding:"7px 12px",fontSize:12,color:"#eee",boxShadow:`0 2px 12px ${t.color}33`,maxWidth:220,animation:"toastIn 0.25s ease-out"}}>
+            {t.text}
+          </div>
+        ))}
+      </div>
+
       {/* HUD */}
       <div style={{width:"100%",maxWidth:440,marginBottom:4}}>
         {/* 1줄: 🏠 ❤️ 스킵 💰 🪙 👾 */}
@@ -2963,6 +3109,7 @@ export default function App(){
           </span>
           {rotMode&&<span style={{fontSize:10,color:"#c084fc",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>🔄회전</span>}
           <span style={{flex:1}}/>
+          <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 9px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0,marginRight:6}}>💬</button>
           <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 10px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 3줄: 배속 */}
@@ -3057,8 +3204,16 @@ export default function App(){
           <Btn bg="linear-gradient(135deg,#7c3aed,#4f46e5)" onClick={()=>{
             const g=G.current;
             g.victory=false;g.over=false;g.infiniteMode=true;
+            g.round++;g.cleared=false;g.total=0;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
+            const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
+            const newWt=getWaveType(g.round);
+            g.waveType=newWt;
+            const waveLabels={normal:'',horde:'🐝 무리 웨이브!',fast:'⚡ 속도 웨이브!',armored:'🛡️ 장갑 웨이브!',healer:'💚 힐러 웨이브!',boss:'💀 보스!',mid:'⚡ 중간보스!'};
+            g.waveLabel=waveLabels[newWt]||'';
+            g.maxSpawn=nb?1:nm?1:newWt==='horde'?Math.floor((15+g.round)*1.8):g.rotMode?20:15+g.round;
             g.running=true;lt.current=performance.now();
             raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
+            sync();
             setUi(prev=>({...prev,victory:false,over:false}));
           }} style={{width:"100%",marginBottom:6,border:"1px solid #7c3aed"}}>🌀 무한모드 계속하기</Btn>
           <Btn bg="#21262d" onClick={()=>{saveRecord(true);setShowRanking(true);loadRanking();}} style={{width:"100%",border:"1px solid #30363d"}}>🏆 랭킹 보기</Btn>
@@ -3070,9 +3225,11 @@ export default function App(){
         <button onClick={()=>{
           const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
           g.gold-=10;
-          const h=mkH(UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)],"노말",g.gradeEnhLv||{});
+          const el=UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)];
+          const h=mkH(el,"노말",g.gradeEnhLv||{});
           const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
           g.heroes.push(h);sync();draw();
+          notifyResult("🎲 뽑기",el,"노말");
         }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
           🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
         </button>
