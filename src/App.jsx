@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.7",
+    date:"2025-06-17",
+    title:"운영자 닉네임 보호 범위 확장",
+    changes:[
+      "🔐 '운영', '운영자', '영자' 세 단어 모두 비밀번호 보호 대상으로 확장 (기존엔 '운영자'만 체크)",
+      "👑 접속자 목록에도 운영자 왕관 표시 추가",
+    ]
+  },
+  {
     version:"v4.6",
     date:"2025-06-17",
     title:"운영자 닉네임 보호 & 채팅 누적 차등",
@@ -1239,10 +1248,12 @@ export default function App(){
   const [adminPwInput,setAdminPwInput]=useState('');
   const pendingNicknameRef=useRef('');
   const ADMIN_PASSWORD="gkdlgkdl5!";
+  const ADMIN_KEYWORDS=["운영","운영자","영자"];
+  const containsAdminKeyword=(s)=>ADMIN_KEYWORDS.some(k=>s.includes(k));
 
   const handleNicknameChange=(val,maxLen)=>{
     const trimmedVal=maxLen?val.slice(0,maxLen):val;
-    if(trimmedVal.includes("운영자")){
+    if(containsAdminKeyword(trimmedVal)){
       pendingNicknameRef.current=trimmedVal;
       setShowAdminPwPrompt(true);
       return; // 비밀번호 확인 전까지는 적용 안 함
@@ -2815,7 +2826,7 @@ export default function App(){
   };
 
   // ── 채팅 불러오기/보내기
-  const isAdmin=()=>nickname.trim().includes("운영자");
+  const isAdmin=()=>containsAdminKeyword(nickname.trim());
 
   const loadChatMessages=async()=>{
     setChatLoading(true);
@@ -2975,8 +2986,8 @@ export default function App(){
           {onlineUsers.length>0&&(
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
               {onlineUsers.map(u=>(
-                <span key={u.name} style={{display:"flex",alignItems:"center",gap:3,background:u.in_game?"#1e3a2e":"#1e293b",border:`1px solid ${u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:u.in_game?"#4ade80":"#94a3b8"}}>
-                  {u.in_game?"🎮":"⭐"}{u.name}
+                <span key={u.name} style={{display:"flex",alignItems:"center",gap:3,background:containsAdminKeyword(u.name)?"#3a2e0f":u.in_game?"#1e3a2e":"#1e293b",border:`1px solid ${containsAdminKeyword(u.name)?"#f59e0b":u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#94a3b8"}}>
+                  {containsAdminKeyword(u.name)?"👑":u.in_game?"🎮":"⭐"}{u.name}
                 </span>
               ))}
             </div>
@@ -3255,7 +3266,7 @@ export default function App(){
           <div onClick={e=>e.stopPropagation()} style={{background:"#161b22",borderRadius:16,border:"1px solid #f59e0b",padding:20,width:"100%",maxWidth:320}}>
             <div style={{fontSize:32,textAlign:"center",marginBottom:6}}>🔐</div>
             <div style={{fontSize:15,fontWeight:"bold",color:"#fbbf24",marginBottom:4,textAlign:"center"}}>운영자 인증</div>
-            <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>'운영자' 포함 닉네임은 비밀번호가 필요합니다.</div>
+            <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>'운영', '운영자', '영자' 포함 닉네임은 비밀번호가 필요합니다.</div>
             <input type="password" value={adminPwInput} onChange={e=>setAdminPwInput(e.target.value)}
               onKeyDown={e=>{
                 if(e.key==='Enter'){
@@ -3368,7 +3379,7 @@ export default function App(){
                 {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
                 {!chatLoading&&chatMessages.map(m=>{
                   const isMe=m.name===nickname.trim();
-                  const isMsgAdmin=m.name.includes("운영자");
+                  const isMsgAdmin=containsAdminKeyword(m.name);
                   return(
                     <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
                       <div style={{fontSize:10,color:isMe?"#60a5fa":isMsgAdmin?"#fbbf24":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{isMsgAdmin?"👑 ":""}{m.name}</div>
