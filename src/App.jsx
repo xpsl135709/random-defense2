@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.5",
+    date:"2025-06-17",
+    title:"접속자 목록 버그 수정",
+    changes:[
+      "🐛 닉네임 입력 중 한 글자씩 입력할 때마다 미완성 닉네임이 접속자로 등록되던 버그 수정",
+      "⏱️ 닉네임 입력 후 0.8초 디바운스 적용, 입력 완료된 닉네임만 접속자 목록에 반영",
+      "⚠️ 기존에 잘못 쌓인 미완성 닉네임 데이터는 Supabase에서 직접 정리 필요",
+    ]
+  },
+  {
     version:"v4.4",
     date:"2025-06-17",
     title:"닉네임 필수 입력으로 변경",
@@ -2835,14 +2845,22 @@ export default function App(){
     }catch(e){setOnlineUsers([]);}
   };
 
-  // 하트비트: 20초마다 전송, 목록은 25초마다 갱신
+  // 하트비트: 닉네임이 입력될 때마다 바로 보내지 않고 800ms 디바운스 후 전송, 이후 20초마다 유지
   useEffect(()=>{
-    sendHeartbeat();
+    const trimmed=nickname.trim();
+    if(!trimmed)return;
+    const debounceTimer=setTimeout(()=>{
+      sendHeartbeat();
+    },800);
+    return ()=>clearTimeout(debounceTimer);
+  },[nickname]);
+
+  useEffect(()=>{
     loadOnlineUsers();
-    const hb=setInterval(sendHeartbeat,20000);
+    const hb=setInterval(()=>{if(nickname.trim())sendHeartbeat();},20000);
     const lu=setInterval(loadOnlineUsers,25000);
     return ()=>{clearInterval(hb);clearInterval(lu);};
-  },[phase,nickname]);
+  },[phase]);
 
   // 채팅창 열려있고 '전체채팅' 탭일 때 3초마다 자동 새로고침
   useEffect(()=>{
