@@ -199,6 +199,27 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.9",
+    date:"2025-06-17",
+    title:"닉네임 입력 타이밍 개선 & 도감/조합표 추가",
+    changes:[
+      "⌨️ 운영자 키워드 체크를 입력 완료 시점(포커스 아웃/확인)으로 변경 — 타이핑 중간엔 비밀번호창 안 뜸",
+      "📔 타이틀 화면에 '도감/조합표' 버튼 추가",
+      "📖 유닛 도감: 등급별 전체 유닛 목록 + 속성 특성 설명",
+      "⚗️ 조합 재료 탭: 등급별 전체 조합 레시피 한눈에 보기 (보유 여부 무관)",
+    ]
+  },
+  {
+    version:"v4.8",
+    date:"2025-06-17",
+    title:"불의왕 순수 불 라인 분리 & 누적 사용자 수 표시",
+    changes:[
+      "🔥 불의왕 조합 경로를 순수 불 라인으로 변경 (화염폭풍+화염폭풍 → 불의왕), 용암폭풍과 분리",
+      "🌋 용암폭풍(불+땅+바람 혼합)은 기존 경로 그대로 유지, 전설 화염제왕에서 다시 합류",
+      "📊 타이틀 화면에 누적 사용자 수 표시 (닉네임 기준 고유 인원, 새로고침해도 중복 집계 안됨)",
+    ]
+  },
+  {
     version:"v4.7",
     date:"2025-06-17",
     title:"운영자 닉네임 보호 범위 확장",
@@ -782,7 +803,7 @@ const COMBO=[
   {a:"신성광",b:"공허",r:"빛의신",g:"영웅"},{a:"심연",b:"공허",r:"어둠신",g:"영웅"},
   {a:"공명",b:"번개폭풍",r:"성음",g:"영웅"},{a:"돌풍",b:"번개폭풍",r:"태풍",g:"영웅"},
   {a:"지진",b:"용암",r:"용암지진",g:"영웅"},{a:"해일",b:"음파해일",r:"음파폭풍",g:"영웅"},
-  {a:"폭풍화염",b:"용암폭풍",r:"불의왕",g:"영웅"},{a:"냉기폭풍",b:"빙하신",r:"빙설신",g:"영웅"},
+  {a:"화염폭풍",b:"화염폭풍",r:"불의왕",g:"영웅"},{a:"냉기폭풍",b:"빙하신",r:"빙설신",g:"영웅"},
   {a:"신성광",b:"태풍",r:"신성폭풍",g:"영웅"},
   {a:"맹독",b:"독안개",r:"독폭풍",g:"영웅"},{a:"가시숲",b:"독안개",r:"맹독늪",g:"영웅"},
   // 시간 조합
@@ -877,6 +898,24 @@ const RECIPES=[
   {r:"원소마법황",g:"불멸",parts:[{u:"화염마법신",n:1},{u:"해왕마법신",n:1},{u:"폭풍마법신",n:1},{u:"번개마법신",n:1},{u:"화염마법왕",n:1},{u:"해왕마법사",n:1},{u:"무속성",n:1}]},
   // 변신유닛 (영웅급) - 조합은 COMBO에서 처리
 ];
+
+// 도감용: 등급별 전체 유닛 목록 (이름 + 재료 정보)
+const getDexByGrade=(grade)=>{
+  if(grade==="노말"){
+    return BASE.map(el=>({name:el,parts:null}));
+  }
+  const fromCombo=COMBO.filter(r=>r.g===grade).map(r=>({name:r.r,parts:[{u:r.a,n:1},{u:r.b,n:1}]}));
+  const fromRecipes=RECIPES.filter(r=>r.g===grade).map(r=>({name:r.r,parts:r.parts}));
+  const seen=new Set();
+  const merged=[];
+  for(const item of [...fromCombo,...fromRecipes]){
+    if(seen.has(item.name))continue;
+    seen.add(item.name);
+    merged.push(item);
+  }
+  return merged;
+};
+
 
 const HH=[
   {id:"guardian",  name:"수호자",  emoji:"🛡️",color:"#6366f1",desc:"라이프+15",             buff:{extraLife:15},   unlockAt:0},
@@ -1253,12 +1292,18 @@ export default function App(){
 
   const handleNicknameChange=(val,maxLen)=>{
     const trimmedVal=maxLen?val.slice(0,maxLen):val;
+    setNickname(trimmedVal);
+  };
+  // 입력 완료 시점(blur/확인버튼)에 운영자 키워드 체크
+  const confirmNickname=()=>{
+    const trimmedVal=nickname.trim();
     if(containsAdminKeyword(trimmedVal)){
       pendingNicknameRef.current=trimmedVal;
+      setNickname(''); // 인증 전까지 비워둠
       setShowAdminPwPrompt(true);
-      return; // 비밀번호 확인 전까지는 적용 안 함
+      return false;
     }
-    setNickname(trimmedVal);
+    return true;
   };
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
@@ -1271,9 +1316,13 @@ export default function App(){
   const [drag,setDrag]=useState(null);
   const [modal,setModal]=useState(null);
   const [showCombo,setShowCombo]=useState(false);
+  const [showDex,setShowDex]=useState(false);
+  const [dexTab,setDexTab]=useState('dex'); // 'dex' | 'combo'
+  const [dexGradeFilter,setDexGradeFilter]=useState('노말');
   const [showChat,setShowChat]=useState(false);
   const chatScrollRef=useRef(null);
   const [onlineUsers,setOnlineUsers]=useState([]);
+  const [totalUsersCount,setTotalUsersCount]=useState(null);
   const [chatTab,setChatTab]=useState('chat'); // 'chat' | 'log'
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
@@ -2892,6 +2941,20 @@ export default function App(){
     }catch(e){setOnlineUsers([]);}
   };
 
+  // 누적 사용자 수: online_users 테이블의 전체 row 수 (한번이라도 접속한 적 있는 고유 닉네임)
+  const loadTotalUsersCount=async()=>{
+    try{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/online_users?select=name`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,Prefer:'count=exact'}
+      });
+      const range=res.headers.get('content-range'); // 예: "0-19/42"
+      if(range){
+        const total=parseInt(range.split('/')[1]);
+        if(!isNaN(total))setTotalUsersCount(total);
+      }
+    }catch(e){}
+  };
+
   // 하트비트: 닉네임이 입력될 때마다 바로 보내지 않고 800ms 디바운스 후 전송, 이후 20초마다 유지
   useEffect(()=>{
     const trimmed=nickname.trim();
@@ -2904,9 +2967,11 @@ export default function App(){
 
   useEffect(()=>{
     loadOnlineUsers();
+    loadTotalUsersCount();
     const hb=setInterval(()=>{if(nickname.trim())sendHeartbeat();},20000);
     const lu=setInterval(loadOnlineUsers,25000);
-    return ()=>{clearInterval(hb);clearInterval(lu);};
+    const tu=setInterval(loadTotalUsersCount,60000);
+    return ()=>{clearInterval(hb);clearInterval(lu);clearInterval(tu);};
   },[phase]);
 
   // 채팅창 열려있고 '전체채팅' 탭일 때 3초마다 자동 새로고침
@@ -2982,6 +3047,7 @@ export default function App(){
           <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:onlineUsers.length>0?6:0}}>
             <span style={{width:6,height:6,borderRadius:3,background:"#4ade80",boxShadow:"0 0 6px #4ade80"}}/>
             <span style={{fontSize:11,color:"#94a3b8",fontWeight:"bold"}}>접속자 {onlineUsers.length}명</span>
+            {totalUsersCount!==null&&<span style={{fontSize:10,color:"#555",marginLeft:4}}>· 누적 {totalUsersCount}명</span>}
           </div>
           {onlineUsers.length>0&&(
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
@@ -3038,6 +3104,7 @@ export default function App(){
           <input
             value={nickname}
             onChange={e=>handleNicknameChange(e.target.value,12)}
+            onBlur={confirmNickname}
             maxLength={12}
             placeholder="닉네임 입력 (최대 12자)"
             style={{width:"100%",background:"#161b22",border:"1px solid #30363d",borderRadius:10,padding:"10px 14px",color:"#eee",fontSize:14,outline:"none",boxSizing:"border-box",textAlign:"center"}}
@@ -3054,7 +3121,7 @@ export default function App(){
             🔄 회전
           </button>
         </div>
-        <div style={{display:"flex",gap:8,marginBottom:8}}>
+        <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap",justifyContent:"center"}}>
           <button onClick={()=>{setShowRanking(true);loadRanking();}}
             style={{background:"none",border:"1px solid #30363d",color:"#fd0",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
             🏆 랭킹
@@ -3062,6 +3129,10 @@ export default function App(){
           <button onClick={()=>setShowGuide(true)}
             style={{background:"none",border:"1px solid #30363d",color:"#4af",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
             📖 설명
+          </button>
+          <button onClick={()=>{setShowDex(true);setDexTab('dex');}}
+            style={{background:"none",border:"1px solid #30363d",color:"#a78bfa",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
+            📔 도감/조합표
           </button>
           <button onClick={()=>setShowPatch(true)}
             style={{background:"none",border:"1px solid #30363d",color:"#555",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
@@ -3242,6 +3313,82 @@ export default function App(){
           </div>
         </div>
       )}
+      {showDex&&(()=>{
+        const allGrades=["노말","고급","영웅","전설","신화","불멸"];
+        const items=getDexByGrade(dexGradeFilter);
+        return(
+        <div onClick={()=>setShowDex(false)}
+          style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:650,padding:16}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:400,maxHeight:"86vh",display:"flex",flexDirection:"column"}}>
+            <div style={{padding:"14px 18px 10px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:"bold"}}>📔 도감 & 조합표</div>
+              <button onClick={()=>setShowDex(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            {/* 메인 탭: 도감 / 조합 재료 */}
+            <div style={{display:"flex",gap:6,padding:"10px 14px 0",flexShrink:0}}>
+              {[{key:'dex',label:'📔 유닛 도감'},{key:'combo',label:'⚗️ 조합 재료'}].map(tb=>(
+                <button key={tb.key} onClick={()=>setDexTab(tb.key)}
+                  style={{flex:1,background:dexTab===tb.key?"#1f6feb":"#1e293b",border:`1px solid ${dexTab===tb.key?"#3b82f6":"#334155"}`,color:dexTab===tb.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:dexTab===tb.key?"bold":"normal"}}>
+                  {tb.label}
+                </button>
+              ))}
+            </div>
+            {/* 등급 필터 */}
+            <div style={{display:"flex",gap:4,padding:"10px 14px 0",flexShrink:0,flexWrap:"wrap"}}>
+              {allGrades.map(g=>(
+                <button key={g} onClick={()=>setDexGradeFilter(g)}
+                  style={{background:dexGradeFilter===g?(GC[g]||"#444")+"33":"#21262d",border:`2px solid ${dexGradeFilter===g?(GC[g]||"#aaa"):"#30363d"}`,borderRadius:7,padding:"5px 10px",cursor:"pointer",color:dexGradeFilter===g?(GC[g]||"#eee"):"#666",fontSize:11,fontWeight:dexGradeFilter===g?"bold":"normal"}}>
+                  {g}
+                </button>
+              ))}
+            </div>
+            {/* 콘텐츠 */}
+            <div style={{overflowY:"auto",flex:1,padding:"12px 14px"}}>
+              {dexTab==='dex'&&(
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {items.map(item=>{
+                    const trait=getElTrait(item.name);
+                    return(
+                      <div key={item.name} style={{display:"flex",alignItems:"center",gap:10,background:"#0f172a",border:`1px solid ${GC[dexGradeFilter]||"#333"}33`,borderRadius:10,padding:"8px 10px"}}>
+                        <div style={{width:36,height:36,borderRadius:9,background:`${GC[dexGradeFilter]||"#aaa"}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                          {EE[item.name]||"?"}
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:"bold",color:"#eee"}}>{EN[item.name]||item.name}</div>
+                          <div style={{fontSize:10,color:"#777"}}>{trait?.desc||""} {trait?.detail?`· ${trait.detail}`:""}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {items.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:30}}>해당 등급 유닛이 없습니다.</div>}
+                </div>
+              )}
+              {dexTab==='combo'&&(
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {dexGradeFilter==='노말'&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:30}}>노말 유닛은 뽑기로 획득합니다.</div>}
+                  {items.filter(it=>it.parts).map(item=>(
+                    <div key={item.name} style={{background:"#0f172a",border:`1px solid ${GC[dexGradeFilter]||"#333"}33`,borderRadius:10,padding:"8px 10px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+                        <span style={{fontSize:15}}>{EE[item.name]||"?"}</span>
+                        <span style={{fontSize:13,fontWeight:"bold",color:GC[dexGradeFilter]||"#eee"}}>{EN[item.name]||item.name}</span>
+                      </div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        {item.parts.map((p,i)=>(
+                          <span key={i} style={{background:"#21262d",borderRadius:6,padding:"2px 7px",fontSize:10,color:"#aaa"}}>
+                            {EE[p.u]||""} {EN[p.u]||p.u}{p.n>1?` x${p.n}`:""}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
       {showNicknamePrompt&&(
         <div onClick={()=>setShowNicknamePrompt(false)}
           style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:700,padding:20}}>
@@ -3250,10 +3397,10 @@ export default function App(){
             <div style={{fontSize:15,fontWeight:"bold",color:"#60a5fa",marginBottom:4,textAlign:"center"}}>닉네임을 먼저 입력해주세요!</div>
             <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>채팅과 랭킹에 사용될 닉네임이에요. (최대 12자)</div>
             <input value={nickname} onChange={e=>handleNicknameChange(e.target.value,12)}
-              onKeyDown={e=>{if(e.key==='Enter'&&nickname.trim())setShowNicknamePrompt(false);}}
+              onKeyDown={e=>{if(e.key==='Enter'&&nickname.trim()){if(confirmNickname())setShowNicknamePrompt(false);}}}
               placeholder="닉네임 입력" autoFocus
               style={{width:"100%",background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#eee",fontSize:16,textAlign:"center",outline:"none",marginBottom:12}}/>
-            <button onClick={()=>{if(nickname.trim())setShowNicknamePrompt(false);}} disabled={!nickname.trim()}
+            <button onClick={()=>{if(nickname.trim()&&confirmNickname())setShowNicknamePrompt(false);}} disabled={!nickname.trim()}
               style={{width:"100%",background:nickname.trim()?"#1f6feb":"#21262d",border:"none",color:nickname.trim()?"#fff":"#555",borderRadius:8,padding:"10px",cursor:nickname.trim()?"pointer":"not-allowed",fontSize:14,fontWeight:"bold"}}>
               확인
             </button>
