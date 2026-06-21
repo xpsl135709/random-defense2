@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v4.6",
+    date:"2025-06-17",
+    title:"운영자 닉네임 보호 & 채팅 누적 차등",
+    changes:[
+      "🔐 닉네임에 '운영자' 포함 시 비밀번호 인증 필요",
+      "👑 운영자 닉네임은 채팅창에서 왕관 표시 + 누적 전체 채팅 기록 열람 가능",
+      "🗓️ 일반 유저는 채팅창에서 당일 메시지만 표시 (매일 초기화되는 것처럼 보임)",
+    ]
+  },
+  {
     version:"v4.5",
     date:"2025-06-17",
     title:"접속자 목록 버그 수정",
@@ -1225,6 +1235,20 @@ export default function App(){
   });
   const [showGuide,setShowGuide]=useState(false);
   const [nickname,setNickname]=useState('');
+  const [showAdminPwPrompt,setShowAdminPwPrompt]=useState(false);
+  const [adminPwInput,setAdminPwInput]=useState('');
+  const pendingNicknameRef=useRef('');
+  const ADMIN_PASSWORD="gkdlgkdl5!";
+
+  const handleNicknameChange=(val,maxLen)=>{
+    const trimmedVal=maxLen?val.slice(0,maxLen):val;
+    if(trimmedVal.includes("운영자")){
+      pendingNicknameRef.current=trimmedVal;
+      setShowAdminPwPrompt(true);
+      return; // 비밀번호 확인 전까지는 적용 안 함
+    }
+    setNickname(trimmedVal);
+  };
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
   const [rankLoading,setRankLoading]=useState(false); // 첫 진입시 패치노트 표시 // easy/normal/hard
@@ -2791,10 +2815,17 @@ export default function App(){
   };
 
   // ── 채팅 불러오기/보내기
+  const isAdmin=()=>nickname.trim().includes("운영자");
+
   const loadChatMessages=async()=>{
     setChatLoading(true);
     try{
-      const res=await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`,{
+      let query=`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`;
+      if(!isAdmin()){
+        const since=new Date();since.setHours(0,0,0,0);
+        query+=`&created_at=gte.${since.toISOString()}`;
+      }
+      const res=await fetch(query,{
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
       });
       const data=await res.json();
@@ -2806,7 +2837,12 @@ export default function App(){
   // 조용한 새로고침 (로딩 스피너 없이, 폴링용)
   const refreshChatSilently=async()=>{
     try{
-      const res=await fetch(`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`,{
+      let query=`${SUPABASE_URL}/rest/v1/chat_messages?select=*&order=created_at.desc&limit=50`;
+      if(!isAdmin()){
+        const since=new Date();since.setHours(0,0,0,0);
+        query+=`&created_at=gte.${since.toISOString()}`;
+      }
+      const res=await fetch(query,{
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
       });
       const data=await res.json();
@@ -2990,7 +3026,7 @@ export default function App(){
           <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>👤 닉네임</div>
           <input
             value={nickname}
-            onChange={e=>setNickname(e.target.value)}
+            onChange={e=>handleNicknameChange(e.target.value,12)}
             maxLength={12}
             placeholder="닉네임 입력 (최대 12자)"
             style={{width:"100%",background:"#161b22",border:"1px solid #30363d",borderRadius:10,padding:"10px 14px",color:"#eee",fontSize:14,outline:"none",boxSizing:"border-box",textAlign:"center"}}
@@ -3202,7 +3238,7 @@ export default function App(){
             <div style={{fontSize:32,textAlign:"center",marginBottom:6}}>👤</div>
             <div style={{fontSize:15,fontWeight:"bold",color:"#60a5fa",marginBottom:4,textAlign:"center"}}>닉네임을 먼저 입력해주세요!</div>
             <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>채팅과 랭킹에 사용될 닉네임이에요. (최대 12자)</div>
-            <input value={nickname} onChange={e=>setNickname(e.target.value.slice(0,12))}
+            <input value={nickname} onChange={e=>handleNicknameChange(e.target.value,12)}
               onKeyDown={e=>{if(e.key==='Enter'&&nickname.trim())setShowNicknamePrompt(false);}}
               placeholder="닉네임 입력" autoFocus
               style={{width:"100%",background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#eee",fontSize:16,textAlign:"center",outline:"none",marginBottom:12}}/>
@@ -3210,6 +3246,32 @@ export default function App(){
               style={{width:"100%",background:nickname.trim()?"#1f6feb":"#21262d",border:"none",color:nickname.trim()?"#fff":"#555",borderRadius:8,padding:"10px",cursor:nickname.trim()?"pointer":"not-allowed",fontSize:14,fontWeight:"bold"}}>
               확인
             </button>
+          </div>
+        </div>
+      )}
+      {showAdminPwPrompt&&(
+        <div onClick={()=>{setShowAdminPwPrompt(false);setAdminPwInput('');}}
+          style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:710,padding:20}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#161b22",borderRadius:16,border:"1px solid #f59e0b",padding:20,width:"100%",maxWidth:320}}>
+            <div style={{fontSize:32,textAlign:"center",marginBottom:6}}>🔐</div>
+            <div style={{fontSize:15,fontWeight:"bold",color:"#fbbf24",marginBottom:4,textAlign:"center"}}>운영자 인증</div>
+            <div style={{fontSize:11,color:"#888",marginBottom:14,textAlign:"center"}}>'운영자' 포함 닉네임은 비밀번호가 필요합니다.</div>
+            <input type="password" value={adminPwInput} onChange={e=>setAdminPwInput(e.target.value)}
+              onKeyDown={e=>{
+                if(e.key==='Enter'){
+                  if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');}
+                  else{alert("비밀번호가 틀렸습니다!");}
+                }
+              }}
+              placeholder="비밀번호 입력" autoFocus
+              style={{width:"100%",background:"#0d1117",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#eee",fontSize:16,textAlign:"center",outline:"none",marginBottom:12}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{setShowAdminPwPrompt(false);setAdminPwInput('');}} style={{flex:1,background:"#21262d",border:"1px solid #30363d",color:"#aaa",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13}}>취소</button>
+              <button onClick={()=>{
+                if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');}
+                else{alert("비밀번호가 틀렸습니다!");}
+              }} style={{flex:1,background:"#f59e0b",border:"none",color:"#000",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>확인</button>
+            </div>
           </div>
         </div>
       )}
@@ -3296,6 +3358,9 @@ export default function App(){
                 </button>
               ))}
             </div>
+            {chatTab==='chat'&&!isAdmin()&&(
+              <div style={{fontSize:10,color:"#555",textAlign:"center",padding:"6px 0 0"}}>오늘 메시지만 표시됩니다 (매일 초기화)</div>
+            )}
 
             {chatTab==='chat'&&(<>
               <div ref={chatScrollRef} style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,minHeight:200}}>
@@ -3303,10 +3368,11 @@ export default function App(){
                 {!chatLoading&&chatMessages.length===0&&<div style={{textAlign:"center",color:"#555",fontSize:12,padding:20}}>아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>}
                 {!chatLoading&&chatMessages.map(m=>{
                   const isMe=m.name===nickname.trim();
+                  const isMsgAdmin=m.name.includes("운영자");
                   return(
                     <div key={m.id} style={{alignSelf:isMe?"flex-end":"flex-start",maxWidth:"80%"}}>
-                      <div style={{fontSize:10,color:isMe?"#60a5fa":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{m.name}</div>
-                      <div style={{background:isMe?"#1d4ed8":"#21262d",color:"#eee",borderRadius:10,padding:"6px 10px",fontSize:13,wordBreak:"break-word"}}>{m.message}</div>
+                      <div style={{fontSize:10,color:isMe?"#60a5fa":isMsgAdmin?"#fbbf24":"#888",marginBottom:2,textAlign:isMe?"right":"left"}}>{isMsgAdmin?"👑 ":""}{m.name}</div>
+                      <div style={{background:isMe?"#1d4ed8":isMsgAdmin?"#3a2e0f":"#21262d",color:"#eee",borderRadius:10,padding:"6px 10px",fontSize:13,wordBreak:"break-word",border:isMsgAdmin&&!isMe?"1px solid #f59e0b44":"none"}}>{m.message}</div>
                     </div>
                   );
                 })}
