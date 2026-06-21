@@ -199,6 +199,17 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v5.0",
+    date:"2025-06-17",
+    title:"토스트 알림 확대 적용",
+    changes:[
+      "⏱️ 토스트 알림 표시 시간 3초 → 2초로 단축",
+      "🎲 도박장(골드/코인/유닛) 결과를 팝업창 대신 우측 토스트로 표시",
+      "💰 뽑기 시 골드 부족 알림도 토스트로 변경",
+      "🪙 코인 부족 알림 전반을 토스트로 통일",
+    ]
+  },
+  {
     version:"v4.9",
     date:"2025-06-17",
     title:"닉네임 입력 타이밍 개선 & 도감/조합표 추가",
@@ -1355,7 +1366,7 @@ export default function App(){
     setToasts(prev=>[...prev,{id,text,color:color||"#94a3b8"}]);
     setTimeout(()=>{
       setToasts(prev=>prev.filter(t=>t.id!==id));
-    },3000);
+    },2000);
   };
   // 개인 뽑기/조합 로그
   const [pullLog,setPullLog]=useState([]);
@@ -2298,7 +2309,7 @@ export default function App(){
           if(pos){h.col=pos[0];h.row=pos[1];g.heroes.push(h);diceMsg="🎲6 - 무속성 유닛 생성!";}
           else diceMsg="🎲6 - 빈 칸 없음";
         }
-        sync();draw();alert(`🎰 도박사 주사위!\n${diceMsg}`);
+        sync();draw();pushToast(`🎰 ${diceMsg}`,"#a78bfa");
       }
       const targetRound=g.difficulty==='easy'?50:g.difficulty==='normal'?70:100;
       if(g.round===targetRound&&!g.infiniteMode){
@@ -2795,14 +2806,14 @@ export default function App(){
   };
 
   const buyWithCoin=(item)=>{
-    const g=G.current;if(g.coins<item.cost){alert(`코인 부족! (${item.cost}개 필요)`);return;}
+    const g=G.current;if(g.coins<item.cost){pushToast(`🪙 코인 부족! (${item.cost}개 필요)`,"#ef4444");return;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
     if(item.grade&&!unlockedG.includes(item.grade)){alert(`${item.grade} 등급이 아직 개방되지 않았습니다!`);return;}
     if(item.element){g.coins-=item.cost;const h=mkH(item.element,item.grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes.push(h);setModal(null);sync();draw();triggerSummon(item.element,item.grade);return;}
     setModal({type:"coinPick",item});
   };
   const buyCoinByElement=(item,el)=>{
-    const g=G.current;if(g.coins<item.cost){alert("코인 부족!");return;}
+    const g=G.current;if(g.coins<item.cost){pushToast("🪙 코인 부족!","#ef4444");return;}
     g.coins-=item.cost;const h=mkH(el,item.grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
     g.heroes.push(h);setModal(null);sync();draw();triggerSummon(el,item.grade);
   };
@@ -3707,7 +3718,7 @@ export default function App(){
       {/* 액션 버튼 */}
       <div style={{width:"100%",maxWidth:440,display:"flex",gap:5,marginTop:5}}>
         <button onClick={()=>{
-          const g=G.current;if(g.gold<10){alert("골드 부족! (10G)");return;}
+          const g=G.current;if(g.gold<10){pushToast("💰 골드 부족! (10G)","#ef4444");return;}
           g.gold-=10;
           const el=UNLOCK_ELEMENTS(clearCount)[Math.floor(Math.random()*UNLOCK_ELEMENTS(clearCount).length)];
           const h=mkH(el,"노말",g.gradeEnhLv||{});
@@ -4058,13 +4069,13 @@ export default function App(){
       {modal==="gamble"&&(()=>{
         const doGamble=(table,cost,isGold)=>{
           const g=G.current;
-          if(isGold&&g.gold<cost){alert("골드 부족!");return;}
-          if(!isGold&&g.coins<cost){alert("코인 부족!");return;}
+          if(isGold&&g.gold<cost){pushToast("💰 골드 부족!","#ef4444");return;}
+          if(!isGold&&g.coins<cost){pushToast("🪙 코인 부족!","#ef4444");return;}
           if(isGold)g.gold-=cost;else g.coins-=cost;
           const rand=Math.random();let acc=0,chosen=table.results[table.results.length-1];
           for(const r of table.results){acc+=r.prob;if(rand<acc){chosen=r;break;}}
           if(chosen.reward==="gold")g.gold+=chosen.val;else g.coins+=chosen.val;
-          sync();alert(`${chosen.val===0?"😢":chosen.desc.includes("🎉")?"🎉":"😊"} ${chosen.desc}`);
+          sync();pushToast(`${chosen.val===0?"😢":chosen.desc.includes("🎉")?"🎉":"😊"} ${chosen.desc}`,chosen.val===0?"#94a3b8":isGold?"#fbbf24":"#a78bfa");
         };
         return(<Overlay>
           <div style={{fontSize:15,fontWeight:"bold",color:"#fd0",marginBottom:10,textAlign:"center"}}>🎲 도박장</div>
@@ -4086,33 +4097,33 @@ export default function App(){
               const need5=!unlocked0.includes("신화"); // 5코인 도박은 신화 포함 -> 3클리어 필요
               return[
               {cost:1,label:"🪙1 — 고급~영웅",desc:"고급60%/영웅30%/꽝10%",locked:false,lockMsg:"",fn:()=>{
-                const g=G.current;if(g.coins<1){alert("코인 부족!");return;}
+                const g=G.current;if(g.coins<1){pushToast("🪙 코인 부족!","#ef4444");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
                 g.coins-=1;const r=Math.random();
                 let grade=null;if(r>=0.10&&r<0.70)grade="고급";else if(r>=0.70)grade="영웅";
                 if(grade&&!unlocked.includes(grade))grade=unlocked.includes("고급")?"고급":null;
-                if(grade){const pool=grade==="고급"?[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))];const el=pool[Math.floor(Math.random()*pool.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
+                if(grade){const pool=grade==="고급"?[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))];const el=pool[Math.floor(Math.random()*pool.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();pushToast(`✨ ${EE[el]||""} ${EN[el]||el} [${grade}] 획득!`,GC[grade]||"#a78bfa");}else{sync();pushToast("😢 꽝...","#94a3b8");}
               }},
               {cost:3,label:"🪙3 — 영웅~전설",desc:"영웅50%/전설35%/신화10%/꽝5%",locked:need3,lockMsg:"전설 등급 개방 필요 (1클리어)",fn:()=>{
-                const g=G.current;if(g.coins<3){alert("코인 부족!");return;}
+                const g=G.current;if(g.coins<3){pushToast("🪙 코인 부족!","#ef4444");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
-                if(!unlocked.includes("전설")){alert("전설 등급이 아직 개방되지 않았습니다! (1클리어 필요)");return;}
+                if(!unlocked.includes("전설")){pushToast("🔒 전설 등급 미개방 (1클리어 필요)","#ef4444");return;}
                 g.coins-=3;const r=Math.random();
                 let grade=null;if(r>=0.05&&r<0.55)grade="영웅";else if(r>=0.55&&r<0.90)grade="전설";else if(r>=0.90)grade=g.round>=20?"신화":"전설";
                 if(grade&&!unlocked.includes(grade)){
                   const fallbackOrder=["신화","전설","영웅","고급"];
                   grade=fallbackOrder.find(gr=>unlocked.includes(gr))||"고급";
                 }
-                if(grade){const pool=grade==="신화"?[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))]:grade==="전설"?[...new Set(RECIPES.filter(x=>x.g==="전설").map(x=>x.r))]:grade==="영웅"?[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,grade);if(!["전설","신화","불멸"].includes(grade))alert(`✨ ${EE[el]||""} ${el} [${grade}] 획득!`);}else{sync();alert("😢 꽝...");}
+                if(grade){const pool=grade==="신화"?[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))]:grade==="전설"?[...new Set(RECIPES.filter(x=>x.g==="전설").map(x=>x.r))]:grade==="영웅"?[...new Set(COMBO.filter(x=>x.g==="영웅").map(x=>x.r))]:[...new Set(COMBO.filter(x=>x.g==="고급").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[Math.floor(Math.random()*BASE.length)];const h=mkH(el,grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,grade);if(!["전설","신화","불멸"].includes(grade))pushToast(`✨ ${EE[el]||""} ${EN[el]||el} [${grade}] 획득!`,GC[grade]||"#a78bfa");}else{sync();pushToast("😢 꽝...","#94a3b8");}
               }},
               {cost:5,label:"🪙5 — 신화 (35R↑)",desc:"신화60%/무속성30%/꽝10%",locked:need5,lockMsg:"신화 등급 개방 필요 (3클리어)",fn:()=>{
-                const g=G.current;if(g.coins<5){alert("코인 부족!");return;}if(g.round<35){alert("35라운드 이후 해금!");return;}
+                const g=G.current;if(g.coins<5){pushToast("🪙 코인 부족!","#ef4444");return;}if(g.round<35){pushToast("⏳ 35라운드 이후 해금!","#ef4444");return;}
                 const unlocked=g.unlockedGrades||["노말","고급","영웅"];
-                if(!unlocked.includes("신화")){alert("신화 등급이 아직 개방되지 않았습니다! (3클리어 필요)");return;}
+                if(!unlocked.includes("신화")){pushToast("🔒 신화 등급 미개방 (3클리어 필요)","#ef4444");return;}
                 g.coins-=5;const r=Math.random();
-                if(r<0.10){sync();alert("😢 꽝...");return;}
+                if(r<0.10){sync();pushToast("😢 꽝...","#94a3b8");return;}
                 if(r<0.70){const pool=[...new Set(RECIPES.filter(x=>x.g==="신화").map(x=>x.r))];const el=pool.length?pool[Math.floor(Math.random()*pool.length)]:BASE[0];const h=mkH(el,"신화",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();triggerSummon(el,"신화");}
-                else{const h=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();alert("⭐ 무속성 유닛 획득!");}
+                else{const h=mkH("무속성","노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes=[...g.heroes,h];sync();draw();pushToast("⭐ 무속성 유닛 획득!","#fbbf24");}
               }},
             ];})().map(item=>{
               const disabled=ui.coins<item.cost||(item.cost===5&&ui.round<35)||item.locked;
