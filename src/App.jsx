@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v6.2",
+    date:"2025-06-22",
+    title:"회전 맵 X자 경로 겹침 버그 수정",
+    changes:[
+      "🐛 X자 맵 플레이 후 회전 모드 진입 시 X자 경로 타일이 잔류해 오버레이로 보이던 버그 수정",
+      "🔧 startRotation 시 DUAL_PATHS 초기화 누락 보완",
+    ]
+  },
+  {
     version:"v6.1",
     date:"2025-06-22",
     title:"배치 칸 확대 & 보관함/연금술 UI 분리",
@@ -2407,6 +2416,7 @@ export default function App(){
     SPAWN_TILE=[0,0];
     GOAL_TILE=[0,0]; // 2바퀴 돌면 제거
     FORK_PATHS=null;
+    DUAL_PATHS=null;
     TRACK=buildRotPath(1); // 대표용 1바퀴 (렌더링용)
     TS=new Set(); // 회전 모드는 경로=외곽 전체, 배치 불가 타일은 외곽
     for(let c=0;c<COLS;c++){TS.add(`${c},0`);TS.add(`${c},${ROWS-1}`);}
