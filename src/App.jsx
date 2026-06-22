@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v7.0",
+    date:"2025-06-22",
+    title:"1라운드 게임 멈춤 버그 수정",
+    changes:[
+      "🐛 게임 시작 시 1라운드부터 적이 스폰 안 되고 멈추던 버그 수정",
+      "🔧 게임 루프 카운트다운/running 상태 처리 안정화",
+      "🔧 중복 루프 충돌 방지 로직 추가",
+    ]
+  },
+  {
     version:"v6.9",
     date:"2025-06-22",
     title:"황금정령 소환 시 검은 화면 버그 수정",
@@ -2194,14 +2204,20 @@ export default function App(){
     const g=G.current;
     if(!g||g.over){draw();return;}
     if(!g.running){
-      // 안전장치: 카운트다운이 끝났는데도 running이 false면 강제로 재개
-      if(countdownValRef.current<=0&&!countdownRef.current&&!g.cleared){
-        g.running=true;
-      } else if(countdownValRef.current<=0&&!countdownRef.current&&g.cleared){
-        // cleared 상태인데 카운트다운도 없으면 → 다음 라운드가 시작 안 된 것, 강제 재개
-        g.cleared=false;g.running=true;
-      } else {
+      // 카운트다운 중이면 draw만 하고 루프 유지
+      if(countdownValRef.current>0||countdownRef.current){
         draw();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));return;
+      }
+      // 카운트다운 끝났는데 running=false면 강제 재개
+      if(!g.cleared){
+        g.running=true;
+      } else {
+        // cleared인데 카운트다운도 없으면 다음 라운드 강제 시작
+        g.cleared=false;
+        const nb2=g.round%10===0,nm2=g.round%5===0&&g.round%10!==0;
+        g.maxSpawn=nb2?1:nm2?1:g.rotMode?20:15+g.round;
+        g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
+        g.running=true;
       }
     }
     const isMidRound=g.round%5===0&&g.round%10!==0,isBossRound=g.round%10===0;
@@ -2703,7 +2719,10 @@ export default function App(){
     const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
     g.maxSpawn=nb?1:nm?1:g.rotMode?20:15+g.round;
     g.running=true;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
-    sync();lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
+    sync();
+    // 기존 루프가 있으면 취소 후 새로 시작 (중복 루프 방지)
+    if(raf.current)cancelAnimationFrame(raf.current);
+    lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
   };
 
   // 게임 시작: 맵 결정 → 히든영웅 화면
