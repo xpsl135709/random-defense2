@@ -4756,7 +4756,8 @@ export default function App(){
         const tabs=allTabs.filter(t=>unlockedGrades.includes(t));
         const isHighGrade=["전설","신화","불멸"].includes(comboFilter);
         const curRecipes=isHighGrade?RECIPES.filter(r=>r.g===comboFilter):[];
-        const curCombos=!isHighGrade?fCombo:[];
+        // fCombo 대신 직접 계산 (state 변경 시 최신값 보장)
+        const curCombos=!isHighGrade?COMBO.filter(r=>r.g===comboFilter):[];
         return(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200}} onClick={()=>setShowCombo(false)}>
           <div style={{background:"#161b22",borderRadius:14,padding:16,border:"1px solid #30363d",width:"92%",maxWidth:360,maxHeight:"88vh",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
