@@ -4445,15 +4445,7 @@ export default function App(){
         );
       })()}
 
-      {/* 히든영웅 버프 */}
-      {hd&&(
-        <div style={{width:"100%",maxWidth:480,background:hr(hd.color,0.07),border:`1px solid ${hd.color}44`,borderRadius:10,padding:"6px 12px",marginTop:4,display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:20}}>{hd.emoji}</span>
-          <span style={{color:hd.color,fontWeight:"bold",fontSize:12}}>{hd.name}</span>
-          <span style={{color:"#86efac",fontSize:11,flex:1}}>{hd.desc}</span>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 6px #22c55e",flexShrink:0,display:"inline-block"}}/>
-        </div>
-      )}
+
 
       {/* 모달들 */}
       {modal&&modal.type==="coinPick"&&(()=>{
