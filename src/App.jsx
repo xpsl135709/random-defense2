@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
-const CS=56,COLS=9,ROWS=14;
+const CS=64,COLS=9,ROWS=14;
 
 // ══════════════════════════════════════════
 // 맵 정의 (3종)
@@ -206,6 +206,7 @@ const PATCH_NOTES=[
       "🖼️ 노말 유닛 16종 AI 이미지 적용 (불/물/대지/바람/번개/나무/빛/어둠/오크/언데드/뱀파이어/수인/인간/천사/악마/시간정령)",
       "📏 등급별 유닛 이미지 크기 차등: 노말40/고급48/영웅60/전설72/신화88/불멸104px",
       "🔧 이미지 로딩 개선: jpeg 우선, 실패 시 png 자동 폴백",
+      "📐 유닛 배치 칸 크기 56→64로 확대",
     ]
   },
   {
@@ -1635,7 +1636,7 @@ export default function App(){
       const dispEl=h._isMorph&&h._morphEl?h._morphEl:h.element;
       const spr=SPRITE_CACHE[dispEl]||SPRITE_CACHE[h.element];
       // 등급별 이미지 크기: 노말40/고급48/영웅60/전설72/신화88/불멸104
-      const IMG_SIZE={노말:40,고급:48,영웅:60,전설:72,신화:88,불멸:104};
+      const IMG_SIZE={노말:48,고급:56,영웅:68,전설:80,신화:96,불멸:112};
       const iSz=IMG_SIZE[h.grade]||40;
       const iOff=(CS-iSz)/2;
       if(spr&&spr.complete&&spr.naturalWidth>0){ctx.drawImage(spr,hx+iOff,hy+iOff,iSz,iSz);}
