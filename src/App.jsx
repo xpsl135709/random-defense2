@@ -4009,7 +4009,7 @@ export default function App(){
 
 
       {/* 토스트 알림 (우측 상단, 3초 후 사라짐) */}
-      <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}`}</style>
+      <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}html,body{overflow:hidden;height:100%;margin:0;padding:0;}`}</style>
       <div style={{position:"fixed",top:60,right:8,zIndex:600,display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end",pointerEvents:"none"}}>
         {toasts.map(t=>(
           <div key={t.id} style={{background:"#0f172a",border:`1px solid ${t.color}`,borderRadius:8,padding:"7px 12px",fontSize:12,color:"#eee",boxShadow:`0 2px 12px ${t.color}33`,maxWidth:220,animation:"toastIn 0.25s ease-out"}}>
@@ -4321,80 +4321,6 @@ export default function App(){
           📍 이동할 칸 클릭 | 다른 영웅 = 스왑
         </div>
       )}
-
-      {/* 영웅 목록 */}
-      {(()=>{
-        const placedHeroes=heroes.filter(h=>h.col!==null);
-        const waitingHeroes=heroes.filter(h=>h.col===null);
-        const waitingCount=waitingHeroes.length;
-        return(
-          <div style={{width:"100%",maxWidth:480,marginTop:5}}>
-            {/* 탭 헤더 */}
-            <div style={{display:"flex",gap:4,marginBottom:4}}>
-              <button onClick={()=>setHeroListTab("placed")}
-                style={{flex:1,background:heroListTab==="placed"?"#1e3a5f":"#0f172a",border:`1px solid ${heroListTab==="placed"?"#60a5fa":"#1e293b"}`,borderRadius:7,padding:"4px 6px",cursor:"pointer",color:heroListTab==="placed"?"#60a5fa":"#475569",fontSize:11,fontWeight:"bold"}}>
-                ⚔️ 배치중 ({placedHeroes.length})
-              </button>
-              <button onClick={()=>setHeroListTab("waiting")}
-                style={{flex:1,background:heroListTab==="waiting"?"#1a2e1a":"#0f172a",border:`1px solid ${heroListTab==="waiting"?"#4ade80":"#1e293b"}`,borderRadius:7,padding:"4px 6px",cursor:"pointer",color:heroListTab==="waiting"?"#4ade80":"#475569",fontSize:11,fontWeight:"bold",position:"relative"}}>
-                📦 대기중 ({waitingCount})
-                {waitingCount>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#ef4444",color:"#fff",borderRadius:"50%",width:14,height:14,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold"}}>{waitingCount}</span>}
-              </button>
-            </div>
-            {/* 유닛 카드 목록 */}
-            <div style={{display:"flex",gap:4,flexWrap:"wrap",paddingBottom:4,minHeight:40}}>
-              {(heroListTab==="placed"?placedHeroes:waitingHeroes).map(h=>{
-                const isSel=h.id===selHero,isDrag=h.id===drag;
-                const gc=GC[h.grade]||"#6b7280";
-                return(
-                  <div key={h.id}
-                    onClick={()=>{
-                      if(heroListTab==="waiting"){
-                        // 대기중 유닛: 클릭하면 빈 칸에 자동배치
-                        const g=G.current;
-                        const pos=autoPlace(g.heroes.filter(x=>x.id!==h.id));
-                        if(pos){
-                          const target=g.heroes.find(x=>x.id===h.id);
-                          if(target){target.col=pos[0];target.row=pos[1];sync();safeDraw();pushToast(`${EE[h.element]||""} ${EN[h.element]||h.element} 배치완료`,"#4ade80");}
-                        }else{pushToast("빈 배치 칸이 없습니다!","#ef4444");}
-                      }else{
-                        onHero(h);
-                      }
-                    }}
-                    onTouchStart={(e)=>{
-                      e.preventDefault();
-                      longPressTimer.current=setTimeout(()=>{
-                        longPressTimer.current=null;
-                        setDetailHero(h);
-                      },450);
-                    }}
-                    onTouchEnd={()=>{
-                      if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}
-                    }}
-                    onTouchMove={()=>{
-                      if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}
-                    }}
-                    style={{background:isSel?`${gc}20`:isDrag?"#1e3a5f":heroListTab==="waiting"?"#0f1f0f":"#0f172a",
-                      border:`2px solid ${isSel?gc:isDrag?"#60a5fa":heroListTab==="waiting"?"#4ade8055":gc+"44"}`,
-                      borderRadius:9,padding:"5px 6px",cursor:"pointer",minWidth:50,textAlign:"center",
-                      boxShadow:isSel?`0 0 10px ${gc}55`:"none",
-                      transition:"border-color 0.15s",userSelect:"none",WebkitUserSelect:"none"}}>
-                    <div style={{fontSize:18,lineHeight:1.2}}>{EE[h.element]||"?"}</div>
-                    <div style={{fontSize:8,color:gc,fontWeight:"bold",lineHeight:1.2}}>{h.grade}</div>
-                    {h.enhLv>0&&<div style={{fontSize:8,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
-                    {heroListTab==="waiting"&&<div style={{fontSize:7,color:"#4ade80",marginTop:1}}>탭=배치</div>}
-                  </div>
-                );
-              })}
-              {(heroListTab==="placed"?placedHeroes:waitingHeroes).length===0&&(
-                <div style={{color:"#334155",fontSize:11,padding:"8px 4px"}}>
-                  {heroListTab==="placed"?"배치된 유닛 없음":"대기 유닛 없음"}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
 
       {/* 유닛 상세정보 모달 (롱프레스) */}
       {detailHero&&(()=>{
