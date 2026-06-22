@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v8.1",
+    date:"2025-06-23",
+    title:"유닛 목록 모달로 전환",
+    changes:[
+      "🎮 배치중/대기중 버튼 클릭 시 바텀시트 모달로 유닛 목록 표시",
+      "📦 대기중 탭에서 유닛 탭하면 자동배치 후 모달 닫힘",
+      "⚔️ 배치중 탭에서 유닛 탭하면 유닛 선택 (재배치/조합/판매)",
+    ]
+  },
+  {
     version:"v8.0",
     date:"2025-06-23",
     title:"조합 체계 개편",
@@ -4293,57 +4303,22 @@ export default function App(){
             🪙<br/><span style={{fontSize:9,opacity:0.8}}>{ui.coins}</span>
           </button>
         </div>
-        {/* 유닛 목록 */}
+        {/* 배치중/대기중 버튼 */}
         {(()=>{
           const placedHeroes=heroes.filter(h=>h.col!==null);
           const waitingHeroes=heroes.filter(h=>h.col===null);
           const waitingCount=waitingHeroes.length;
           return(
-            <div style={{padding:"2px 4px 3px 4px"}}>
-              <div style={{display:"flex",gap:3,marginBottom:3}}>
-                <button onClick={()=>setHeroListTab("placed")}
-                  style={{flex:1,background:heroListTab==="placed"?"#1e3a5f":"transparent",border:`1px solid ${heroListTab==="placed"?"#60a5fa":"#1e293b"}`,borderRadius:6,padding:"2px 4px",cursor:"pointer",color:heroListTab==="placed"?"#60a5fa":"#475569",fontSize:10,fontWeight:"bold"}}>
-                  ⚔️ 배치중 ({placedHeroes.length})
-                </button>
-                <button onClick={()=>setHeroListTab("waiting")}
-                  style={{flex:1,background:heroListTab==="waiting"?"#1a2e1a":"transparent",border:`1px solid ${heroListTab==="waiting"?"#4ade80":"#1e293b"}`,borderRadius:6,padding:"2px 4px",cursor:"pointer",color:heroListTab==="waiting"?"#4ade80":"#475569",fontSize:10,fontWeight:"bold",position:"relative"}}>
-                  📦 대기중 ({waitingCount})
-                  {waitingCount>0&&<span style={{position:"absolute",top:-3,right:-3,background:"#ef4444",color:"#fff",borderRadius:"50%",width:13,height:13,fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold"}}>{waitingCount}</span>}
-                </button>
-              </div>
-              <div style={{display:"flex",gap:3,flexWrap:"wrap",minHeight:36}}>
-                {(heroListTab==="placed"?placedHeroes:waitingHeroes).map(h=>{
-                  const isSel=h.id===selHero,isDrag=h.id===drag;
-                  const gc=GC[h.grade]||"#6b7280";
-                  return(
-                    <div key={h.id}
-                      onClick={()=>{
-                        if(heroListTab==="waiting"){
-                          const g=G.current;
-                          const pos=autoPlace(g.heroes.filter(x=>x.id!==h.id));
-                          if(pos){const target=g.heroes.find(x=>x.id===h.id);if(target){target.col=pos[0];target.row=pos[1];sync();safeDraw();pushToast(`${EE[h.element]||""} ${EN[h.element]||h.element} 배치완료`,"#4ade80");}}
-                          else{pushToast("빈 배치 칸이 없습니다!","#ef4444");}
-                        }else{onHero(h);}
-                      }}
-                      onTouchStart={(e)=>{e.preventDefault();longPressTimer.current=setTimeout(()=>{longPressTimer.current=null;setDetailHero(h);},450);}}
-                      onTouchEnd={()=>{if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}}}
-                      onTouchMove={()=>{if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}}}
-                      style={{background:isSel?`${gc}25`:isDrag?"#1e3a5f":heroListTab==="waiting"?"#0f1f0f":"#0f172a",
-                        border:`2px solid ${isSel?gc:isDrag?"#60a5fa":heroListTab==="waiting"?"#4ade8055":gc+"44"}`,
-                        borderRadius:7,padding:"2px 4px",cursor:"pointer",minWidth:40,textAlign:"center",
-                        boxShadow:isSel?`0 0 8px ${gc}55`:"none",userSelect:"none",WebkitUserSelect:"none"}}>
-                      <div style={{fontSize:15,lineHeight:1.1}}>{EE[h.element]||"?"}</div>
-                      <div style={{fontSize:7,color:gc,fontWeight:"bold",lineHeight:1.1}}>{h.grade}</div>
-                      {h.enhLv>0&&<div style={{fontSize:7,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
-                    </div>
-                  );
-                })}
-                {(heroListTab==="placed"?placedHeroes:waitingHeroes).length===0&&(
-                  <div style={{color:"#334155",fontSize:10,padding:"6px 4px"}}>
-                    {heroListTab==="placed"?"배치된 유닛 없음":"대기 유닛 없음"}
-                  </div>
-                )}
-              </div>
+            <div style={{display:"flex",gap:3,padding:"3px 4px 4px 4px"}}>
+              <button onClick={()=>{setHeroListTab("placed");setModal("heroList");}}
+                style={{flex:1,background:"#0f1f3a",border:"1px solid #60a5fa44",borderRadius:7,padding:"5px 4px",cursor:"pointer",color:"#60a5fa",fontSize:11,fontWeight:"bold"}}>
+                ⚔️ 배치중 ({placedHeroes.length})
+              </button>
+              <button onClick={()=>{setHeroListTab("waiting");setModal("heroList");}}
+                style={{flex:1,background:"#0f1f0f",border:`1px solid ${waitingCount>0?"#4ade80":"#1e293b"}`,borderRadius:7,padding:"5px 4px",cursor:"pointer",color:waitingCount>0?"#4ade80":"#475569",fontSize:11,fontWeight:"bold",position:"relative"}}>
+                📦 대기중 ({waitingCount})
+                {waitingCount>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#ef4444",color:"#fff",borderRadius:"50%",width:15,height:15,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold",lineHeight:1}}>{waitingCount}</span>}
+              </button>
             </div>
           );
         })()}
@@ -4373,6 +4348,63 @@ export default function App(){
         </div>
       )}
       {/* 유닛 클릭 팝업 모달 */}
+      {/* 배치중/대기중 유닛 목록 모달 */}
+      {modal==="heroList"&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}
+          onClick={()=>setModal(null)}>
+          <div onClick={e=>e.stopPropagation()}
+            style={{width:"100%",maxWidth:480,background:"#0d1117",borderRadius:"16px 16px 0 0",border:"1px solid #1e293b",maxHeight:"70vh",display:"flex",flexDirection:"column"}}>
+            {/* 헤더 */}
+            <div style={{display:"flex",gap:3,padding:"12px 12px 8px 12px",borderBottom:"1px solid #1e293b",flexShrink:0}}>
+              <button onClick={()=>setHeroListTab("placed")}
+                style={{flex:1,background:heroListTab==="placed"?"#1e3a5f":"transparent",border:`1px solid ${heroListTab==="placed"?"#60a5fa":"#334155"}`,borderRadius:8,padding:"7px 4px",cursor:"pointer",color:heroListTab==="placed"?"#60a5fa":"#475569",fontSize:12,fontWeight:"bold"}}>
+                ⚔️ 배치중 ({heroes.filter(h=>h.col!==null).length})
+              </button>
+              <button onClick={()=>setHeroListTab("waiting")}
+                style={{flex:1,background:heroListTab==="waiting"?"#1a2e1a":"transparent",border:`1px solid ${heroListTab==="waiting"?"#4ade80":"#334155"}`,borderRadius:8,padding:"7px 4px",cursor:"pointer",color:heroListTab==="waiting"?"#4ade80":"#475569",fontSize:12,fontWeight:"bold"}}>
+                📦 대기중 ({heroes.filter(h=>h.col===null).length})
+              </button>
+              <button onClick={()=>setModal(null)}
+                style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13}}>✕</button>
+            </div>
+            {/* 유닛 목록 */}
+            <div style={{overflowY:"auto",padding:"10px 12px 20px",display:"flex",flexWrap:"wrap",gap:6,alignContent:"flex-start"}}>
+              {(()=>{
+                const list=heroListTab==="placed"?heroes.filter(h=>h.col!==null):heroes.filter(h=>h.col===null);
+                if(list.length===0)return <div style={{color:"#334155",fontSize:12,padding:"16px",width:"100%",textAlign:"center"}}>{heroListTab==="placed"?"배치된 유닛 없음":"대기 유닛 없음"}</div>;
+                return list.map(h=>{
+                  const gc=GC[h.grade]||"#6b7280";
+                  const isSel=h.id===selHero;
+                  return(
+                    <div key={h.id}
+                      onClick={()=>{
+                        if(heroListTab==="waiting"){
+                          const g=G.current;
+                          const pos=autoPlace(g.heroes.filter(x=>x.id!==h.id));
+                          if(pos){const t=g.heroes.find(x=>x.id===h.id);if(t){t.col=pos[0];t.row=pos[1];sync();safeDraw();pushToast(`${EN[h.element]||h.element} 배치완료`,"#4ade80");setModal(null);}}
+                          else{pushToast("빈 배치 칸이 없습니다!","#ef4444");}
+                        }else{
+                          setModal(null);
+                          setTimeout(()=>setSelHero(h.id),50);
+                        }
+                      }}
+                      style={{background:isSel?`${gc}25`:"#0f172a",border:`2px solid ${isSel?gc:gc+"66"}`,
+                        borderRadius:12,padding:"10px 10px",cursor:"pointer",minWidth:68,textAlign:"center",
+                        boxShadow:isSel?`0 0 10px ${gc}66`:"none"}}>
+                      <div style={{fontSize:32,lineHeight:1.2}}>{EE[h.element]||"?"}</div>
+                      <div style={{fontSize:10,color:gc,fontWeight:"bold",marginTop:3}}>{h.grade}</div>
+                      <div style={{fontSize:10,color:"#94a3b8"}}>{EN[h.element]||h.element}</div>
+                      {h.enhLv>0&&<div style={{fontSize:10,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
+                      {heroListTab==="waiting"&&<div style={{fontSize:9,color:"#4ade80",marginTop:2}}>탭→배치</div>}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {selHeroObj&&(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:180,background:"rgba(0,0,0,0.6)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}
           onClick={()=>setSelHero(null)}>
