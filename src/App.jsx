@@ -4176,7 +4176,7 @@ export default function App(){
             {speed}x
           </button>
           <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
-          <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
+          <button onClick={()=>{setComboFilter("고급");setShowCombo(true);}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 보스 라운드 정보 줄 */}
         {countdown>0&&(()=>{
@@ -4781,12 +4781,12 @@ export default function App(){
               ))}
             </div>
             {/* 콘텐츠 스크롤 영역 - 조합표는 정보만 표시 */}
-            <div style={{overflowY:"auto",flex:1}}>
+            <div key={comboFilter} style={{overflowY:"auto",flex:1}}>
               {(()=>{
                 let rows=[];
-                if(!isHighGrade){
-                  // 고급/영웅: COMBO 표시
-                  rows=curCombos.map(r=>({
+                const _isHigh=["전설","신화","불멸"].includes(comboFilter);
+                if(!_isHigh){
+                  rows=COMBO.filter(r=>r.g===comboFilter).map(r=>({
                     key:r.r,
                     parts:[{u:r.a,n:1},{u:r.b,n:1}],
                     result:r.r,
@@ -4794,7 +4794,6 @@ export default function App(){
                     can:(r.a===r.b?(unitCnt[r.a]||0)>=2:(myEls.has(r.a)&&myEls.has(r.b))),
                   }));
                 } else {
-                  // 전설/신화/불멸: COMBO + RECIPES 둘 다 표시
                   const comboRows=COMBO.filter(r=>r.g===comboFilter).map(r=>({
                     key:r.r,
                     parts:[{u:r.a,n:1},{u:r.b,n:1}],
@@ -4802,14 +4801,13 @@ export default function App(){
                     grade:r.g,
                     can:(unitCnt[r.a]||0)>=1&&(unitCnt[r.b]||0)>=1,
                   }));
-                  const recipeRows=curRecipes.map(recipe=>({
+                  const recipeRows=RECIPES.filter(r=>r.g===comboFilter).map(recipe=>({
                     key:recipe.r,
                     parts:recipe.parts,
                     result:recipe.r,
                     grade:recipe.g,
                     can:canRecipe(recipe),
                   }));
-                  // 중복 제거 후 합치기
                   const seen=new Set(comboRows.map(r=>r.key));
                   rows=[...comboRows,...recipeRows.filter(r=>!seen.has(r.key))];
                 }
