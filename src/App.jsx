@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v6.7",
+    date:"2025-06-22",
+    title:"게임 멈춤 버그 수정",
+    changes:[
+      "🐛 보스/중간보스 라운드에서 게임이 멈추던 버그 수정 (스폰 타이밍 문제로 보스가 등장 안 되던 현상)",
+      "🔧 보스 강제 스폰 안전장치 추가: 적이 없는데 보스가 스폰 안 된 경우 강제 등장",
+      "🔧 게임 루프 stuck 안전장치 강화",
+    ]
+  },
+  {
     version:"v6.6",
     date:"2025-06-22",
     title:"유닛별 사거리 전면 재설계",
@@ -2166,6 +2176,9 @@ export default function App(){
       // 안전장치: 카운트다운이 끝났는데도 running이 false면 강제로 재개
       if(countdownValRef.current<=0&&!countdownRef.current&&!g.cleared){
         g.running=true;
+      } else if(countdownValRef.current<=0&&!countdownRef.current&&g.cleared){
+        // cleared 상태인데 카운트다운도 없으면 → 다음 라운드가 시작 안 된 것, 강제 재개
+        g.cleared=false;g.running=true;
       } else {
         draw();raf.current=requestAnimationFrame((t2)=>gameLoopRef.current(t2));return;
       }
@@ -2539,6 +2552,17 @@ export default function App(){
     if(g.particles){for(const p of g.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;p.life-=dt;}g.particles=g.particles.filter(p=>p.life>0);}
     for(const h of g.heroes){if(h.shootAnim>0)h.shootAnim-=dt;}
 
+    // 보스/중간보스 강제 스폰 안전장치: 적이 없는데 스폰이 안 된 경우
+    if(isBossRound&&!g.bossSpawned&&g.enemies.length===0&&g.spawnC>=g.maxSpawn){
+      // maxSpawn이 1인데 이미 spawnC>=1이면 보스 스폰 기회를 놓친 것 → 강제 스폰
+      const bossInfo=makeBoss(g.round);g.currentBoss=bossInfo;
+      const boss=mkE("일반",g.round,true,false,g.rotMode?'ROT':g.mapKey,{});
+      boss.isRageReady=true;boss.bossInfo=bossInfo;
+      g.enemies.push(boss);g.bossSpawned=true;
+    }
+    if(isMidRound&&!g.midSpawned&&g.enemies.length===0&&g.spawnC>=g.maxSpawn){
+      g.enemies.push(mkE("일반",g.round,false,true,g.rotMode?'ROT':g.mapKey,{}));g.midSpawned=true;
+    }
     const spawnDone=(isBossRound&&g.bossSpawned)||(isMidRound&&g.midSpawned)||(!isBossRound&&!isMidRound&&g.spawnC>=g.maxSpawn);
     // 회전 모드: 적 다 잡아도 타이머 끝날 때까지 대기
     const canClear=spawnDone&&g.enemies.length===0&&!g.cleared&&(!g.rotMode||countdownValRef.current===0);
