@@ -3474,11 +3474,11 @@ export default function App(){
   if(phase==='title'){
     return(
       <>
-      <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
-        <div style={{fontSize:52,marginBottom:6,filter:"drop-shadow(0 0 20px #3b82f6)"}}>🗡️</div>
-        <div style={{fontSize:30,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4,letterSpacing:3}}>랜덤 디펜스</div>
-        <div style={{fontSize:12,color:"#374151",marginBottom:8,letterSpacing:4}}>RANDOM DEFENSE</div>
-        <div style={{display:"flex",gap:8,marginBottom:20,alignItems:"center"}}>
+      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",overflow:"hidden",boxSizing:"border-box"}}>
+        <div style={{fontSize:40,marginBottom:4,filter:"drop-shadow(0 0 20px #3b82f6)"}}>🗡️</div>
+        <div style={{fontSize:24,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:2,letterSpacing:3}}>랜덤 디펜스</div>
+        <div style={{fontSize:11,color:"#374151",marginBottom:6,letterSpacing:4}}>RANDOM DEFENSE</div>
+        <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
           <span
             onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
             onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
@@ -3492,7 +3492,7 @@ export default function App(){
         </div>
 
         {/* 접속자 목록 */}
-        <div style={{width:"100%",maxWidth:340,marginBottom:18,background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"8px 12px"}}>
+        <div style={{width:"100%",maxWidth:340,marginBottom:10,background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"8px 12px"}}>
           <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:onlineUsers.length>0?6:0}}>
             <span style={{width:6,height:6,borderRadius:3,background:"#4ade80",boxShadow:"0 0 6px #4ade80"}}/>
             <span style={{fontSize:11,color:"#94a3b8",fontWeight:"bold"}}>접속자 {onlineUsers.length}명</span>
@@ -3510,10 +3510,10 @@ export default function App(){
         </div>
 
         {/* 맵 선택 */}
-        <div style={{width:"100%",maxWidth:340,marginBottom:20}}>
-          <div style={{fontSize:11,color:"#888",marginBottom:8,textAlign:"center"}}>🗺️ 맵 설정</div>
+        <div style={{width:"100%",maxWidth:340,marginBottom:10}}>
+          <div style={{fontSize:11,color:"#888",marginBottom:4,textAlign:"center"}}>🗺️ 맵 설정</div>
           {/* 랜덤 / 선택 탭 */}
-          <div style={{display:"flex",gap:6,marginBottom:10}}>
+          <div style={{display:"flex",gap:6,marginBottom:6}}>
             {[{key:"random",label:"🎲 랜덤맵"},{key:"pick",label:"🗺️ 선택맵"}].map(m=>(
               <button key={m.key} onClick={()=>setMapMode(m.key)}
                 style={{flex:1,background:mapMode===m.key?"linear-gradient(135deg,#1f6feb,#6e40c9)":"#161b22",border:`1px solid ${mapMode===m.key?"#3b82f6":"#30363d"}`,color:mapMode===m.key?"#fff":"#888",borderRadius:10,padding:"9px 0",cursor:"pointer",fontSize:13,fontWeight:mapMode===m.key?"bold":"normal",transition:"all 0.15s"}}>
@@ -3548,8 +3548,8 @@ export default function App(){
         </div>
 
         {/* 닉네임 입력 */}
-        <div style={{width:"100%",maxWidth:340,marginBottom:16}}>
-          <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>👤 닉네임</div>
+        <div style={{width:"100%",maxWidth:340,marginBottom:8}}>
+          <div style={{fontSize:11,color:"#888",marginBottom:4,textAlign:"center"}}>👤 닉네임</div>
           <input
             value={nickname}
             onChange={e=>handleNicknameChange(e.target.value,12)}
@@ -3560,17 +3560,17 @@ export default function App(){
           />
         </div>
 
-        <div style={{display:"flex",gap:8,marginBottom:10,width:"100%",maxWidth:340}}>
+        <div style={{display:"flex",gap:8,marginBottom:8,width:"100%",maxWidth:340}}>
           <button onClick={()=>startGame(null)}
-            style={{flex:2,background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:16,fontWeight:"bold",letterSpacing:1,boxShadow:"0 4px 20px rgba(31,111,235,0.4)"}}>
+            style={{flex:2,background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"11px 0",cursor:"pointer",fontSize:16,fontWeight:"bold",letterSpacing:1,boxShadow:"0 4px 20px rgba(31,111,235,0.4)"}}>
             ⚔️ 게임 시작
           </button>
           <button onClick={()=>startRotation()}
-            style={{flex:1,background:"linear-gradient(135deg,#7c3aed,#dc2626)",border:"none",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:14,fontWeight:"bold",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>
+            style={{flex:1,background:"linear-gradient(135deg,#7c3aed,#dc2626)",border:"none",color:"#fff",borderRadius:12,padding:"11px 0",cursor:"pointer",fontSize:14,fontWeight:"bold",boxShadow:"0 4px 20px rgba(124,58,237,0.4)"}}>
             🔄 회전
           </button>
         </div>
-        <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap",justifyContent:"center"}}>
+        <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap",justifyContent:"center"}}>
           <button onClick={()=>{setShowRanking(true);loadRanking();}}
             style={{background:"none",border:"1px solid #30363d",color:"#fd0",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:12}}>
             🏆 랭킹
@@ -3909,7 +3909,7 @@ export default function App(){
   // ══════════════════════════════════════════
   if(phase==='hidden'){
     return(
-      <div style={{fontFamily:"sans-serif",background:"#0d1117",minHeight:"100vh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",overflow:"hidden",boxSizing:"border-box"}}>
         <div style={{width:"100%",maxWidth:400,background:"#161b22",borderRadius:16,padding:20,border:"1px solid #30363d"}}>
           <div style={{textAlign:"center",marginBottom:4}}>
             <div style={{fontSize:11,color:"#4af",marginBottom:4}}>🗺️ {currentMapName} 맵</div>
