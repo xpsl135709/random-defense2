@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v7.6",
+    date:"2025-06-22",
+    title:"조합 옵션 등급 필터 수정",
+    changes:[
+      "🐛 유닛 클릭 시 조합 가능 목록에 엉뚱한 등급 결과 뜨던 버그 수정",
+      "⚗️ 노말→고급만 / 고급→영웅만 / 영웅→전설만 정확하게 표시",
+    ]
+  },
+  {
     version:"v7.5",
     date:"2025-06-22",
     title:"한화면 레이아웃 & 유닛 팝업 개선",
@@ -1616,12 +1625,6 @@ export default function App(){
     logPull(action,el,grade);
   };
 
-  const drawPending=useRef(false);
-  const safeDraw=useCallback(()=>{
-    if(drawPending.current)return;
-    drawPending.current=true;
-    requestAnimationFrame(()=>{drawPending.current=false;draw();});
-  },[draw]);
   const sync=useCallback(()=>{
     const g=G.current;if(!g)return;
     setUi({life:g.life,gold:g.gold,coins:g.coins,round:g.round,total:g.total,over:g.over,victory:g.victory||false});
@@ -2258,6 +2261,12 @@ export default function App(){
     }
   }catch(err){console.error("draw error:",err);}
   },[selHero]);
+  const drawPending=useRef(false);
+  const safeDraw=useCallback(()=>{
+    if(drawPending.current)return;
+    drawPending.current=true;
+    requestAnimationFrame(()=>{drawPending.current=false;draw();});
+  },[draw]);
 
   const gameLoop=useCallback((t)=>{
     const raw=Math.min((t-lt.current)/1000,0.1);
@@ -2942,17 +2951,18 @@ export default function App(){
     const myEls=g.heroes.filter(x=>x.id!==heroId).map(x=>x.element);
     const myCnt={};
     for(const hero of g.heroes) myCnt[hero.element]=(myCnt[hero.element]||0)+1;
-    // 같은 속성 조합 체크용 (선택한 유닛 제외한 카운트)
     const myElsCntEx={};
     for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    // 등급별 조합 결과 등급 매핑: 내 등급 → 만들 수 있는 결과 등급
+    const GRADE_RESULT={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
+    const targetGrade=GRADE_RESULT[h.grade]; // 이 등급만 결과로 허용
 
-    // 고급/영웅: COMBO 방식
+    // COMBO: 내 등급에서 만들 수 있는 등급만 필터
     const comboOpts=COMBO.filter(r=>{
+      if(r.g!==targetGrade)return false; // 등급 불일치 제외
       if(!unlockedG.includes(r.g))return false;
       const isSame=r.a===r.b;
-      // 동속성: 내가 그 속성이고 + 나머지에 1개 더 있어야
-      // 이속성: 내가 a면 나머지에 b, 내가 b면 나머지에 a
       const match=isSame
         ?(h.element===r.a&&(myElsCntEx[r.a]||0)>=1)
         :((r.a===h.element&&myEls.includes(r.b))||(r.b===h.element&&myEls.includes(r.a)));
@@ -2964,15 +2974,14 @@ export default function App(){
       return false;
     }).map(r=>({...r,isRecipe:false}));
 
-    // 전설/신화/불멸: RECIPES 방식 - 선택 유닛이 재료 중 하나라도 포함되면 표시
-    const recipeOpts=RECIPES.filter(recipe=>{
+    // RECIPES: 전설 이상만 (영웅→전설 포함)
+    const recipeOpts=(!targetGrade||["전설","신화","불멸"].includes(targetGrade))?RECIPES.filter(recipe=>{
+      if(recipe.g!==targetGrade)return false;
       if(!unlockedG.includes(recipe.g))return false;
-      // 선택 유닛이 재료에 포함되는지
       const usesMe=recipe.parts.some(p=>p.u===h.element);
       if(!usesMe)return false;
-      // 전체 재료 충족 여부
       return recipe.parts.every(p=>(myCnt[p.u]||0)>=p.n);
-    }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe}));
+    }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe})):[];
 
     return [...comboOpts,...recipeOpts];
   };
