@@ -199,6 +199,18 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v6.5",
+    date:"2025-06-22",
+    title:"등급별 이펙트 차별화",
+    changes:[
+      "✨ 투사체 꼬리: 그라디언트 잔상으로 개선, 등급 높을수록 길고 굵어짐",
+      "🔮 영웅↑: 투사체 주위 궤도 파티클 추가 (영웅3개/전설4개/신화6개/불멸8개)",
+      "💥 임팩트 크기 등급별 차등 확대 (노말12→불멸54)",
+      "⚡ 전설↑: 쇼크웨이브(충격파) 링 추가",
+      "👑 불멸: 임팩트 시 골드 반짝이 파티클 추가",
+    ]
+  },
+  {
     version:"v6.4",
     date:"2025-06-22",
     title:"유닛 목록 탭 분리 & 연금술 조합 범위 조정",
@@ -1018,7 +1030,14 @@ const SUPABASE_KEY="sb_publishable_fVoCA4WfdzLVwWeb0Rz0iA_IBetZ9Je";
 let hid=1,eid=1;
 const EL_BASE={"불정령":"불","물정령":"물","대지정령":"땅","바람정령":"바람","번개정령":"전기","나무정령":"나무","빛정령":"빛","어둠정령":"어둠","오크":"무속성","언데드":"무속성","뱀파이어":"무속성","수인":"무속성","인간":"무속성","천사":"빛","악마":"어둠","시간정령":"시간","해골투사":"무속성","혈전사":"무속성","야수전사":"무속성","전쟁용병":"무속성","저주야수":"무속성","사령견습":"무속성","혈수":"무속성","혈술사":"무속성","야성검사":"무속성","금술사":"어둠","잿불파쇄자":"불","홍염망자":"불","적월귀":"불","화염갈기":"불","불꽃술사":"불","심해파수자":"물","익사망령":"물","서리송곳니":"물","대지분쇄자":"땅","질풍송곳니":"바람","뇌광야수":"전기","고목망령":"나무","성전사":"빛","마전사":"어둠","사혈귀":"무속성","속죄망령":"빛","혈천사":"빛","성수":"빛","성기사":"빛","성익천사":"빛","심연악마":"어둠","타락성익":"어둠","홍련학살자":"불","해일군주":"물","폭뢰야수":"바람","부패현자":"나무","강철야수":"땅","리치데몬":"어둠","혈마":"어둠","마수":"어둠","타천사":"빛","월식천사":"빛","인페르노 군주":"불","아비스 드라큘":"물","천뢰 펜리르":"바람","세라핌":"빛","폴른 세라핌":"어둠","어비스 리치":"나무","마그마 펜리르":"땅","성흑기사":"빛","혈옥군주":"빛","마검군주":"어둠","금단의 현자":"어둠","종말세라프":"빛","종말의 화신":"불","혈해마신":"물","폭천수왕":"바람","천계의 사도":"빛","심연의 천사":"어둠","죽음의 현신":"나무","혈옥리치":"빛","혼돈야수":"빛","혼돈성기사":"빛","지옥파쇄자":"어둠","영겁의 재":"불","영겁혈제":"물","번개의 포식자":"바람","영원의 성익":"빛","영겁의 흑익":"어둠","공허의 사도":"나무","멸천기사":"빛","흑월의 군주":"빛","빛의 의지":"빛","불":"불","물":"물","땅":"땅","바람":"바람","전기":"전기","나무":"나무","빛":"빛","어둠":"어둠","시간":"시간","무속성":"무속성"};
 const elBase=(el)=>EL_BASE[el]||el;
-const GRADE_FX={노말:{glow:0,trail:0},고급:{glow:4,trail:0},영웅:{glow:6,trail:3},전설:{glow:10,trail:5},신화:{glow:14,trail:8},불멸:{glow:20,trail:12}};
+const GRADE_FX={
+  노말:{glow:0,trail:0,projR:3,impactR:10,impactGrow:12,orbits:0,rings:1,shockwave:false},
+  고급:{glow:5,trail:4,projR:4,impactR:12,impactGrow:16,orbits:0,rings:1,shockwave:false},
+  영웅:{glow:8,trail:6,projR:5,impactR:14,impactGrow:22,orbits:3,rings:2,shockwave:false},
+  전설:{glow:14,trail:9,projR:6,impactR:18,impactGrow:30,orbits:4,rings:2,shockwave:true},
+  신화:{glow:20,trail:13,projR:8,impactR:22,impactGrow:40,orbits:6,rings:3,shockwave:true},
+  불멸:{glow:28,trail:18,projR:10,impactR:28,impactGrow:54,orbits:8,rings:4,shockwave:true},
+};
 // 속성별 기본 사거리 (타일 단위)
 const EL_RANGE={
   "불":2.5,"물":3.0,"땅":1.8,"바람":3.5,"전기":3.2,
@@ -1910,8 +1929,32 @@ export default function App(){
           break;
         default: ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.globalAlpha=0.7;ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.fill();
       }
-      if(fx.trail>0){const mdx=p.tx-p.sx,mdy=p.ty-p.sy,mlen=Math.sqrt(mdx*mdx+mdy*mdy)||1;const ux2=mdx/mlen,uy2=mdy/mlen;ctx.globalAlpha=0.25;ctx.strokeStyle=c;ctx.lineWidth=Math.max(1,fx.trail/3);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-ux2*fx.trail*2,p.y-uy2*fx.trail*2);ctx.stroke();}
-      if(p.grade==="불멸"){ctx.globalAlpha=0.5;for(let i=0;i<3;i++){const ang=p.age*8+i*(Math.PI*2/3);ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x+Math.cos(ang)*6,p.y+Math.sin(ang)*6,1.5,0,Math.PI*2);ctx.fill();}}
+      // 꼬리 잔상
+      if(fx.trail>0){
+        const mdx=p.tx-p.sx,mdy=p.ty-p.sy,mlen=Math.sqrt(mdx*mdx+mdy*mdy)||1;
+        const ux2=mdx/mlen,uy2=mdy/mlen;
+        const trailLen=fx.trail*2.5;
+        const grad=ctx.createLinearGradient(p.x,p.y,p.x-ux2*trailLen,p.y-uy2*trailLen);
+        grad.addColorStop(0,c+'cc');grad.addColorStop(1,c+'00');
+        ctx.globalAlpha=0.6;ctx.strokeStyle=grad;
+        ctx.lineWidth=Math.max(1.5,fx.trail/2.5);
+        ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-ux2*trailLen,p.y-uy2*trailLen);ctx.stroke();
+      }
+      // 등급별 궤도 파티클
+      if(fx.orbits>0){
+        for(let i=0;i<fx.orbits;i++){
+          const ang=p.age*10+i*(Math.PI*2/fx.orbits);
+          const orR=fx.projR+2;
+          ctx.globalAlpha=0.7;ctx.fillStyle=c;
+          ctx.beginPath();ctx.arc(p.x+Math.cos(ang)*orR,p.y+Math.sin(ang)*orR,1.2,0,Math.PI*2);ctx.fill();
+        }
+      }
+      // 불멸: 추가 링
+      if(p.grade==="불멸"){
+        ctx.globalAlpha=0.35;ctx.strokeStyle="#fff";ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(p.x,p.y,fx.projR+4+Math.sin(p.age*12)*2,0,Math.PI*2);ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -1929,24 +1972,91 @@ export default function App(){
       const prog=im.t/im.maxT;
       const c=im.color||"#ff0";
       const eb=im.elBase||"무속성";
-      const big=im.grade==="전설"||im.grade==="신화"||im.grade==="불멸";
-      const baseR=big?6:4,growR=big?20:14;
-      ctx.save();ctx.globalAlpha=1-prog;
-      switch(eb){
-        case "불": ctx.fillStyle=c;for(let i=0;i<5;i++){const ang=i*(Math.PI*2/5);ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.7,im.y+Math.sin(ang)*prog*growR*0.7,2,0,Math.PI*2);ctx.fill();}ctx.strokeStyle="#ff0";ctx.lineWidth=2;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.6,0,Math.PI*2);ctx.stroke();break;
-        case "물": ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();break;
-        case "땅": ctx.fillStyle=c;for(let i=0;i<4;i++){const ang=i*(Math.PI/2)+prog*2;ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.6,im.y+Math.sin(ang)*prog*growR*0.6-prog*5,2,0,Math.PI*2);ctx.fill();}break;
-        case "바람": ctx.strokeStyle=c;ctx.lineWidth=2;ctx.save();ctx.translate(im.x,im.y);ctx.rotate(prog*8);ctx.beginPath();ctx.arc(0,0,baseR+prog*growR,0,Math.PI*1.5);ctx.stroke();ctx.restore();break;
-        case "전기": ctx.strokeStyle=c;ctx.lineWidth=2;for(let i=0;i<4;i++){const ang=i*(Math.PI/2)+Math.random();ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR),im.y+Math.sin(ang)*(baseR+prog*growR));ctx.stroke();}break;
-        case "얼음": ctx.strokeStyle=c;ctx.lineWidth=1.5;for(let i=0;i<6;i++){const ang=i*(Math.PI/3);ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR*0.8),im.y+Math.sin(ang)*(baseR+prog*growR*0.8));ctx.stroke();}break;
-        case "빛": ctx.fillStyle="#fff";ctx.globalAlpha=(1-prog)*0.8;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;ctx.globalAlpha=1-prog;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();break;
-        case "어둠": ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(im.x,im.y,baseR+(1-prog)*growR*0.5,0,Math.PI*2);ctx.stroke();break;
-        case "소리": ctx.strokeStyle=c;ctx.lineWidth=1.5;for(let i=0;i<2;i++)ctx.beginPath(),ctx.arc(im.x,im.y,baseR+prog*growR*(0.6+i*0.4),0,Math.PI*2),ctx.stroke();break;
-        case "독": ctx.fillStyle=c;for(let i=0;i<6;i++){const ang=i*(Math.PI/3)+prog*2;ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.7,im.y+Math.sin(ang)*prog*growR*0.7,2.5,0,Math.PI*2);ctx.fill();}break;
-        case "나무": ctx.strokeStyle=c;ctx.lineWidth=2;for(let i=0;i<5;i++){const ang=i*(Math.PI*2/5)-Math.PI/2;ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR),im.y+Math.sin(ang)*(baseR+prog*growR));ctx.stroke();}break;
-        default: ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR,0,Math.PI*2);ctx.stroke();
+      const fx2=GRADE_FX[im.grade]||GRADE_FX.노말;
+      const baseR=fx2.impactR*0.3,growR=fx2.impactGrow;
+      const lw=im.grade==="불멸"?3:im.grade==="신화"?2.5:im.grade==="전설"?2:1.5;
+      ctx.save();
+      // 쇼크웨이브 (전설 이상)
+      if(fx2.shockwave){
+        ctx.globalAlpha=(1-prog)*0.35;
+        ctx.strokeStyle="#fff";ctx.lineWidth=lw+1;
+        ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*1.5,0,Math.PI*2);ctx.stroke();
       }
-      if(im.grade==="신화"||im.grade==="불멸"){ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.globalAlpha=(1-prog)*0.6;ctx.beginPath();ctx.arc(im.x,im.y,(baseR+prog*growR)*1.3,0,Math.PI*2);ctx.stroke();}
+      ctx.globalAlpha=1-prog;
+      switch(eb){
+        case "불": {
+          ctx.shadowColor=c;ctx.shadowBlur=fx2.glow;
+          const cnt=im.grade==="불멸"?10:im.grade==="신화"?8:im.grade==="전설"?6:5;
+          ctx.fillStyle=c;
+          for(let i=0;i<cnt;i++){const ang=i*(Math.PI*2/cnt)+prog;ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.75,im.y+Math.sin(ang)*prog*growR*0.75,lw+1,0,Math.PI*2);ctx.fill();}
+          ctx.strokeStyle="#ff0";ctx.lineWidth=lw;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.6,0,Math.PI*2);ctx.stroke();
+          break;
+        }
+        case "물": {
+          for(let r=0;r<fx2.rings;r++){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.globalAlpha=(1-prog)*(1-r*0.3);ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*(0.6+r*0.4),0,Math.PI*2);ctx.stroke();}
+          break;
+        }
+        case "땅": {
+          const cnt2=im.grade==="불멸"?8:im.grade==="신화"?6:4;
+          ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=fx2.glow*0.5;
+          for(let i=0;i<cnt2;i++){const ang=i*(Math.PI*2/cnt2)+prog*2;ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.7,im.y+Math.sin(ang)*prog*growR*0.7-prog*6,lw+1,0,Math.PI*2);ctx.fill();}
+          break;
+        }
+        case "바람": {
+          ctx.shadowColor=c;ctx.shadowBlur=fx2.glow*0.5;
+          for(let r=0;r<fx2.rings;r++){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.globalAlpha=(1-prog)*(1-r*0.25);ctx.save();ctx.translate(im.x,im.y);ctx.rotate(prog*(6+r*2));ctx.beginPath();ctx.arc(0,0,baseR+prog*growR*(0.5+r*0.5),0,Math.PI*1.5);ctx.stroke();ctx.restore();}
+          break;
+        }
+        case "전기": {
+          ctx.shadowColor=c;ctx.shadowBlur=fx2.glow;
+          const bolts=im.grade==="불멸"?8:im.grade==="신화"?6:im.grade==="전설"?5:4;
+          ctx.strokeStyle=c;ctx.lineWidth=lw;
+          for(let i=0;i<bolts;i++){const ang=i*(Math.PI*2/bolts)+Math.random()*0.3;const r2=baseR+prog*growR;ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*r2*0.5+Math.random()*6-3,im.y+Math.sin(ang)*r2*0.5+Math.random()*6-3);ctx.lineTo(im.x+Math.cos(ang)*r2,im.y+Math.sin(ang)*r2);ctx.stroke();}
+          break;
+        }
+        case "얼음": {
+          const spokes=im.grade==="불멸"?12:im.grade==="신화"?8:6;
+          ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.shadowColor=c;ctx.shadowBlur=fx2.glow*0.5;
+          for(let i=0;i<spokes;i++){const ang=i*(Math.PI*2/spokes);ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR*0.9),im.y+Math.sin(ang)*(baseR+prog*growR*0.9));ctx.stroke();}
+          break;
+        }
+        case "빛": {
+          ctx.shadowColor="#fff";ctx.shadowBlur=fx2.glow*1.5;
+          ctx.fillStyle="#fff";ctx.globalAlpha=(1-prog)*0.6;ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*0.4,0,Math.PI*2);ctx.fill();
+          for(let r=0;r<fx2.rings;r++){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.globalAlpha=(1-prog)*(1-r*0.3);ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*(0.5+r*0.5),0,Math.PI*2);ctx.stroke();}
+          break;
+        }
+        case "어둠": {
+          const darks=im.grade==="불멸"?3:im.grade==="신화"?2:1;
+          for(let r=0;r<darks;r++){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.globalAlpha=(1-prog)*(1-r*0.3);ctx.beginPath();ctx.arc(im.x,im.y,baseR+(1-prog)*growR*(0.4+r*0.4),0,Math.PI*2);ctx.stroke();}
+          break;
+        }
+        case "독": {
+          const dots=im.grade==="불멸"?10:im.grade==="신화"?8:6;
+          ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=fx2.glow*0.5;
+          for(let i=0;i<dots;i++){const ang=i*(Math.PI*2/dots)+prog*2;ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*prog*growR*0.75,im.y+Math.sin(ang)*prog*growR*0.75,lw+0.5,0,Math.PI*2);ctx.fill();}
+          break;
+        }
+        case "나무": {
+          const branches=im.grade==="불멸"?8:im.grade==="신화"?6:5;
+          ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.shadowColor=c;ctx.shadowBlur=fx2.glow*0.5;
+          for(let i=0;i<branches;i++){const ang=i*(Math.PI*2/branches)-Math.PI/2;ctx.beginPath();ctx.moveTo(im.x,im.y);ctx.lineTo(im.x+Math.cos(ang)*(baseR+prog*growR),im.y+Math.sin(ang)*(baseR+prog*growR));ctx.stroke();}
+          break;
+        }
+        default: {
+          for(let r=0;r<fx2.rings;r++){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.globalAlpha=(1-prog)*(1-r*0.3);ctx.beginPath();ctx.arc(im.x,im.y,baseR+prog*growR*(0.5+r*0.5),0,Math.PI*2);ctx.stroke();}
+        }
+      }
+      // 전설 이상: 흰 링 추가
+      if(fx2.rings>=2){
+        ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.globalAlpha=(1-prog)*0.4;
+        ctx.beginPath();ctx.arc(im.x,im.y,(baseR+prog*growR)*1.2,0,Math.PI*2);ctx.stroke();
+      }
+      // 불멸: 골드 반짝이
+      if(im.grade==="불멸"){
+        ctx.fillStyle="#ffd700";ctx.globalAlpha=(1-prog)*0.8;
+        for(let i=0;i<6;i++){const ang=im.t*20+i*(Math.PI/3);ctx.beginPath();ctx.arc(im.x+Math.cos(ang)*growR*0.6*prog,im.y+Math.sin(ang)*growR*0.6*prog,2,0,Math.PI*2);ctx.fill();}
+      }
       ctx.restore();
     }
   },[selHero]);
