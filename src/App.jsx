@@ -199,6 +199,26 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v7.9",
+    date:"2025-06-22",
+    title:"유닛 클릭 오차 수정 & 조합 개선",
+    changes:[
+      "🐛 모바일 유닛 클릭 좌표 오차 수정 (objectFit:contain 제거)",
+      "🐛 조합 가능 칸 흰 배경 버그 수정",
+      "🔓 0클리어 기본 속성 확대: 언데드/뱀파이어/수인/오크/나무/어둠 추가",
+      "⚗️ 0클리어에서 고급 20종 + 영웅 5종 조합 가능",
+    ]
+  },
+  {
+    version:"v7.8",
+    date:"2025-06-22",
+    title:"속성 특성 개편",
+    changes:[
+      "✨ 빛 속성 → 방어무시로 변경 (방어력 완전 무시 데미지)",
+      "🪨 대지 속성 → 바위파편 추가 (느린 공격속도 + 주변 3마리 60% 파편 데미지)",
+    ]
+  },
+  {
     version:"v7.7",
     date:"2025-06-22",
     title:"HUD 개편 & 대기중 동작 수정",
@@ -952,9 +972,10 @@ const BASE=["불정령","물정령","대지정령","바람정령","번개정령"
 const RARE_BASE=["시간정령"];
 // 클리어 횟수별 개방 속성
 const UNLOCK_ELEMENTS=(cc)=>{
-  const els=["불정령","물정령","대지정령","바람정령","인간"]; // 기본
-  if(cc>=1)els.push("번개정령","빛정령","어둠정령","천사","악마");
-  if(cc>=5)els.push("나무정령","오크","언데드","뱀파이어","수인");
+  // 기본: 영웅까지 조합 가능하도록 핵심 속성 포함
+  const els=["불정령","물정령","대지정령","바람정령","인간",
+             "어둠정령","나무정령","오크","언데드","뱀파이어","수인"];
+  if(cc>=1)els.push("번개정령","빛정령","천사","악마");
   return els;
 };
 // 클리어 횟수별 개방 등급
@@ -1277,22 +1298,23 @@ const getRange=(el,grade)=>{
 // 속성별 특성 (elBase 기준)
 // ══════════════════════════════════════════
 const EL_TRAITS={
-  "불":   {type:"splash",   desc:"범위공격",    detail:"반경 1.5칸 스플래시",   splashR:1.5, dmgMul:0.6},
-  "운석": {type:"splash",   desc:"범위공격",    detail:"반경 2.0칸 스플래시",   splashR:2.0, dmgMul:0.5},
-  "전기": {type:"chain",    desc:"체인",        detail:"최대 3회 튕김 (60%감쇠)",chainCnt:3,  chainMul:0.6},
-  "바람": {type:"pierce",   desc:"관통",        detail:"일직선 적 전체 타격"},
-  "소리": {type:"pierce",   desc:"관통",        detail:"일직선 적 전체 타격"},
-  "독":   {type:"dot",      desc:"독데미지",    detail:"3초간 지속데미지",       dotDur:3,    dotMul:0.3},
-  "나무": {type:"root",     desc:"속박",        detail:"1.5초 이동정지",         rootDur:1.5},
-  "물":   {type:"debuff",   desc:"방어감소",    detail:"5초간 받는 데미지+30%",  debuffDur:5, debuffMul:1.3},
-  "어둠": {type:"stun",     desc:"스턴",        detail:"0.8초 완전 정지",        stunDur:0.8},
-  "빛":   {type:"heal",     desc:"치유",        detail:"주변 아군 HP%로 회복 (미구현→광역데미지)", splashR:2.0, dmgMul:0.4},
-  "얼음": {type:"slow",     desc:"슬로우",      detail:"속도 감소"},
-  "시간": {type:"slow",     desc:"광역슬로우",  detail:"범위 내 전체 슬로우"},
-  "홍수": {type:"slow",     desc:"광역슬로우",  detail:"넓은 범위 슬로우"},
-  "시간의눈보라":{type:"slow",desc:"슬로우",   detail:"속도 감소"},
-  "홍수해일":{type:"slow",  desc:"슬로우",      detail:"속도 감소"},
-  "화염운석":{type:"splash",desc:"범위공격",   detail:"반경 1.5칸 스플래시",    splashR:1.5,dmgMul:0.5},
+  "불":   {type:"splash",     desc:"범위공격",   detail:"반경 1.5칸 스플래시",    splashR:1.5, dmgMul:0.6},
+  "운석": {type:"splash",     desc:"범위공격",   detail:"반경 2.0칸 스플래시",    splashR:2.0, dmgMul:0.5},
+  "전기": {type:"chain",      desc:"체인",       detail:"최대 3회 튕김 (60%감쇠)", chainCnt:3,  chainMul:0.6},
+  "바람": {type:"pierce",     desc:"관통",       detail:"일직선 적 전체 타격"},
+  "소리": {type:"pierce",     desc:"관통",       detail:"일직선 적 전체 타격"},
+  "독":   {type:"dot",        desc:"독데미지",   detail:"3초간 지속데미지",        dotDur:3,    dotMul:0.3},
+  "나무": {type:"root",       desc:"속박",       detail:"1.5초 이동정지",          rootDur:1.5},
+  "물":   {type:"debuff",     desc:"방어감소",   detail:"5초간 받는 데미지+30%",   debuffDur:5, debuffMul:1.3},
+  "어둠": {type:"stun",       desc:"스턴",       detail:"0.8초 완전 정지",         stunDur:0.8},
+  "빛":   {type:"armorBreak", desc:"방어무시",   detail:"방어력 완전 무시 데미지"},
+  "땅":   {type:"rockSplash", desc:"바위파편",   detail:"주변 3마리 60% 추가 타격", splashCnt:3, splashMul:0.6},
+  "얼음": {type:"slow",       desc:"슬로우",     detail:"속도 감소"},
+  "시간": {type:"slow",       desc:"광역슬로우", detail:"범위 내 전체 슬로우"},
+  "홍수": {type:"slow",       desc:"광역슬로우", detail:"넓은 범위 슬로우"},
+  "시간의눈보라":{type:"slow",desc:"슬로우",    detail:"속도 감소"},
+  "홍수해일":{type:"slow",    desc:"슬로우",     detail:"속도 감소"},
+  "화염운석":{type:"splash",  desc:"범위공격",   detail:"반경 1.5칸 스플래시",     splashR:1.5, dmgMul:0.5},
 };
 const getElTrait=(el)=>{
   const base=EL_BASE[el]||el;
@@ -1330,7 +1352,9 @@ const mkH=(el,g="노말",gradeEnhLv={})=>{
   const isFlood=FLOOD_UNITS.has(el);
   const iceCfg=isIce?(ICE_SLOW[g]||ICE_SLOW["노말"]):isFlood?(FLOOD_SLOW[g]||FLOOD_SLOW["노말"]):null;
   const range=(isIce||isFlood)?iceCfg.range:getRange(el,g);  // rangeBonus는 게임루프에서 동적 적용
-  return{id:hid++,element:el,grade:g,atk:(isIce||isFlood)?0:(ATK_MAP[g]||10)+bonus.atk,spd:Math.min(1.0+bonus.spd,3.0),range,col:null,row:null,lastShot:0,enhLv:0,isIce:isIce||isFlood,iceCfg};
+  const isEarth=(EL_BASE[el]||el)==="땅";
+  const baseSpd2=isEarth?Math.min((1.0+bonus.spd)*0.55,1.5):Math.min(1.0+bonus.spd,3.0);
+  return{id:hid++,element:el,grade:g,atk:(isIce||isFlood)?0:(ATK_MAP[g]||10)+bonus.atk,spd:baseSpd2,range,col:null,row:null,lastShot:0,enhLv:0,isIce:isIce||isFlood,iceCfg};
 };
 
 // ── 웨이브 타입 정의
@@ -2683,6 +2707,27 @@ export default function App(){
             t2.debuff=true;t2.debuffMul=(trait.debuffMul||1.3);t2.debuffTimer=(trait.debuffDur||5)*(buff.statusMul||1);
           }
 
+        } else if(trait.type==="armorBreak"){
+          // 방어무시 - armor 임시 0으로 처리
+          if(t2&&p.dmg>0){
+            const origArmor=t2.armor||0;
+            t2.armor=0;
+            applyDmg(t2,p.dmg,goldPerKill,g);
+            t2.armor=origArmor;
+          }
+
+        } else if(trait.type==="rockSplash"){
+          // 바위파편 - 주 타겟 + 주변 최대 3마리 60%
+          if(t2&&p.dmg>0)applyDmg(t2,p.dmg,goldPerKill,g);
+          const nearby=g.enemies
+            .filter(e=>!e.remove&&e.hp>0&&e.id!==p.tid)
+            .sort((a,b)=>Math.sqrt((a.x-p.tx)**2+(a.y-p.ty)**2)-Math.sqrt((b.x-p.tx)**2+(b.y-p.ty)**2))
+            .slice(0,trait.splashCnt||3);
+          for(const nb of nearby){
+            const frag=Math.floor(p.dmg*(trait.splashMul||0.6));
+            if(frag>0){applyDmg(nb,frag,goldPerKill,g);g.impacts.push({x:nb.x+CS/2,y:nb.y+CS/2,t:0,maxT:0.2,color:"#a73",elBase:"땅",grade:p.grade});}
+          }
+
         } else {
           // 단일공격 (기본)
           if(t2&&p.dmg>0)applyDmg(t2,p.dmg,goldPerKill,g);
@@ -3681,8 +3726,8 @@ export default function App(){
                   "☠️ 어둠정령 → 스턴",
                   "🌿 나무정령 → 속박",
                   "💧 물정령 → 방어감소",
-                  "✨ 빛정령 → 장거리 단일 고데미지",
-                  "🪨 대지정령 → 근거리 고데미지",
+                  "✨ 빛정령 → 방어무시 (방어력 완전 무시)",
+                  "🪨 대지정령 → 느린 공격속도, 피격 시 주변 3마리 60% 파편 데미지",
                   "⏳ 시간정령 → 슬로우 (희귀/상점 전용)",
                   "종족(오크/언데드 등) → 조합 재료, 속성정령과 교차 조합 가능",
                 ]},
@@ -4075,6 +4120,12 @@ export default function App(){
           <span style={{background:"#1e293b",borderRadius:5,padding:"2px 5px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
             {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
           </span>
+          {countdown>0&&(
+            <button onClick={skipCountdown}
+              style={{background:"#166534",border:"1px solid #22c55e",color:"#4ade80",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:10,fontWeight:"bold",flexShrink:0}}>
+              ▶ 라운드스킵 {countdown}s
+            </button>
+          )}
           <span style={{flex:1}}/>
           {/* 배속 토글: 누를 때마다 1→2→3→4→1 */}
           <button onClick={()=>changeSpeed(speed>=4?1:speed+1)}
@@ -4084,32 +4135,25 @@ export default function App(){
           <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
           <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
-        {/* 4줄: 카운트다운 + 보스정보 + 스킵 */}
+        {/* 보스 라운드 정보 줄 */}
         {countdown>0&&(()=>{
           const nb=G.current?.round%10===0;
           const bossInfo=nb?makeBoss(G.current?.round||10):null;
+          if(!bossInfo)return(
+            <div style={{background:"#052e16",borderRadius:"0 0 10px 10px",padding:"3px 8px",border:"1px solid #166534",borderTop:"none",display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#4ade80"}}>
+              {G.current?.waveLabel&&<span style={{color:"#fcd34d",fontWeight:"bold"}}>{G.current.waveLabel}</span>}
+            </div>
+          );
           return(
-            <div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:bossInfo?"linear-gradient(135deg,#450a0a,#7f1d1d)":"linear-gradient(135deg,#052e16,#14532d)",padding:"6px 10px",border:`1px solid ${bossInfo?"#ef4444":"#166534"}`,borderTop:"none",borderRadius:bossInfo?0:"0 0 10px 10px",fontSize:14,color:bossInfo?"#fca5a5":"#4ade80",fontWeight:"bold"}}>
-                {G.current?.waveLabel&&<span style={{fontSize:12,marginRight:6,color:"#fcd34d"}}>{G.current.waveLabel}</span>}
-                <span>⏱ {countdown}초 후 시작</span>
-                <button onClick={skipCountdown}
-                  style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",marginLeft:8,flexShrink:0}}>
-                  ▶ 스킵
-                </button>
+            <div style={{background:"#1c0a0a",borderRadius:"0 0 10px 10px",padding:"5px 10px",border:"1px solid #7f1d1d",borderTop:"1px solid #1e293b",display:"flex",alignItems:"center",gap:8,fontSize:11}}>
+              <span style={{fontSize:16}}>{bossInfo.emoji}</span>
+              <span style={{color:"#fca5a5",fontWeight:"bold"}}>{bossInfo.name}</span>
+              <span style={{color:"#888",flex:1}}>{bossInfo.desc}</span>
+              <div style={{display:"flex",gap:3}}>
+                {(bossInfo.weak||[]).map(w=>(
+                  <span key={w} style={{background:"#451a03",border:"1px solid #f97316",borderRadius:4,padding:"1px 4px",color:"#fb923c",fontSize:10}}>{EE[w]||w}</span>
+                ))}
               </div>
-              {bossInfo&&(
-                <div style={{background:"#1c0a0a",borderRadius:"0 0 10px 10px",padding:"5px 10px",border:"1px solid #7f1d1d",borderTop:"none",display:"flex",alignItems:"center",gap:8,fontSize:11}}>
-                  <span style={{fontSize:16}}>{bossInfo.emoji}</span>
-                  <span style={{color:"#fca5a5",fontWeight:"bold"}}>{bossInfo.name}</span>
-                  <span style={{color:"#888",flex:1}}>{bossInfo.desc}</span>
-                  <div style={{display:"flex",gap:3}}>
-                    {(bossInfo.weak||[]).map(w=>(
-                      <span key={w} style={{background:"#451a03",border:"1px solid #f97316",borderRadius:4,padding:"1px 4px",color:"#fb923c",fontSize:10}}>{EE[w]||w}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           );
         })()}
@@ -4126,7 +4170,7 @@ export default function App(){
           onCanvas(fakeEv);
         }}
         style={{width:"100%",maxWidth:480,flex:1,minHeight:0,
-          borderRadius:8,objectFit:"contain",
+          borderRadius:8,
           border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
           boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
           cursor:drag||selHero?"crosshair":"default",touchAction:"none"}}/>
@@ -4341,7 +4385,7 @@ export default function App(){
                     const gc2=GC[r.g]||"#888";
                     return(
                       <button key={i} onClick={()=>{doCombine(selHero,r);setSelHero(null);}}
-                        style={{background:`${gc2}18`,border:`1.5px solid ${gc2}88`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left"}}>
+                        style={{background:"#0f172a",border:`1.5px solid ${gc2}`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left"}}>
                         <span style={{fontSize:26}}>{EE[r.r]||"⚗️"}</span>
                         <div style={{flex:1}}>
                           <div style={{color:"#eee",fontWeight:"bold",fontSize:14}}>{EN[r.r]||r.r}</div>
