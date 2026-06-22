@@ -207,6 +207,7 @@ const PATCH_NOTES=[
       "📏 등급별 유닛 이미지 크기 차등: 노말40/고급48/영웅60/전설72/신화88/불멸104px",
       "🔧 이미지 로딩 개선: jpeg 우선, 실패 시 png 자동 폴백",
       "📐 유닛 배치 칸 크기 56→64로 확대",
+      "🎨 배경 테마 2종 랜덤 적용: 돌바닥(던전)/풀밭(야외) 게임마다 랜덤 선택",
     ]
   },
   {
@@ -1224,6 +1225,7 @@ const initGame=(diff='hard')=>({
   waveType:'normal',waveLabel:'',
   impacts:[],
   mapKey:CURRENT_MAP||'B',
+  bgTheme:Math.random()<0.5?'stone':'grass',
   difficulty:diff,
   // 난이도별 유닛 공격력 배율: 쉬움 1.5배, 보통 1.25배, 어려움 1.0배
   diffMul:diff==='easy'?2.2:diff==='normal'?1.5:1.3,
@@ -1416,6 +1418,7 @@ export default function App(){
     ctx.fillStyle="#0d1117";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
 
     // ── 타일 배경
+    const bgTheme=g?.bgTheme||'stone';
     for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
       const isT=TS.has(`${col},${r}`),isC=col===CX&&r===CY;
       const isSpawn=DUAL_PATHS
@@ -1424,25 +1427,55 @@ export default function App(){
       const isGoal=DUAL_PATHS
         ?((col===DUAL_PATHS.goalA[0]&&r===DUAL_PATHS.goalA[1])||(col===DUAL_PATHS.goalB[0]&&r===DUAL_PATHS.goalB[1]))
         :(col===GOAL_TILE[0]&&r===GOAL_TILE[1]);
+      const tx=col*CS,ty=r*CS;
       if(isSpawn||isGoal){
-        // 스폰/골은 나중에 별도 처리
-        ctx.fillStyle="#111827";ctx.fillRect(col*CS,r*CS,CS,CS);
+        ctx.fillStyle="#111827";ctx.fillRect(tx,ty,CS,CS);
       } else if(isC){
         // 히든영웅 슬롯
-        ctx.fillStyle="#1e1b4b";ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="#3730a3";ctx.lineWidth=1;ctx.strokeRect(col*CS+0.5,r*CS+0.5,CS-1,CS-1);ctx.lineWidth=1;
+        ctx.fillStyle="#1e1b4b";ctx.fillRect(tx,ty,CS,CS);
+        ctx.strokeStyle="#3730a3";ctx.lineWidth=1;ctx.strokeRect(tx+0.5,ty+0.5,CS-1,CS-1);ctx.lineWidth=1;
       } else if(isT){
-        // 경로 타일 - 흙길 느낌
-        ctx.fillStyle="#1c2a1c";ctx.fillRect(col*CS,r*CS,CS,CS);
-        // 경로 텍스처 (어두운 점)
-        ctx.fillStyle="#162016";
-        ctx.fillRect(col*CS+4,r*CS+4,2,2);
-        ctx.fillRect(col*CS+CS-8,r*CS+CS-8,2,2);
-        ctx.strokeStyle="#0f1a0f";ctx.lineWidth=1;ctx.strokeRect(col*CS,r*CS,CS,CS);
+        // 경로 타일
+        if(bgTheme==='grass'){
+          // 풀밭 테마: 흙길
+          ctx.fillStyle="#5c3d1a";ctx.fillRect(tx,ty,CS,CS);
+          ctx.fillStyle="#4a2f10";
+          ctx.fillRect(tx+3,ty+3,4,3);ctx.fillRect(tx+CS-9,ty+CS-8,5,3);
+          ctx.fillRect(tx+CS/2-2,ty+CS/2-1,4,3);
+          ctx.strokeStyle="#3d2408";ctx.lineWidth=1;ctx.strokeRect(tx,ty,CS,CS);
+        } else {
+          // 돌바닥 테마: 어두운 돌길
+          ctx.fillStyle="#2a2a35";ctx.fillRect(tx,ty,CS,CS);
+          ctx.fillStyle="#222230";
+          ctx.fillRect(tx+2,ty+2,CS/2-3,CS/2-3);
+          ctx.fillRect(tx+CS/2+1,ty+CS/2+1,CS/2-3,CS/2-3);
+          ctx.strokeStyle="#1a1a22";ctx.lineWidth=1;ctx.strokeRect(tx,ty,CS,CS);
+          // 돌 균열
+          ctx.strokeStyle="#1e1e28";ctx.lineWidth=0.5;
+          ctx.beginPath();ctx.moveTo(tx+CS/2,ty+2);ctx.lineTo(tx+CS/2+3,ty+CS/2);ctx.stroke();
+        }
       } else {
-        // 일반 타일 - 약간 질감
-        ctx.fillStyle="#111827";ctx.fillRect(col*CS,r*CS,CS,CS);
-        ctx.strokeStyle="#0d1420";ctx.lineWidth=1;ctx.strokeRect(col*CS,r*CS,CS,CS);
+        // 일반 배치 타일
+        if(bgTheme==='grass'){
+          // 풀밭 테마
+          ctx.fillStyle="#1a3320";ctx.fillRect(tx,ty,CS,CS);
+          ctx.fillStyle="#152a1a";
+          // 풀 느낌 점점
+          ctx.fillRect(tx+5,ty+4,2,3);ctx.fillRect(tx+CS-9,ty+7,2,3);
+          ctx.fillRect(tx+CS/2,ty+CS-10,2,3);ctx.fillRect(tx+8,ty+CS-7,2,3);
+          ctx.strokeStyle="#112216";ctx.lineWidth=1;ctx.strokeRect(tx,ty,CS,CS);
+        } else {
+          // 돌바닥 테마
+          ctx.fillStyle="#16161f";ctx.fillRect(tx,ty,CS,CS);
+          // 돌 블록 패턴
+          const brickH=CS/2;
+          const offset=r%2===0?0:CS/2;
+          ctx.fillStyle="#111118";
+          ctx.fillRect(tx+offset,ty,CS/2-1,brickH-1);
+          ctx.fillRect(tx+offset-CS/2,ty+brickH,CS/2-1,brickH-1);
+          ctx.fillRect(tx+offset+CS/2,ty+brickH,CS/2-1,brickH-1);
+          ctx.strokeStyle="#0e0e15";ctx.lineWidth=1;ctx.strokeRect(tx,ty,CS,CS);
+        }
       }
     }
 
