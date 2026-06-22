@@ -1082,9 +1082,9 @@ const loadSprite=(el)=>{
   if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;
   const fname=ELEM_FILE[el]||el;
   const img=new Image();
-  // jpeg 우선, 없으면 png 폴백
-  img.src=`/${fname}.jpeg`;
-  img.onerror=()=>{img.src=`/${fname}.png`;};
+  // png 우선, 없으면 jpeg 폴백
+  img.src=`/${fname}.png`;
+  img.onerror=()=>{img.src=`/${fname}.jpeg`;};
   SPRITE_CACHE[el]=img;
 };
 Object.keys(ELEM_FILE).forEach(loadSprite);
