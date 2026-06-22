@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v7.7",
+    date:"2025-06-22",
+    title:"HUD 개편 & 대기중 동작 수정",
+    changes:[
+      "🎮 HUD 1줄: ❤️ 옆에 히든영웅 능력 + 라운드 표시",
+      "⏩ 배속 버튼 4개→토글 1개로 통합 (1x→2x→3x→4x→1x)",
+      "📦 뽑기/조합/변환/보관함 꺼내기 결과 → 대기중 탭으로",
+    ]
+  },
+  {
     version:"v7.6",
     date:"2025-06-22",
     title:"조합 옵션 등급 필터 수정",
@@ -3027,7 +3037,7 @@ export default function App(){
     nh.col=pos.col;nh.row=pos.row;
     g.heroes=g.heroes.filter(x=>x.id!==h1.id&&x.id!==h2.id);
     g.heroes.push(nh);
-    setSelHero(null);sync();safeDraw();triggerSummon(opt.r,opt.g);notifyResult("⚗️ 조합",opt.r,opt.g);
+    setSelHero(null);setHeroListTab("waiting");sync();safeDraw();triggerSummon(opt.r,opt.g);notifyResult("⚗️ 조합",opt.r,opt.g);
   };
 
   const GRADE_ENH_COST={노말:10,고급:15,영웅:25,전설:30,신화:40,불멸:50};
@@ -3091,8 +3101,8 @@ export default function App(){
     const g=G.current;if(!g.stacks||!g.stacks[el]||g.stacks[el]<=0)return;
     const newStacks={...g.stacks};newStacks[el]-=1;if(newStacks[el]===0)delete newStacks[el];
     g.stacks=newStacks;
-    const h=mkH(el,"노말",g.gradeEnhLv||{});const pos=autoPlace(g.heroes);
-    if(pos){h.col=pos[0];h.row=pos[1];}
+    const h=mkH(el,"노말",g.gradeEnhLv||{});
+    // 보관함에서 꺼내기 → 대기중
     g.heroes=[...g.heroes,h];sync();safeDraw();
   };
 
@@ -3100,7 +3110,7 @@ export default function App(){
     const g=G.current;if(!g.stacks||!g.stacks[el]||g.stacks[el]<=0)return;
     const cnt=g.stacks[el];const newStacks={...g.stacks};delete newStacks[el];g.stacks=newStacks;
     const newHeroes=[...g.heroes];
-    for(let i=0;i<cnt;i++){const h=mkH(el,"노말",g.gradeEnhLv||{});const pos=autoPlace(newHeroes);if(pos){h.col=pos[0];h.row=pos[1];}newHeroes.push(h);}
+    for(let i=0;i<cnt;i++){const h=mkH(el,"노말",g.gradeEnhLv||{});newHeroes.push(h);}
     g.heroes=newHeroes;sync();safeDraw();
   };
 
@@ -3121,8 +3131,8 @@ export default function App(){
     }
     const remaining=[...g.heroes];
     for(const part of recipe.parts){let removed=0;for(let i=remaining.length-1;i>=0&&removed<part.n;i--){if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}}}
-    const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});const pos=autoPlace(remaining);
-    if(pos){h.col=pos[0];h.row=pos[1];}
+    const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});
+    // 조합 결과는 대기중으로
     g.heroes=[...remaining,h];setModal(null);sync();safeDraw();triggerSummon(recipe.r,recipe.g);notifyResult("⚗️ 조합",recipe.r,recipe.g);
   };
 
@@ -4041,35 +4051,38 @@ export default function App(){
 
       {/* HUD */}
       <div style={{width:"100%",maxWidth:480,marginBottom:4}}>
-        {/* 1줄: 🏠 ❤️ 스킵 💰 🪙 👾 */}
-        <div style={{display:"flex",alignItems:"center",gap:4,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"5px 8px",border:"1px solid #1e293b",borderBottom:"none"}}>
-          <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontSize:11,flexShrink:0}}>🏠</button>
-          <span style={{background:"#450a0a",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
-          <span style={{flex:1}}/>
-          <span style={{background:"#1c1917",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
-          <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
-          <span style={{background:ui.total>=25?"#450a0a":ui.total>=15?"#1c1917":"#111827",borderRadius:6,padding:"2px 6px",fontSize:11,color:ui.total>=25?"#f87171":ui.total>=15?"#fcd34d":"#6b7280",fontWeight:ui.total>=15?"bold":"normal",flexShrink:0}}>👾{ui.total}/30</span>
-        </div>
-        {/* 2줄: 라운드 / 지형 / 조합표 */}
-        <div style={{display:"flex",alignItems:"center",gap:4,background:"#0a0f1a",padding:"4px 8px",border:"1px solid #1e293b",borderTop:"none",borderBottom:"none"}}>
-          <span style={{background:"#172554",borderRadius:6,padding:"2px 8px",fontSize:12,color:"#93c5fd",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{fontSize:10,color:"#374151"}}>/{G.current?.difficulty==='easy'?50:G.current?.difficulty==='normal'?70:100}</span></span>
-          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:"#60a5fa",flexShrink:0}}>{currentMapName}{rotMode?" 🔄":""}</span>
-          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 6px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
+        {/* 1줄: 🏠 ❤️ 히든영웅 R라운드 💰 🪙 👾 */}
+        {(()=>{
+          const g=G.current;
+          const hhId=g?.hiddenHero?.id;
+          const hhData=hhId?HH.find(h=>h.id===hhId):null;
+          return(
+            <div style={{display:"flex",alignItems:"center",gap:3,background:"#0f172a",borderRadius:"10px 10px 0 0",padding:"4px 6px",border:"1px solid #1e293b",borderBottom:"none"}}>
+              <button onClick={()=>setPhase('title')} style={{background:"transparent",border:"1px solid #1e293b",color:"#6b7280",borderRadius:6,padding:"2px 5px",cursor:"pointer",fontSize:10,flexShrink:0}}>🏠</button>
+              <span style={{background:"#450a0a",borderRadius:6,padding:"2px 5px",fontSize:11,color:"#fca5a5",fontWeight:"bold",flexShrink:0}}>❤️{ui.life}</span>
+              {hhData&&<span style={{background:`${hhData.color}22`,border:`1px solid ${hhData.color}55`,borderRadius:6,padding:"2px 5px",fontSize:10,color:hhData.color,fontWeight:"bold",flexShrink:0}}>{hhData.emoji}{hhData.desc}</span>}
+              <span style={{background:"#172554",borderRadius:6,padding:"2px 6px",fontSize:11,color:"#93c5fd",fontWeight:"bold",flexShrink:0}}>R{ui.round}<span style={{fontSize:9,color:"#374151"}}>/{g?.difficulty==='easy'?50:g?.difficulty==='normal'?70:100}</span></span>
+              <span style={{flex:1}}/>
+              <span style={{background:"#1c1917",borderRadius:6,padding:"2px 5px",fontSize:11,color:"#fcd34d",fontWeight:"bold",flexShrink:0}}>💰{ui.gold}G</span>
+              <span style={{background:"#1e1b4b",borderRadius:6,padding:"2px 5px",fontSize:11,color:"#a78bfa",fontWeight:"bold",flexShrink:0,cursor:"pointer"}} onClick={()=>setModal("shop")}>🪙{ui.coins}</span>
+              <span style={{background:ui.total>=25?"#450a0a":ui.total>=15?"#1c1917":"#111827",borderRadius:6,padding:"2px 5px",fontSize:11,color:ui.total>=25?"#f87171":ui.total>=15?"#fcd34d":"#6b7280",fontWeight:ui.total>=15?"bold":"normal",flexShrink:0}}>👾{ui.total}/30</span>
+            </div>
+          );
+        })()}
+        {/* 2줄: 맵/난이도 + 배속토글 + 대화 + 조합표 */}
+        <div style={{display:"flex",alignItems:"center",gap:3,background:"#0a0f1a",padding:"3px 6px",border:"1px solid #1e293b",borderTop:"none",borderBottom:countdown>0?"none":"none"}}>
+          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 5px",fontSize:10,color:"#60a5fa",flexShrink:0}}>{currentMapName}{rotMode?" 🔄":""}</span>
+          <span style={{background:"#1e293b",borderRadius:5,padding:"2px 5px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
             {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
           </span>
-          {rotMode&&<span style={{fontSize:10,color:"#c084fc",background:"#1e293b",borderRadius:5,padding:"2px 5px"}}>🔄회전</span>}
           <span style={{flex:1}}/>
-          <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 9px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0,marginRight:6}}>💬</button>
-          <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 10px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
-        </div>
-        {/* 3줄: 배속 */}
-        <div style={{display:"flex",gap:3,background:"#0a0f1a",borderRadius:countdown>0?0:"0 0 10px 10px",padding:"4px 6px",border:"1px solid #1e293b",borderTop:"none"}}>
-          {[1,2,3,4].map(s=>(
-            <button key={s} onClick={()=>changeSpeed(s)}
-              style={{flex:1,background:speed===s?"#1d4ed8":"transparent",border:`1px solid ${speed===s?"#3b82f6":"#1e293b"}`,color:speed===s?"#fff":"#475569",borderRadius:6,padding:"4px 0",cursor:"pointer",fontSize:13,fontWeight:"bold",transition:"all 0.15s"}}>
-              {s}x
-            </button>
-          ))}
+          {/* 배속 토글: 누를 때마다 1→2→3→4→1 */}
+          <button onClick={()=>changeSpeed(speed>=4?1:speed+1)}
+            style={{background:"#1d4ed8",border:"1px solid #3b82f6",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",flexShrink:0}}>
+            {speed}x
+          </button>
+          <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
+          <button onClick={()=>setShowCombo(true)} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 4줄: 카운트다운 + 보스정보 + 스킵 */}
         {countdown>0&&(()=>{
@@ -4103,12 +4116,20 @@ export default function App(){
       </div>
 
 
-      <canvas ref={cvs} width={COLS*CS} height={ROWS*CS} onClick={onCanvas}
+      <canvas ref={cvs} width={COLS*CS} height={ROWS*CS}
+        onClick={onCanvas}
+        onTouchEnd={(e)=>{
+          e.preventDefault();
+          const t=e.changedTouches[0];
+          const rect=cvs.current.getBoundingClientRect();
+          const fakeEv={clientX:t.clientX,clientY:t.clientY,currentTarget:e.currentTarget};
+          onCanvas(fakeEv);
+        }}
         style={{width:"100%",maxWidth:480,flex:1,minHeight:0,
           borderRadius:8,objectFit:"contain",
           border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
           boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
-          cursor:drag||selHero?"crosshair":"default"}}/>
+          cursor:drag||selHero?"crosshair":"default",touchAction:"none"}}/>
 
       {/* 게임오버 */}
       {ui.over&&(()=>{
@@ -4175,7 +4196,7 @@ export default function App(){
       {/* ── 하단 고정 바 ── */}
       <div style={{width:"100%",maxWidth:480,background:"#0a0f1a",borderTop:"1px solid #1e293b",flexShrink:0}}>
         {/* 액션 버튼 */}
-        <div style={{display:"flex",gap:3,padding:"4px 4px 2px 4px"}}>
+        <div style={{display:"flex",gap:3,padding:"3px 4px 1px 4px"}}>
           <button onClick={()=>{
             const g=G.current;if(g.gold<10){pushToast("💰 골드 부족! (10G)","#ef4444");return;}
             g.gold-=10;
@@ -4184,16 +4205,16 @@ export default function App(){
             const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}
             g.heroes.push(h);sync();safeDraw();
             notifyResult("🎲 뽑기",el,"노말");
-          }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:8,padding:"6px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
+          }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:8,padding:"4px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
             🎲 뽑기<br/><span style={{fontSize:9,opacity:0.8}}>10G</span>
           </button>
-          <button onClick={()=>{setRandomPicks([]);setTransformPicks([]);setMergeTab("storage");setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:8,padding:"6px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
+          <button onClick={()=>{setRandomPicks([]);setTransformPicks([]);setMergeTab("storage");setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:8,padding:"4px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
             📦<br/><span style={{fontSize:9,opacity:0.8}}>보관함</span>
           </button>
-          <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:8,padding:"6px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
+          <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:8,padding:"4px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
             ⬆️<br/><span style={{fontSize:9,opacity:0.8}}>강화</span>
           </button>
-          <button onClick={()=>setModal("shop")} style={{flex:1,background:"linear-gradient(135deg,#4c1d95,#3b0764)",border:"1px solid #a78bfa",color:"#fff",borderRadius:8,padding:"6px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
+          <button onClick={()=>setModal("shop")} style={{flex:1,background:"linear-gradient(135deg,#4c1d95,#3b0764)",border:"1px solid #a78bfa",color:"#fff",borderRadius:8,padding:"4px 2px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>
             🪙<br/><span style={{fontSize:9,opacity:0.8}}>{ui.coins}</span>
           </button>
         </div>
@@ -4203,7 +4224,7 @@ export default function App(){
           const waitingHeroes=heroes.filter(h=>h.col===null);
           const waitingCount=waitingHeroes.length;
           return(
-            <div style={{padding:"2px 4px 4px 4px"}}>
+            <div style={{padding:"2px 4px 3px 4px"}}>
               <div style={{display:"flex",gap:3,marginBottom:3}}>
                 <button onClick={()=>setHeroListTab("placed")}
                   style={{flex:1,background:heroListTab==="placed"?"#1e3a5f":"transparent",border:`1px solid ${heroListTab==="placed"?"#60a5fa":"#1e293b"}`,borderRadius:6,padding:"2px 4px",cursor:"pointer",color:heroListTab==="placed"?"#60a5fa":"#475569",fontSize:10,fontWeight:"bold"}}>
@@ -4234,9 +4255,9 @@ export default function App(){
                       onTouchMove={()=>{if(longPressTimer.current){clearTimeout(longPressTimer.current);longPressTimer.current=null;}}}
                       style={{background:isSel?`${gc}25`:isDrag?"#1e3a5f":heroListTab==="waiting"?"#0f1f0f":"#0f172a",
                         border:`2px solid ${isSel?gc:isDrag?"#60a5fa":heroListTab==="waiting"?"#4ade8055":gc+"44"}`,
-                        borderRadius:8,padding:"3px 5px",cursor:"pointer",minWidth:44,textAlign:"center",
+                        borderRadius:7,padding:"2px 4px",cursor:"pointer",minWidth:40,textAlign:"center",
                         boxShadow:isSel?`0 0 8px ${gc}55`:"none",userSelect:"none",WebkitUserSelect:"none"}}>
-                      <div style={{fontSize:16,lineHeight:1.1}}>{EE[h.element]||"?"}</div>
+                      <div style={{fontSize:15,lineHeight:1.1}}>{EE[h.element]||"?"}</div>
                       <div style={{fontSize:7,color:gc,fontWeight:"bold",lineHeight:1.1}}>{h.grade}</div>
                       {h.enhLv>0&&<div style={{fontSize:7,color:"#fcd34d",fontWeight:"bold"}}>+{h.enhLv}</div>}
                     </div>
