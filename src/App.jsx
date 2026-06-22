@@ -199,6 +199,16 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v6.3",
+    date:"2025-06-22",
+    title:"노말 유닛 16종 이미지 적용 & 등급별 크기 차등",
+    changes:[
+      "🖼️ 노말 유닛 16종 AI 이미지 적용 (불/물/대지/바람/번개/나무/빛/어둠/오크/언데드/뱀파이어/수인/인간/천사/악마/시간정령)",
+      "📏 등급별 유닛 이미지 크기 차등: 노말40/고급48/영웅60/전설72/신화88/불멸104px",
+      "🔧 이미지 로딩 개선: jpeg 우선, 실패 시 png 자동 폴백",
+    ]
+  },
+  {
     version:"v6.2",
     date:"2025-06-22",
     title:"회전 맵 X자 경로 겹침 버그 수정",
@@ -1060,8 +1070,22 @@ const FLOOD_UNITS=new Set(["홍수","대홍수","해일왕"]);
 const FLOOD_SLOW={"노말":{cd:6,dur:1.5,range:2.5,slow:0.6},"고급":{cd:5,dur:2,range:3.0,slow:0.55},"영웅":{cd:4,dur:2.5,range:3.5,slow:0.5},"전설":{cd:3,dur:3,range:4.0,slow:0.45},"신화":{cd:2,dur:4,range:4.5,slow:0.4},"불멸":{cd:1.5,dur:5,range:5.0,slow:0.35}};
 
 const SPRITE_CACHE={};
-const loadSprite=(el)=>{if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;const img=new Image();img.src=`/${el}.png`;SPRITE_CACHE[el]=img;};
-["불","물","땅","바람","전기","얼음","빛","어둠","소리","무속성","독","나무"].forEach(loadSprite);
+const ELEM_FILE={
+  "불정령":"fire","물정령":"water","대지정령":"earth","바람정령":"wind",
+  "번개정령":"lightning","나무정령":"nature","빛정령":"light","어둠정령":"dark",
+  "오크":"orc","언데드":"undead","뱀파이어":"vampire","수인":"beast",
+  "인간":"human","천사":"angel","악마":"demon","시간정령":"time",
+};
+const loadSprite=(el)=>{
+  if(SPRITE_CACHE[el]&&SPRITE_CACHE[el].complete)return;
+  const fname=ELEM_FILE[el]||el;
+  const img=new Image();
+  // jpeg 우선, 없으면 png 폴백
+  img.src=`/${fname}.jpeg`;
+  img.onerror=()=>{img.src=`/${fname}.png`;};
+  SPRITE_CACHE[el]=img;
+};
+Object.keys(ELEM_FILE).forEach(loadSprite);
 
 const mkH=(el,g="노말",gradeEnhLv={})=>{
   const lv=gradeEnhLv[g]||0;
@@ -1610,7 +1634,11 @@ export default function App(){
       // 변신정령: 현재 변신 속성으로 표시
       const dispEl=h._isMorph&&h._morphEl?h._morphEl:h.element;
       const spr=SPRITE_CACHE[dispEl]||SPRITE_CACHE[h.element];
-      if(spr&&spr.complete&&spr.naturalWidth>0){ctx.drawImage(spr,hx,hy,CS,CS);}
+      // 등급별 이미지 크기: 노말40/고급48/영웅60/전설72/신화88/불멸104
+      const IMG_SIZE={노말:40,고급:48,영웅:60,전설:72,신화:88,불멸:104};
+      const iSz=IMG_SIZE[h.grade]||40;
+      const iOff=(CS-iSz)/2;
+      if(spr&&spr.complete&&spr.naturalWidth>0){ctx.drawImage(spr,hx+iOff,hy+iOff,iSz,iSz);}
       else{
         ctx.fillStyle=gr+"22";ctx.beginPath();ctx.arc(hx+CS/2,hy+CS/2,CS/2-2,0,Math.PI*2);ctx.fill();
         ctx.font="20px serif";ctx.textAlign="center";ctx.textBaseline="middle";
