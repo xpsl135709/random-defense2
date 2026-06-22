@@ -1506,6 +1506,27 @@ function Btn({bg,children,onClick,disabled,style}){
 }
 
 export default function App(){
+  // 모든 화면 스크롤 완전 차단
+  useEffect(()=>{
+    const noScroll=(e)=>{
+      // 모달 내부 스크롤 허용 (overflowY:auto/scroll 요소)
+      let el=e.target;
+      while(el&&el!==document.body){
+        const s=window.getComputedStyle(el);
+        if(s.overflowY==='auto'||s.overflowY==='scroll'){return;}
+        el=el.parentElement;
+      }
+      e.preventDefault();
+    };
+    const style=document.createElement('style');
+    style.innerHTML='html,body{overflow:hidden!important;position:fixed!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;}';
+    document.head.appendChild(style);
+    document.addEventListener('touchmove',noScroll,{passive:false});
+    return()=>{
+      document.head.removeChild(style);
+      document.removeEventListener('touchmove',noScroll);
+    };
+  },[]);
   const cvs=useRef(null);
   const G=useRef(null);
   const raf=useRef(null);
