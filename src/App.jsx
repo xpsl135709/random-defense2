@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
-const CS=48,COLS=9,ROWS=14;
+const CS=56,COLS=9,ROWS=14;
 
 // ══════════════════════════════════════════
 // 맵 정의 (3종)
@@ -198,6 +198,17 @@ function buildMap(mapKey){
 // 패치노트
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
+  {
+    version:"v6.1",
+    date:"2025-06-22",
+    title:"배치 칸 확대 & 보관함/연금술 UI 분리",
+    changes:[
+      "📐 유닛 배치 칸 크기 48→56으로 확대 (게임 맵 전체 넓어짐)",
+      "📦 HUD '뭉치기' 버튼 → '보관함'으로 이름 변경",
+      "⚗️ 보관함 모달에 탭 구조 도입: '보관함' / '연금술' 탭 분리",
+      "🎲 연금술 탭: 무작위 조합(3개 → 등급 업) + 변환(2개 → 같은 등급 교체) 한 화면에",
+    ]
+  },
   {
     version:"v6.0",
     date:"2025-06-17",
@@ -1315,6 +1326,7 @@ export default function App(){
   const countdownValRef=useRef(0);
   const [randomPicks,setRandomPicks]=useState([]);
   const [transformPicks,setTransformPicks]=useState([]);
+  const [mergeTab,setMergeTab]=useState("storage"); // "storage" | "alchemy"
   const [stacks,setStacks]=useState({});
   const [summonAnim,setSummonAnim]=useState(null);
   const [toasts,setToasts]=useState([]);
@@ -3698,8 +3710,8 @@ export default function App(){
         }} style={{flex:1.3,background:"linear-gradient(135deg,#1d4ed8,#1e40af)",border:"1px solid #3b82f6",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(59,130,246,0.3)"}}>
           🎲 뽑기<br/><span style={{fontSize:10,opacity:0.8}}>10G</span>
         </button>
-        <button onClick={()=>{setRandomPicks([]);setTransformPicks([]);setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
-          ✨<br/><span style={{fontSize:10,opacity:0.8}}>뭉치기</span>
+        <button onClick={()=>{setRandomPicks([]);setTransformPicks([]);setMergeTab("storage");setModal("merge");}} style={{flex:1,background:"linear-gradient(135deg,#15803d,#166534)",border:"1px solid #22c55e",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(34,197,94,0.2)"}}>
+          📦<br/><span style={{fontSize:10,opacity:0.8}}>보관함</span>
         </button>
         <button onClick={()=>setModal("gradeEnh")} style={{flex:1,background:"linear-gradient(135deg,#92400e,#78350f)",border:"1px solid #f59e0b",color:"#fff",borderRadius:10,padding:"9px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold",boxShadow:"0 2px 8px rgba(245,158,11,0.2)"}}>
           ⬆️<br/><span style={{fontSize:10,opacity:0.8}}>강화</span>
@@ -3971,51 +3983,70 @@ export default function App(){
       {modal==="merge"&&(()=>{
         const sameGroups=getSameElementGroups();const stackEntries=Object.entries(stacks).filter(([,n])=>n>0);
         return(<Overlay>
-          <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];setTransformPicks([]);transformPicksRef.current=[];}} style={{width:"100%",marginBottom:10}}>닫기</Btn>
-          <div style={{fontSize:15,fontWeight:"bold",color:"#4f8",marginBottom:10,textAlign:"center"}}>✨ 뭉치기</div>
-          {stackEntries.length>0&&(<div style={{marginBottom:12}}>
-            <div style={{fontSize:12,color:"#4f8",marginBottom:6}}>📦 보관함</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {stackEntries.map(([el,cnt])=>(<div key={el} style={{background:hr(EC[el]||"#888",0.13),border:`1px solid ${EC[el]||"#888"}`,borderRadius:10,padding:"6px 10px",textAlign:"center",minWidth:68}}>
-                <div style={{fontSize:20}}>{EE[el]||"?"}</div><div style={{fontSize:11,color:"#eee"}}>{el}</div>
-                <div style={{fontSize:13,color:"#fd0",fontWeight:"bold",margin:"2px 0"}}>×{cnt}</div>
-                <div style={{display:"flex",gap:3,justifyContent:"center",flexWrap:"wrap"}}>
-                  <button onClick={()=>popStack(el)} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10}}>빼기</button>
-                  <button onClick={()=>popStackAll(el)} style={{background:"#0a3a7a",border:"1px solid #4af",color:"#4af",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10}}>모두빼기</button>
-                </div>
-                {cnt>=2&&<button onClick={()=>stackCombine(el)} style={{background:"#553300",border:"1px solid #fd0",color:"#fd0",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10,marginTop:3,width:"100%"}}>조합</button>}
-              </div>))}
+          {/* 헤더 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:15,fontWeight:"bold",color:mergeTab==="storage"?"#4f8":"#f59e0b"}}>
+              {mergeTab==="storage"?"📦 보관함":"⚗️ 연금술"}
             </div>
-          </div>)}
-          <div style={{marginBottom:12}}>
-            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🔗 배치된 유닛 보관함에 넣기</div>
-            {sameGroups.length===0&&<div style={{fontSize:11,color:"#555"}}>배치된 유닛 없음</div>}
-            <div style={{display:"flex",flexDirection:"column",gap:5}}>
-              {sameGroups.map(({el,arr})=>(<div key={el} style={{background:"#21262d",borderRadius:8,padding:"6px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:4}}>
-                <span style={{fontSize:13}}>{EE[el]||""} {el} <b style={{color:"#aaa"}}>×{arr.length}</b></span>
-                <div style={{display:"flex",gap:4}}>
-                  <button onClick={()=>doStack(el,1)} style={{background:"#4f844",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>넣기</button>
-                  <button onClick={()=>doStack(el,arr.length)} style={{background:"#1a3a1a",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>모두넣기</button>
-                </div>
-              </div>))}
-            </div>
+            <Btn bg="#444" onClick={()=>{setModal(null);setRandomPicks([]);randomPicksRef.current=[];setTransformPicks([]);transformPicksRef.current=[];}}>닫기</Btn>
           </div>
-          <div style={{borderTop:"1px solid #30363d",paddingTop:10}}>
-            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🎲 무작위 3개 조합 (등급 업그레이드) <span style={{color:"#fd0"}}>({randomPicks.length}/3)</span></div>
-            <div style={{fontSize:10,color:"#666",marginBottom:6}}>같은 등급 3개를 선택해 소모하면, 한 단계 위 등급의 유닛 중 하나가 완전 랜덤으로 나옵니다. (속성은 무관)</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
-              {heroes.map(h=>{const isPicked=randomPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleRandomPick(h.id)} style={{background:isPicked?"rgba(80,200,80,0.2)":"#21262d",border:`2px solid ${isPicked?"#4f8":GC[h.grade]||"#444"}`,borderRadius:9,padding:"8px 10px",cursor:"pointer",textAlign:"center",minWidth:62,minHeight:62}}><div style={{fontSize:24}}>{EE[h.element]||"?"}</div><div style={{fontSize:10,color:GC[h.grade]}}>{h.grade}</div></div>);})}
-            </div>
-            <Btn bg={randomPicks.length===3?"#1a5c2a":"#333"} onClick={doRandomMerge} disabled={randomPicks.length!==3} style={{width:"100%",marginBottom:8}}>🎲 조합하기 {randomPicks.length===3?"":"(3개 선택)"}</Btn>
+          {/* 탭 전환 버튼 */}
+          <div style={{display:"flex",gap:6,marginBottom:12}}>
+            <button onClick={()=>setMergeTab("storage")} style={{flex:1,background:mergeTab==="storage"?"#1a3a1a":"#21262d",border:`2px solid ${mergeTab==="storage"?"#4f8":"#333"}`,borderRadius:8,padding:"7px 4px",cursor:"pointer",color:mergeTab==="storage"?"#4f8":"#666",fontSize:12,fontWeight:"bold"}}>📦 보관함</button>
+            <button onClick={()=>setMergeTab("alchemy")} style={{flex:1,background:mergeTab==="alchemy"?"#2a1f00":"#21262d",border:`2px solid ${mergeTab==="alchemy"?"#f59e0b":"#333"}`,borderRadius:8,padding:"7px 4px",cursor:"pointer",color:mergeTab==="alchemy"?"#f59e0b":"#666",fontSize:12,fontWeight:"bold"}}>⚗️ 연금술</button>
           </div>
-          <div style={{borderTop:"1px solid #30363d",paddingTop:10,marginTop:10}}>
-            <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🔄 변환 (같은 등급 내 무작위 교체) <span style={{color:"#fd0"}}>({transformPicks.length}/2)</span></div>
-            <div style={{fontSize:10,color:"#666",marginBottom:6}}>같은 등급 2개를 선택해 소모하면, 같은 등급 내 다른 유닛 하나로 무작위 변환됩니다. (등급 변화 없음)</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
-              {heroes.map(h=>{const isPicked=transformPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleTransformPick(h.id)} style={{background:isPicked?"rgba(168,85,247,0.2)":"#21262d",border:`2px solid ${isPicked?"#a855f7":GC[h.grade]||"#444"}`,borderRadius:9,padding:"8px 10px",cursor:"pointer",textAlign:"center",minWidth:62,minHeight:62}}><div style={{fontSize:24}}>{EE[h.element]||"?"}</div><div style={{fontSize:10,color:GC[h.grade]}}>{h.grade}</div></div>);})}
+
+          {/* 보관함 탭 */}
+          {mergeTab==="storage"&&(<>
+            {stackEntries.length>0&&(<div style={{marginBottom:12}}>
+              <div style={{fontSize:12,color:"#4f8",marginBottom:6}}>📦 보관 중인 유닛</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {stackEntries.map(([el,cnt])=>(<div key={el} style={{background:hr(EC[el]||"#888",0.13),border:`1px solid ${EC[el]||"#888"}`,borderRadius:10,padding:"6px 10px",textAlign:"center",minWidth:68}}>
+                  <div style={{fontSize:20}}>{EE[el]||"?"}</div><div style={{fontSize:11,color:"#eee"}}>{el}</div>
+                  <div style={{fontSize:13,color:"#fd0",fontWeight:"bold",margin:"2px 0"}}>×{cnt}</div>
+                  <div style={{display:"flex",gap:3,justifyContent:"center",flexWrap:"wrap"}}>
+                    <button onClick={()=>popStack(el)} style={{background:"#1f6feb",border:"none",color:"#fff",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10}}>빼기</button>
+                    <button onClick={()=>popStackAll(el)} style={{background:"#0a3a7a",border:"1px solid #4af",color:"#4af",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10}}>모두빼기</button>
+                  </div>
+                  {cnt>=2&&<button onClick={()=>stackCombine(el)} style={{background:"#553300",border:"1px solid #fd0",color:"#fd0",borderRadius:5,padding:"2px 6px",cursor:"pointer",fontSize:10,marginTop:3,width:"100%"}}>조합</button>}
+                </div>))}
+              </div>
+            </div>)}
+            {stackEntries.length===0&&<div style={{fontSize:11,color:"#555",marginBottom:10}}>보관함이 비어있습니다.</div>}
+            <div style={{marginBottom:4}}>
+              <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>🔗 배치된 유닛 보관함에 넣기</div>
+              {sameGroups.length===0&&<div style={{fontSize:11,color:"#555"}}>배치된 유닛 없음</div>}
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {sameGroups.map(({el,arr})=>(<div key={el} style={{background:"#21262d",borderRadius:8,padding:"6px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:4}}>
+                  <span style={{fontSize:13}}>{EE[el]||""} {el} <b style={{color:"#aaa"}}>×{arr.length}</b></span>
+                  <div style={{display:"flex",gap:4}}>
+                    <button onClick={()=>doStack(el,1)} style={{background:"#4f844",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>넣기</button>
+                    <button onClick={()=>doStack(el,arr.length)} style={{background:"#1a3a1a",border:"1px solid #4f8",color:"#4f8",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold"}}>모두넣기</button>
+                  </div>
+                </div>))}
+              </div>
             </div>
-            <Btn bg={transformPicks.length===2?"#5b2a8a":"#333"} onClick={doTransform} disabled={transformPicks.length!==2} style={{width:"100%",marginBottom:8}}>🔄 변환하기 {transformPicks.length===2?"":"(2개 선택)"}</Btn>
-          </div>
+          </>)}
+
+          {/* 연금술 탭 */}
+          {mergeTab==="alchemy"&&(<>
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,color:"#f59e0b",marginBottom:4,fontWeight:"bold"}}>🎲 무작위 조합 <span style={{color:"#fd0",fontSize:11}}>({randomPicks.length}/3)</span></div>
+              <div style={{fontSize:10,color:"#666",marginBottom:8}}>같은 등급 3개를 선택 → 한 단계 위 등급 유닛 랜덤 획득 (속성 무관)</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
+                {heroes.map(h=>{const isPicked=randomPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleRandomPick(h.id)} style={{background:isPicked?"rgba(80,200,80,0.2)":"#21262d",border:`2px solid ${isPicked?"#4f8":GC[h.grade]||"#444"}`,borderRadius:9,padding:"8px 10px",cursor:"pointer",textAlign:"center",minWidth:62,minHeight:62}}><div style={{fontSize:24}}>{EE[h.element]||"?"}</div><div style={{fontSize:10,color:GC[h.grade]}}>{h.grade}</div></div>);})}
+              </div>
+              <Btn bg={randomPicks.length===3?"#1a5c2a":"#333"} onClick={doRandomMerge} disabled={randomPicks.length!==3} style={{width:"100%"}}>🎲 조합하기 {randomPicks.length===3?"":"(3개 선택)"}</Btn>
+            </div>
+            <div style={{borderTop:"1px solid #30363d",paddingTop:14}}>
+              <div style={{fontSize:12,color:"#a78bfa",marginBottom:4,fontWeight:"bold"}}>🔄 변환 <span style={{color:"#fd0",fontSize:11}}>({transformPicks.length}/2)</span></div>
+              <div style={{fontSize:10,color:"#666",marginBottom:8}}>같은 등급 2개를 선택 → 같은 등급 내 다른 유닛으로 무작위 교체 (등급 변화 없음)</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
+                {heroes.map(h=>{const isPicked=transformPicks.includes(h.id);return(<div key={h.id} onClick={()=>toggleTransformPick(h.id)} style={{background:isPicked?"rgba(168,85,247,0.2)":"#21262d",border:`2px solid ${isPicked?"#a855f7":GC[h.grade]||"#444"}`,borderRadius:9,padding:"8px 10px",cursor:"pointer",textAlign:"center",minWidth:62,minHeight:62}}><div style={{fontSize:24}}>{EE[h.element]||"?"}</div><div style={{fontSize:10,color:GC[h.grade]}}>{h.grade}</div></div>);})}
+              </div>
+              <Btn bg={transformPicks.length===2?"#5b2a8a":"#333"} onClick={doTransform} disabled={transformPicks.length!==2} style={{width:"100%"}}>🔄 변환하기 {transformPicks.length===2?"":"(2개 선택)"}</Btn>
+            </div>
+          </>)}
         </Overlay>);
       })()}
 
