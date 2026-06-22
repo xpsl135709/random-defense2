@@ -3764,7 +3764,7 @@ export default function App(){
             <input type="password" value={adminPwInput} onChange={e=>setAdminPwInput(e.target.value)}
               onKeyDown={e=>{
                 if(e.key==='Enter'){
-                  if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');}
+                  if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');setClearCount(999);try{localStorage.setItem('clearCount','999');}catch{}pushToast('👑 관리자 모드: 모든 기능 개방!','#f59e0b');}
                   else{alert("비밀번호가 틀렸습니다!");}
                 }
               }}
@@ -3773,7 +3773,7 @@ export default function App(){
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>{setShowAdminPwPrompt(false);setAdminPwInput('');}} style={{flex:1,background:"#21262d",border:"1px solid #30363d",color:"#aaa",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13}}>취소</button>
               <button onClick={()=>{
-                if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');}
+                if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');setClearCount(999);try{localStorage.setItem('clearCount','999');}catch{}pushToast('👑 관리자 모드: 모든 기능 개방!','#f59e0b');}
                 else{alert("비밀번호가 틀렸습니다!");}
               }} style={{flex:1,background:"#f59e0b",border:"none",color:"#000",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>확인</button>
             </div>
