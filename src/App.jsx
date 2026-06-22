@@ -199,6 +199,17 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v7.1",
+    date:"2025-06-22",
+    title:"보스 스턴 면역 & 스턴 중복 방지",
+    changes:[
+      "⚔️ 보스/중간보스 스턴 면역 추가 (악마 계열 유닛 다수 시 보스 영구 정지 방지)",
+      "🔧 스턴 중복 갱신 방지: 스턴 중인 적에게 추가 스턴 무시",
+      "🔧 스턴/속박 중 이동 처리 명시적 스킵으로 안정화",
+      "🔧 스턴/속박 해제 시 광폭화 상태 보존 (해제 후 보스 속도 정상화)",
+    ]
+  },
+  {
     version:"v7.0",
     date:"2025-06-22",
     title:"1라운드 게임 멈춤 버그 수정",
@@ -2299,12 +2310,12 @@ export default function App(){
       // 스턴 타이머
       if(e.stunTimer>0){
         e.stunTimer-=dt;
-        if(e.stunTimer<=0){e.stunTimer=0;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+        if(e.stunTimer<=0){e.stunTimer=0;if(e.baseSpeed){e.speed=e.isRaging?e.baseSpd*1.7:e.baseSpeed;e.baseSpeed=null;}}
       }
       // 속박 타이머
       if(e.rootTimer>0){
         e.rootTimer-=dt;
-        if(e.rootTimer<=0){e.rootTimer=0;e.rootImmune=3;if(e.baseSpeed){e.speed=e.baseSpeed;e.baseSpeed=null;}}
+        if(e.rootTimer<=0){e.rootTimer=0;e.rootImmune=3;if(e.baseSpeed){e.speed=e.isRaging?e.baseSpd*1.7:e.baseSpeed;e.baseSpeed=null;}}
       }
       // 속박 면역 타이머
       if(e.rootImmune>0){e.rootImmune-=dt;if(e.rootImmune<=0)e.rootImmune=0;}
@@ -2365,6 +2376,8 @@ export default function App(){
       if(!path||e.pathIdx>=path.length){
         e.remove=true;g.life=Math.max(0,g.life-e.dmg);if(g.life<=0)g.over=true;sync();continue;
       }
+      // 스턴/속박 중이면 이동 스킵
+      if((e.stunTimer||0)>0||(e.rootTimer||0)>0)continue;
       const[tc,tr]=path[e.pathIdx];
       const tx=tc*CS,ty=tr*CS,dx=tx-e.x,dy=ty-e.y;
       const spd=e.isDashing?e.speed*2.5:e.speed;
@@ -2564,11 +2577,13 @@ export default function App(){
           }
 
         } else if(trait.type==="stun"){
-          // 스턴 - 완전 정지 + 데미지 없음
+          // 스턴 - 완전 정지 + 데미지 없음 (보스/중간보스 면역, 스턴 중 갱신 안됨)
           if(t2){
             applyDmg(t2,p.dmg,goldPerKill,g);
-            if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
-            t2.speed=0;t2.stunTimer=(trait.stunDur||0.8)*(buff.statusMul||1);
+            if(!t2.isBoss&&!t2.isMid&&!(t2.stunTimer>0)){
+              if(!t2.baseSpeed)t2.baseSpeed=t2.speed;
+              t2.speed=0;t2.stunTimer=(trait.stunDur||0.8)*(buff.statusMul||1);
+            }
           }
 
         } else if(trait.type==="debuff"){
