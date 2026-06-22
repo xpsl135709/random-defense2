@@ -1934,9 +1934,9 @@ export default function App(){
       }
     }
 
-    // 선택된 유닛 사거리 표시
-    if(g&&selHero){
-      const sh=g.heroes.find(h=>h.id===selHero);
+    // 선택된 유닛 사거리 표시 (선택 중 + 재배치 중 모두)
+    if(g&&(selHero||drag)){
+      const sh=g.heroes.find(h=>h.id===(selHero||drag));
       if(sh&&sh.col!==null){
         const hx=sh.col*CS+CS/2,hy=sh.row*CS+CS/2;
         const rng=(sh.range||3.0)*CS;
