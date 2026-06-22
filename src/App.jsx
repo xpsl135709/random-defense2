@@ -4053,7 +4053,7 @@ export default function App(){
   // 게임 화면
   // ══════════════════════════════════════════
   return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",height:"100dvh",maxHeight:"100dvh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 4px 0 4px",overflow:"hidden",boxSizing:"border-box"}}>
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",height:"100dvh",maxHeight:"100dvh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"0",overflow:"hidden",boxSizing:"border-box"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
       {showChat&&(
@@ -4194,15 +4194,13 @@ export default function App(){
 
 
       <canvas ref={cvs} width={COLS*CS} height={ROWS*CS}
-        onClick={onCanvas}
         onTouchEnd={(e)=>{
           e.preventDefault();
           const t=e.changedTouches[0];
-          const rect=cvs.current.getBoundingClientRect();
-          const fakeEv={clientX:t.clientX,clientY:t.clientY,currentTarget:e.currentTarget};
-          onCanvas(fakeEv);
+          onCanvas({clientX:t.clientX,clientY:t.clientY});
         }}
-        style={{width:"100%",maxWidth:480,flex:1,minHeight:0,
+        onClick={onCanvas}
+        style={{width:"100%",flex:1,minHeight:0,display:"block",
           borderRadius:8,
           border:`2px solid ${drag?"rgba(251,191,36,0.6)":selHero?"rgba(99,102,241,0.5)":"#1e293b"}`,
           boxShadow:drag?"0 0 15px rgba(251,191,36,0.2)":selHero?"0 0 15px rgba(99,102,241,0.15)":"0 4px 20px rgba(0,0,0,0.5)",
