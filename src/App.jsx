@@ -199,6 +199,15 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v9.3",
+    date:"2025-06-23",
+    title:"영웅 조합 표시 버그 완전 수정",
+    changes:[
+      "🐛 배치된 유닛 클릭 시 조합 목록에 영웅/전설/신화/불멸 조합 안 뜨던 버그 최종 수정",
+      "🔧 getCombOptions 재료 체크 로직을 canRecipe와 동일하게 통일 (일관성 확보)",
+    ]
+  },
+  {
     version:"v9.2",
     date:"2025-06-23",
     title:"전설/신화/불멸 조합 표시 버그 수정",
@@ -3321,18 +3330,15 @@ export default function App(){
       return false;
     }).map(r=>({...r,isRecipe:false}));
 
-    // RECIPES: 영웅 이상 모두 포함
+    // RECIPES: 영웅 이상 모두 포함 (canRecipe와 동일 로직으로 통일)
     const recipeOpts=(!targetGrade||["영웅","전설","신화","불멸"].includes(targetGrade))?RECIPES.filter(recipe=>{
       if(recipe.g!==targetGrade)return false;
       if(!unlockedG.includes(recipe.g))return false;
       const usesMe=recipe.parts.some(p=>p.u===h.element);
       if(!usesMe)return false;
-      // 본인(클릭 유닛)은 이미 소모 확정 → 본인 재료 1개는 통과, 나머지만 myElsCntEx로 체크
-      let selfUsed=false;
-      return recipe.parts.every(p=>{
-        if(p.u===h.element&&!selfUsed){selfUsed=true;return true;}
-        return (myElsCntEx[p.u]||0)>=p.n;
-      });
+      const cnt={};
+      for(const hero of g.heroes)cnt[hero.element]=(cnt[hero.element]||0)+1;
+      return recipe.parts.every(p=>(cnt[p.u]||0)>=p.n);
     }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe})):[];
 
     return [...comboOpts,...recipeOpts];
