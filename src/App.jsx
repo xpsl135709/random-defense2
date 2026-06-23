@@ -1734,7 +1734,7 @@ export default function App(){
   const containsAdminKeyword=(s)=>ADMIN_KEYWORDS.some(k=>s.includes(k));
 
   // 닉네임 욕설/비속어 목록
-  const BANNED_WORDS=["씨발","시발","씨팔","시팔","씨빨","ㅅㅂ","ㅆㅂ","개새","개새끼","새끼","놈","년","미친","미친놈","미친년","병신","ㅂㅅ","지랄","ㅈㄹ","좆","보지","자지","쌍년","쌍놈","창녀","걸레","쓰레기","개같","개쓰레기","뒤져","뒤지","죽어","꺼져","닥쳐","fuck","shit","bitch","asshole","damn","bastard"];
+  const BANNED_WORDS=["씨발","시발","씨팔","시팔","씨빨","ㅅㅂ","ㅆㅂ","개새","개새끼","새끼","미친","미친놈","미친년","병신","ㅂㅅ","지랄","ㅈㄹ","좆","좃","보지","보지년","자지","자지새끼","쌍년","쌍놈","창녀","창년","걸레","쓰레기","개같","개쓰레기","뒤져","뒤지","죽어","꺼져","닥쳐","섹스","섹시","야동","야한","음란","성교","강간","성폭","항문","fuck","sex","porn","nude","naked","bitch","asshole","shit","bastard","cock","dick","pussy","ass"];
   // 자음/모음만 있는지 체크 (ㄱ-ㅎ: 자음, ㅏ-ㅣ: 모음)
   const hasIncompleteKorean=(s)=>/[ㄱ-ㅎㅏ-ㅣ]/.test(s);
   // 완성된 한글+영문+숫자+공백만 허용
@@ -1743,7 +1743,7 @@ export default function App(){
     if(!/^[가-힣a-zA-Z0-9 _-]+$/.test(s))return{ok:false,msg:"특수문자는 사용할 수 없어요"};
     if(s.length<1)return{ok:false,msg:"닉네임을 입력해주세요"};
     const lower=s.toLowerCase();
-    const banned=BANNED_WORDS.find(w=>lower.includes(w.toLowerCase()));
+    const banned=BANNED_WORDS.find(w=>lower===w.toLowerCase());
     if(banned)return{ok:false,msg:"사용할 수 없는 닉네임이에요"};
     return{ok:true,msg:""};
   };
