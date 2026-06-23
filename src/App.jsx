@@ -1712,6 +1712,28 @@ export default function App(){
       document.removeEventListener('touchmove',noScroll);
     };
   },[]);
+
+  // 홈화면 내렸다 복귀 시 게임 루프 재개
+  useEffect(()=>{
+    const onVisibility=()=>{
+      if(document.visibilityState==='visible'){
+        const g=G.current;
+        if(!g||g.over)return;
+        // RAF가 죽어있으면 재시작
+        if(!raf.current){
+          lt.current=performance.now();
+          raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
+        }
+        // 카운트다운 중이었으면 draw만 다시
+        if(safeDrawRef.current)safeDrawRef.current();
+      }else{
+        // 백그라운드 진입 시 RAF 중단 (배터리 절약)
+        if(raf.current){cancelAnimationFrame(raf.current);raf.current=null;}
+      }
+    };
+    document.addEventListener('visibilitychange',onVisibility);
+    return()=>document.removeEventListener('visibilitychange',onVisibility);
+  },[]);
   const cvs=useRef(null);
   const G=useRef(null);
   const raf=useRef(null);
@@ -1719,6 +1741,7 @@ export default function App(){
   const dragR=useRef(null);
   const spR=useRef(1);
   const gameLoopRef=useRef(null);
+  const safeDrawRef=useRef(null);
   const randomPicksRef=useRef([]);
   const transformPicksRef=useRef([]);
 
@@ -3049,6 +3072,7 @@ export default function App(){
   },[draw,sync,getBuff,setUi]);
 
   useEffect(()=>{gameLoopRef.current=gameLoop;},[gameLoop]);
+  useEffect(()=>{safeDrawRef.current=safeDraw;},[safeDraw]);
   // 닉네임 변경 시 해당 닉네임 clearCount 로드
   useEffect(()=>{
     if(!nickname||isAdminMode)return;
@@ -3688,7 +3712,7 @@ export default function App(){
     if(!trimmed)return;
     const debounceTimer=setTimeout(()=>{
       sendHeartbeat();
-    },800);
+    },1500);
     return ()=>clearTimeout(debounceTimer);
   },[nickname]);
 
@@ -4215,7 +4239,9 @@ export default function App(){
                   setTimeout(()=>{
                     setNickname(nick);
                     try{localStorage.setItem("nickname",nick);}catch{}
-                    const saved=loadClearCount(nick);setClearCount(saved);
+                    let saved=loadClearCount(nick);
+                    if(nick==="경찰"&&saved<5){saved=5;saveClearCount(nick,5);}
+                    setClearCount(saved);
                     setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
                     pushToast("환영합니다, "+nick+"!","#4ade80");
                   },1000);
@@ -4226,7 +4252,11 @@ export default function App(){
                     setTimeout(()=>{
                       setNickname(nick);
                       try{localStorage.setItem("nickname",nick);}catch{}
-                      loadClearCountFromServer(nick).then(cnt=>{setClearCount(cnt);});
+                      loadClearCountFromServer(nick).then(cnt=>{
+                        const final=nick==="경찰"?Math.max(cnt,5):cnt;
+                        if(nick==="경찰"&&final>cnt)saveClearCount(nick,final);
+                        setClearCount(final);
+                      });
                       setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
                       pushToast(nick+"님 접속!","#60a5fa");
                     },800);
