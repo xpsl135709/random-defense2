@@ -199,6 +199,28 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v8.2",
+    date:"2025-06-23",
+    title:"레이아웃 & 조합 개편 & 버그 수정",
+    changes:[
+      "📱 모든 화면 스크롤 차단 (100dvh 고정)",
+      "🐛 모바일 유닛 클릭 좌표 오차 수정",
+      "🎮 유닛 클릭 → 바텀시트 팝업 (재배치/강화/판매/조합)",
+      "🎮 배치중/대기중 버튼 → 모달로 표시, 유닛 카드 크게",
+      "🎮 HUD 1줄에 히든영웅 능력 + 라운드 통합",
+      "⏩ 배속 토글 1개로 통합 (1→2→3→4→1)",
+      "▶ 라운드스킵 버튼 난이도 옆으로 이동",
+      "✨ 빛 속성 → 방어무시 / 🪨 대지 → 바위파편",
+      "🐛 노말+노말→영웅 조합 10종 고급으로 조정",
+      "⚗️ 신규 영웅 조합 10종 추가 (성마전사/성광기사 등)",
+      "🔓 0클리어 기본 속성 확대 (오크/언데드/뱀파이어/수인/나무/어둠)",
+      "🔍 조합표 검색 기능 추가",
+      "🐛 조합표 탭 고정 버그 수정",
+      "🐛 사거리 표시 파란화면 버그 수정",
+      "🎯 재배치 모드에서 사거리 원 표시",
+    ]
+  },
+  {
     version:"v8.1",
     date:"2025-06-23",
     title:"유닛 목록 모달로 전환",
@@ -1681,6 +1703,7 @@ export default function App(){
   const [chatInput,setChatInput]=useState('');
   const [chatLoading,setChatLoading]=useState(false);
   const [comboFilter,setComboFilter]=useState("고급");
+  const [comboSearch,setComboSearch]=useState("");
   const [speed,setSpeedState]=useState(1);
   const [selHero,setSelHero]=useState(null);
   const [countdown,setCountdown]=useState(0);
@@ -1937,16 +1960,15 @@ export default function App(){
     // 선택된 유닛 사거리 표시 (선택 중 + 재배치 중 모두)
     if(g&&(selHero||drag)){
       const sh=g.heroes.find(h=>h.id===(selHero||drag));
-      if(sh&&sh.col!==null){
+      if(sh&&sh.col!==null&&sh.row!==null&&!isNaN(sh.col)&&!isNaN(sh.row)){
         const hx=sh.col*CS+CS/2,hy=sh.row*CS+CS/2;
-        const rng=(sh.range||3.0)*CS;
+        const rng=Math.min((sh.range||3.0)*CS, COLS*CS); // 최대 맵 크기로 제한
         const gc=GC[sh.grade]||"#aaa";
+        if(!gc||isNaN(rng))return; // 안전장치
         // 사거리 채우기
         ctx.save();
         ctx.beginPath();ctx.arc(hx,hy,rng,0,Math.PI*2);
-        ctx.fillStyle=gc.replace('#','rgba(').replace(/^rgba\(/,'rgba(')+'22)';
-        // 직접 rgba 계산
-        ctx.fillStyle=hr(gc,0.08);
+        ctx.fillStyle=hr(gc,0.06);
         ctx.fill();
         // 사거리 테두리
         ctx.strokeStyle=gc;ctx.lineWidth=1.5;ctx.globalAlpha=0.5;
@@ -4176,7 +4198,7 @@ export default function App(){
             {speed}x
           </button>
           <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
-          <button onClick={()=>{setComboFilter("고급");setShowCombo(true);}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
+          <button onClick={()=>{setComboFilter("고급");setComboSearch("");setShowCombo(true);}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 보스 라운드 정보 줄 */}
         {countdown>0&&(()=>{
@@ -4780,8 +4802,18 @@ export default function App(){
                 </button>
               ))}
             </div>
-            {/* 콘텐츠 스크롤 영역 - 조합표는 정보만 표시 */}
-            <div key={comboFilter} style={{overflowY:"auto",flex:1}}>
+            {/* 검색창 */}
+            <div style={{marginBottom:8,flexShrink:0}}>
+              <input
+                value={comboSearch}
+                onChange={e=>setComboSearch(e.target.value)}
+                placeholder="유닛 이름 검색..."
+                style={{width:"100%",background:"#0d1117",border:"1px solid #30363d",borderRadius:8,
+                  padding:"7px 10px",color:"#e2e8f0",fontSize:12,boxSizing:"border-box",outline:"none"}}
+              />
+            </div>
+            {/* 콘텐츠 스크롤 영역 */}
+            <div key={comboFilter+comboSearch} style={{overflowY:"auto",flex:1}}>
               {(()=>{
                 let rows=[];
                 const _isHigh=["전설","신화","불멸"].includes(comboFilter);
@@ -4811,8 +4843,17 @@ export default function App(){
                   const seen=new Set(comboRows.map(r=>r.key));
                   rows=[...comboRows,...recipeRows.filter(r=>!seen.has(r.key))];
                 }
+                // 검색어 필터
+                if(comboSearch.trim()){
+                  const q=comboSearch.trim().toLowerCase();
+                  rows=rows.filter(r=>{
+                    const resultMatch=(EN[r.result]||r.result).toLowerCase().includes(q);
+                    const partMatch=r.parts.some(p=>(EN[p.u]||p.u).toLowerCase().includes(q));
+                    return resultMatch||partMatch;
+                  });
+                }
                 if(rows.length===0){
-                  return <div style={{color:"#555",fontSize:12,textAlign:"center",marginTop:20}}>조합 없음</div>;
+                  return <div style={{color:"#555",fontSize:12,textAlign:"center",marginTop:20}}>{comboSearch?"검색 결과 없음":"조합 없음"}</div>;
                 }
                 return rows.map(row=>{
                   const gc=GC[row.grade]||"#aaa";
