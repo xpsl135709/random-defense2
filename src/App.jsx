@@ -4433,61 +4433,64 @@ export default function App(){
       )}
 
       {selHeroObj&&(
-        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:180,background:"rgba(0,0,0,0.6)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:180,background:"rgba(0,0,0,0.6)",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"center"}}
           onClick={()=>setSelHero(null)}>
           <div onClick={e=>e.stopPropagation()}
-            style={{width:"100%",maxWidth:480,background:"#0d1117",borderRadius:"16px 16px 0 0",border:`1px solid ${GC[selHeroObj.grade]||"#333"}66`,padding:"14px 14px 20px",boxShadow:`0 -4px 20px ${GC[selHeroObj.grade]||"#000"}33`}}>
-            {/* 유닛 정보 헤더 */}
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-              <div style={{width:52,height:52,borderRadius:12,background:`${GC[selHeroObj.grade]||"#aaa"}22`,border:`2px solid ${GC[selHeroObj.grade]||"#aaa"}66`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0}}>
-                {EE[selHeroObj.element]||"?"}
-              </div>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                  <span style={{color:GC[selHeroObj.grade],fontWeight:"bold",fontSize:15}}>{EN[selHeroObj.element]||selHeroObj.element}</span>
-                  <span style={{background:`${GC[selHeroObj.grade]||"#aaa"}22`,color:GC[selHeroObj.grade],fontSize:11,borderRadius:5,padding:"1px 6px",border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}44`}}>{selHeroObj.grade}</span>
-                  {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:12,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
+            style={{width:"100%",maxWidth:480,background:"#0d1117",borderRadius:"16px 16px 0 0",border:`1px solid ${GC[selHeroObj.grade]||"#333"}66`,boxShadow:`0 -4px 20px ${GC[selHeroObj.grade]||"#000"}33`,display:"flex",flexDirection:"column",maxHeight:"75vh"}}>
+            {/* 스크롤 가능 상단 영역 (유닛 정보 + 조합 목록) */}
+            <div style={{overflowY:"auto",padding:"14px 14px 8px",flex:1}}>
+              {/* 유닛 정보 헤더 */}
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <div style={{width:52,height:52,borderRadius:12,background:`${GC[selHeroObj.grade]||"#aaa"}22`,border:`2px solid ${GC[selHeroObj.grade]||"#aaa"}66`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0}}>
+                  {EE[selHeroObj.element]||"?"}
                 </div>
-                <div style={{display:"flex",gap:10,fontSize:11,color:"#64748b"}}>
-                  <span>⚔️ {Math.floor(selHeroObj.atk+(selHeroObj.enhLv||0)*5)}</span>
-                  <span>💨 {((selHeroObj.spd||1)*100).toFixed(0)}%</span>
-                  <span>🎯 {(selHeroObj.range||3.0).toFixed(1)}</span>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                    <span style={{color:GC[selHeroObj.grade],fontWeight:"bold",fontSize:15}}>{EN[selHeroObj.element]||selHeroObj.element}</span>
+                    <span style={{background:`${GC[selHeroObj.grade]||"#aaa"}22`,color:GC[selHeroObj.grade],fontSize:11,borderRadius:5,padding:"1px 6px",border:`1px solid ${GC[selHeroObj.grade]||"#aaa"}44`}}>{selHeroObj.grade}</span>
+                    {selHeroObj.enhLv>0&&<span style={{color:"#fcd34d",fontSize:12,fontWeight:"bold"}}>+{selHeroObj.enhLv}</span>}
+                  </div>
+                  <div style={{display:"flex",gap:10,fontSize:11,color:"#64748b"}}>
+                    <span>⚔️ {Math.floor(selHeroObj.atk+(selHeroObj.enhLv||0)*5)}</span>
+                    <span>💨 {((selHeroObj.spd||1)*100).toFixed(0)}%</span>
+                    <span>🎯 {(selHeroObj.range||3.0).toFixed(1)}</span>
+                  </div>
+                  {(()=>{const trait=getElTrait(elBase(selHeroObj.element));const tc={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac",armorBreak:"#e2e8f0",rockSplash:"#a16207"}[trait.type]||"#64748b";return <span style={{background:tc+"22",border:`1px solid ${tc}44`,borderRadius:4,padding:"1px 6px",fontSize:10,color:tc,marginTop:3,display:"inline-block"}}>{trait.desc} — {trait.detail}</span>})()}
                 </div>
-                {(()=>{const trait=getElTrait(elBase(selHeroObj.element));const tc={single:"#64748b",splash:"#f97316",chain:"#fbbf24",pierce:"#60a5fa",dot:"#4ade80",root:"#22c55e",stun:"#fcd34d",debuff:"#ef4444",slow:"#7dd3fc",heal:"#86efac"}[trait.type]||"#64748b";return <span style={{background:tc+"22",border:`1px solid ${tc}44`,borderRadius:4,padding:"1px 6px",fontSize:10,color:tc,marginTop:3,display:"inline-block"}}>{trait.desc} — {trait.detail}</span>})()}
+                <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:14,alignSelf:"flex-start"}}>✕</button>
               </div>
-              <button onClick={()=>setSelHero(null)} style={{background:"#1e293b",border:"1px solid #334155",color:"#64748b",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:14,alignSelf:"flex-start"}}>✕</button>
+              {/* 조합 가능 목록 */}
+              {combOpts.length>0&&(
+                <div>
+                  <div style={{fontSize:12,color:"#a78bfa",fontWeight:"bold",marginBottom:8}}>⚗️ 조합 가능</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {combOpts.map((r,i)=>{
+                      const gc2=GC[r.g]||"#888";
+                      return(
+                        <button key={i} onClick={()=>{doCombine(selHero,r);setSelHero(null);}}
+                          style={{background:"#0f172a",border:`1.5px solid ${gc2}`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left"}}>
+                          <span style={{fontSize:26}}>{EE[r.r]||"⚗️"}</span>
+                          <div style={{flex:1}}>
+                            <div style={{color:"#eee",fontWeight:"bold",fontSize:14}}>{EN[r.r]||r.r}</div>
+                            <div style={{color:gc2,fontSize:11,marginTop:1}}>{r.g} 등급</div>
+                          </div>
+                          <span style={{background:gc2,color:"#000",borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:"bold"}}>조합</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-            {/* 액션 버튼 */}
-            <div style={{display:"flex",gap:6,marginBottom:combOpts.length>0?12:0}}>
-              <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:10,padding:"10px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>📍 재배치</button>
+            {/* 항상 하단 고정: 재배치/강화/판매 */}
+            <div style={{display:"flex",gap:6,padding:"10px 14px 20px",borderTop:"1px solid #1e293b",flexShrink:0}}>
+              <button onClick={()=>{setSelHero(null);setDragBoth(selHeroObj.id);}} style={{flex:1,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:10,padding:"12px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>📍 재배치</button>
               {canEnhance(selHeroObj)
-                ?<button onClick={()=>{doEnhance(selHeroObj.id);setSelHero(null);}} style={{flex:1.3,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:10,padding:"10px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>⬆️ 강화 {enhCost(selHeroObj)}G<br/><span style={{fontSize:9,opacity:0.7}}>({selHeroObj.enhLv||0}/{maxEnh(selHeroObj)}강)</span></button>
-                :<div style={{flex:1.3,background:"#1e293b",border:"1px solid #334155",color:"#475569",borderRadius:10,padding:"10px 4px",fontSize:11,textAlign:"center"}}>{ENHANCE_GRADES.includes(selHeroObj.grade)?"최대강화":"강화불가"}</div>
+                ?<button onClick={()=>{doEnhance(selHeroObj.id);setSelHero(null);}} style={{flex:1.3,background:"#78350f",border:"1px solid #f59e0b",color:"#fcd34d",borderRadius:10,padding:"12px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>⬆️ 강화 {enhCost(selHeroObj)}G<br/><span style={{fontSize:9,opacity:0.7}}>({selHeroObj.enhLv||0}/{maxEnh(selHeroObj)}강)</span></button>
+                :<div style={{flex:1.3,background:"#1e293b",border:"1px solid #334155",color:"#475569",borderRadius:10,padding:"12px 4px",fontSize:11,textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}>{ENHANCE_GRADES.includes(selHeroObj.grade)?"최대강화":"강화불가"}</div>
               }
-              <button onClick={()=>{doSell(selHeroObj.id);setSelHero(null);}} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:10,padding:"10px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>💰판매<br/><span style={{fontSize:10}}>+{SELL_PRICE[selHeroObj.grade]||5}G</span></button>
+              <button onClick={()=>{doSell(selHeroObj.id);setSelHero(null);}} style={{flex:1,background:"#450a0a",border:"1px solid #ef4444",color:"#fca5a5",borderRadius:10,padding:"12px 4px",cursor:"pointer",fontSize:12,fontWeight:"bold"}}>💰판매<br/><span style={{fontSize:10}}>+{SELL_PRICE[selHeroObj.grade]||5}G</span></button>
             </div>
-            {/* 조합 가능 목록 */}
-            {combOpts.length>0&&(
-              <div>
-                <div style={{fontSize:12,color:"#a78bfa",fontWeight:"bold",marginBottom:8}}>⚗️ 조합 가능</div>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {combOpts.map((r,i)=>{
-                    const gc2=GC[r.g]||"#888";
-                    return(
-                      <button key={i} onClick={()=>{doCombine(selHero,r);setSelHero(null);}}
-                        style={{background:"#0f172a",border:`1.5px solid ${gc2}`,borderRadius:10,padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left"}}>
-                        <span style={{fontSize:26}}>{EE[r.r]||"⚗️"}</span>
-                        <div style={{flex:1}}>
-                          <div style={{color:"#eee",fontWeight:"bold",fontSize:14}}>{EN[r.r]||r.r}</div>
-                          <div style={{color:gc2,fontSize:11,marginTop:1}}>{r.g} 등급</div>
-                        </div>
-                        <span style={{background:gc2,color:"#000",borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:"bold"}}>조합</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
