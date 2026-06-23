@@ -1900,7 +1900,8 @@ export default function App(){
     // ctx 상태 완전 초기화 (이전 프레임 오염 방지)
     ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
     ctx.shadowBlur=0;ctx.shadowColor="transparent";
-    ctx.setLineDash([]);ctx.lineWidth=1;
+    ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle="#060d1a";
+    ctx.fillRect(0,0,c.width,c.height);
     ctx.clearRect(0,0,COLS*CS,ROWS*CS);
     ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
 
@@ -3149,8 +3150,8 @@ export default function App(){
     // 난이도 최종 반영
     g.difficulty=difficulty;
     g.diffMul=difficulty==='easy'?2.2:difficulty==='normal'?1.5:1.3;
-    // 수호자: 시작 라이프 +10
-    if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;}
+    // 수호자: 시작 라이프 추가
+    if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;sync();}
     // 미배치 유닛 자동 배치
     for(const hero of g.heroes){
       if(hero.col===null){
@@ -3940,7 +3941,7 @@ export default function App(){
                   "⏳ 시간정령 → 슬로우 (희귀/상점 전용)",
                   "종족(오크/언데드 등) → 조합 재료, 속성정령과 교차 조합 가능",
                 ]},
-                {icon:"👑",title:"히든영웅",color:"#f97316",items:["게임 시작 전 히든영웅 1명 선택","전체 유닛에 버프 적용 (공격력/속도/사거리 등)","상인: 골드+30% / 저격수: 사거리+2","수호자: 라이프+10 / 번개신: 연쇄공격","시간술사: 슬로우 강화 / 연금술사: 균형형","도박사: 5라운드마다 랜덤 보너스"]},
+                {icon:"👑",title:"히든영웅",color:"#f97316",items:["게임 시작 전 히든영웅 1명 선택","전체 유닛에 버프 적용 (공격력/속도/사거리 등)","상인: 골드+30% / 저격수: 사거리+2","수호자: 라이프+15 / 번개신: 연쇄공격","시간술사: 슬로우 강화 / 연금술사: 균형형","도박사: 5라운드마다 랜덤 보너스"]},
                 {icon:"⬆️",title:"강화 시스템",color:"#4ade80",items:["개별강화: 전설 이상만 가능 (최대 10강)","황금정령은 개별강화 20강 (강화마다 +1골드)","등급강화: 전 유닛 일괄 능력치 상승 (최대 20강)","코인 상점에서 유닛 직접 구매 가능","보관함: 노말 유닛 보관 후 연금술 조합에 활용"]},
                 {icon:"💀",title:"보스 & 웨이브",color:"#f44",items:["5라운드마다 중간보스, 10라운드마다 보스 등장","보스는 약점 속성에만 정상 데미지 (나머지 10%)","10라운드 보스 처치 시 무속성 유닛 지급","20라운드마다 보스 처치 시 무속성 추가 지급","무리/속도/장갑/힐러 등 다양한 웨이브 등장","보스 HP 40% 이하 시 광폭화"]},
                 {icon:"🏆",title:"클리어 개방 기준",color:"#fcd34d",items:[
