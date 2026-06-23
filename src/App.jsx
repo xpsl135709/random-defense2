@@ -4987,9 +4987,9 @@ export default function App(){
         const unlockedGrades=G.current?.unlockedGrades||["노말","고급","영웅"];
         const tabs=allTabs.filter(t=>unlockedGrades.includes(t));
         const isHighGrade=["전설","신화","불멸"].includes(comboFilter);
-        const curRecipes=isHighGrade?RECIPES.filter(r=>r.g===comboFilter):[];
-        // fCombo 대신 직접 계산 (state 변경 시 최신값 보장)
-        const curCombos=!isHighGrade?COMBO.filter(r=>r.g===comboFilter):[];
+        // 모든 등급: COMBO + RECIPES 둘 다 참조
+        const curRecipes=RECIPES.filter(r=>r.g===comboFilter);
+        const curCombos=COMBO.filter(r=>r.g===comboFilter);
         return(
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200}} onClick={()=>setShowCombo(false)}>
           <div style={{background:"#161b22",borderRadius:14,padding:16,border:"1px solid #30363d",width:"92%",maxWidth:360,maxHeight:"88vh",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
@@ -5026,33 +5026,23 @@ export default function App(){
             <div key={comboFilter+comboSearch} style={{overflowY:"auto",flex:1}}>
               {(()=>{
                 let rows=[];
-                const _isHigh=["전설","신화","불멸"].includes(comboFilter);
-                if(!_isHigh){
-                  rows=COMBO.filter(r=>r.g===comboFilter).map(r=>({
-                    key:r.r,
-                    parts:[{u:r.a,n:1},{u:r.b,n:1}],
-                    result:r.r,
-                    grade:r.g,
-                    can:(r.a===r.b?(unitCnt[r.a]||0)>=2:(myEls.has(r.a)&&myEls.has(r.b))),
-                  }));
-                } else {
-                  const comboRows=COMBO.filter(r=>r.g===comboFilter).map(r=>({
-                    key:r.r,
-                    parts:[{u:r.a,n:1},{u:r.b,n:1}],
-                    result:r.r,
-                    grade:r.g,
-                    can:(unitCnt[r.a]||0)>=1&&(unitCnt[r.b]||0)>=1,
-                  }));
-                  const recipeRows=RECIPES.filter(r=>r.g===comboFilter).map(recipe=>({
-                    key:recipe.r,
-                    parts:recipe.parts,
-                    result:recipe.r,
-                    grade:recipe.g,
-                    can:canRecipe(recipe),
-                  }));
-                  const seen=new Set(comboRows.map(r=>r.key));
-                  rows=[...comboRows,...recipeRows.filter(r=>!seen.has(r.key))];
-                }
+                // COMBO + RECIPES 통합 (고급~불멸 모두)
+                const comboRows=COMBO.filter(r=>r.g===comboFilter).map(r=>({
+                  key:r.r,
+                  parts:[{u:r.a,n:1},{u:r.b,n:1}],
+                  result:r.r,
+                  grade:r.g,
+                  can:(r.a===r.b?(unitCnt[r.a]||0)>=2:(myEls.has(r.a)&&myEls.has(r.b))),
+                }));
+                const recipeRows=RECIPES.filter(r=>r.g===comboFilter).map(recipe=>({
+                  key:recipe.r,
+                  parts:recipe.parts,
+                  result:recipe.r,
+                  grade:recipe.g,
+                  can:canRecipe(recipe),
+                }));
+                const seen=new Set(comboRows.map(r=>r.key));
+                rows=[...comboRows,...recipeRows.filter(r=>!seen.has(r.key))];
                 // 검색어 필터
                 if(comboSearch.trim()){
                   const q=comboSearch.trim().toLowerCase();
