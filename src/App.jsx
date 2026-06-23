@@ -199,6 +199,62 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v8.7",
+    date:"2025-06-23",
+    title:"닉네임 필터 강화",
+    changes:[
+      "🚫 자음/모음만 입력 불가 (ㄱ, ㅏ 등)",
+      "🚫 특수문자 입력 불가 (한글/영문/숫자만 허용)",
+      "🚫 욕설/비속어 닉네임 차단",
+      "🚫 닉네임 최소 2자 이상",
+      "⚡ 실시간 닉네임 유효성 피드백",
+    ]
+  },
+  {
+    version:"v8.6",
+    date:"2025-06-23",
+    title:"전 등급 3재료 조합 & 난이도 차별화",
+    changes:[
+      "⚗️ 영웅(15종): 고급+고급+노말(쉬움) / 고급+고급+고급(보통/어려움)",
+      "⚗️ 전설(18종): 영웅+고급+노말(쉬움) / 영웅+영웅+고급(보통) / 영웅+영웅+영웅(어려움)",
+      "⚗️ 신화(10종): 전설+영웅+영웅(쉬움) / 전설+전설+영웅(보통) / 전설+전설+전설(어려움)",
+      "⚗️ 불멸(9종): 신화+전설+전설(쉬움) / 신화+신화+전설(보통) / 신화+신화+신화(어려움)",
+      "🔧 영웅 이상 모두 COMBO→RECIPES 3재료 방식으로 통합",
+    ]
+  },
+  {
+    version:"v8.5",
+    date:"2025-06-23",
+    title:"조합 재료 등급 다양화",
+    changes:[
+      "⚗️ 전설: 영웅+고급+노말 혼합 (ex: 부패현자+해골투사+언데드)",
+      "⚗️ 신화: 전설+영웅+고급 혼합 (ex: 인페르노군주+홍련학살자+잿불파쇄자)",
+      "⚗️ 불멸: 신화+전설+영웅 혼합 (ex: 종말의화신+지옥파쇄자+인페르노군주)",
+    ]
+  },
+  {
+    version:"v8.4",
+    date:"2025-06-23",
+    title:"조합 체계 3재료 전면 개편",
+    changes:[
+      "⚗️ 전설(18종): 영웅+영웅+고급 3재료 조합으로 변경",
+      "⚗️ 신화(10종): 전설+전설+영웅 3재료 조합으로 변경",
+      "⚗️ 불멸(9종): 신화+신화+전설 3재료 조합으로 변경",
+      "🔧 전설/신화/불멸 모두 COMBO→RECIPES 방식으로 통합",
+      "👑 황금정령: 금단의 현자+마검군주+무속성으로 변경",
+    ]
+  },
+  {
+    version:"v8.3",
+    date:"2025-06-23",
+    title:"닉네임 비밀번호 시스템 & 조합표 수정",
+    changes:[
+      "🔐 닉네임별 비밀번호 시스템 추가 (최초 접속 시 등록, 이후 로그인)",
+      "🐛 전설 조합 재료 수정 (노말+노말→전설 4종 → 고급+고급으로 교체)",
+      "🎮 유닛 팝업 재배치/강화/판매 버튼 항상 하단 고정",
+    ]
+  },
+  {
     version:"v8.2",
     date:"2025-06-23",
     title:"레이아웃 & 조합 개편 & 버그 수정",
@@ -1078,71 +1134,77 @@ const COMBO=[
   {a:"빛정령",b:"천사",r:"성익천사",g:"고급"},
   {a:"어둠정령",b:"악마",r:"심연악마",g:"고급"},
   {a:"어둠정령",b:"천사",r:"타락성익",g:"고급"},
-  {a:"잿불파쇄자",b:"혈전사",r:"홍련학살자",g:"영웅"},
-  {a:"심해파수자",b:"혈술사",r:"해일군주",g:"영웅"},
-  {a:"질풍송곳니",b:"뇌광야수",r:"폭뢰야수",g:"영웅"},
-  {a:"고목망령",b:"사령견습",r:"부패현자",g:"영웅"},
-  {a:"대지분쇄자",b:"야수전사",r:"강철야수",g:"영웅"},
-  {a:"성전사",b:"마전사",r:"성마전사",g:"영웅"},
-  {a:"혈천사",b:"사혈귀",r:"혈월성기사",g:"영웅"},
-  {a:"성기사",b:"속죄망령",r:"성광기사",g:"영웅"},
-  {a:"타락성익",b:"심연악마",r:"암흑기사",g:"영웅"},
-  {a:"성익천사",b:"성수",r:"신수호자",g:"영웅"},
-  {a:"성전사",b:"성기사",r:"성전기사",g:"영웅"},
-  {a:"마전사",b:"심연악마",r:"지옥기사",g:"영웅"},
-  {a:"혈천사",b:"타락성익",r:"타락혈기사",g:"영웅"},
-  {a:"속죄망령",b:"성수",r:"정화자",g:"영웅"},
-  {a:"사혈귀",b:"심연악마",r:"흡혈마장",g:"영웅"},
   // 신규 영웅: 고급+고급 조합
-  {a:"성전사",b:"마전사",r:"성마전사",g:"영웅"},
-  {a:"혈천사",b:"사혈귀",r:"혈월성기사",g:"영웅"},
-  {a:"성기사",b:"속죄망령",r:"성광기사",g:"영웅"},
-  {a:"타락성익",b:"심연악마",r:"암흑기사",g:"영웅"},
-  {a:"성익천사",b:"성수",r:"신수호자",g:"영웅"},
-  {a:"성전사",b:"성기사",r:"성전기사",g:"영웅"},
-  {a:"마전사",b:"심연악마",r:"지옥기사",g:"영웅"},
-  {a:"혈천사",b:"타락성익",r:"타락혈기사",g:"영웅"},
-  {a:"속죄망령",b:"성수",r:"정화자",g:"영웅"},
-  {a:"사혈귀",b:"심연악마",r:"흡혈마장",g:"영웅"},
-  {a:"언데드",b:"악마",r:"리치데몬",g:"전설"},
-  {a:"뱀파이어",b:"악마",r:"혈마",g:"전설"},
-  {a:"수인",b:"악마",r:"마수",g:"전설"},
-  {a:"천사",b:"악마",r:"타천사",g:"전설"},
-  {a:"혈천사",b:"타천사",r:"월식천사",g:"전설"},
-  {a:"홍련학살자",b:"마전사",r:"인페르노 군주",g:"전설"},
-  {a:"해일군주",b:"혈술사",r:"아비스 드라큘",g:"전설"},
-  {a:"폭뢰야수",b:"마수",r:"천뢰 펜리르",g:"전설"},
-  {a:"성익천사",b:"성기사",r:"세라핌",g:"전설"},
-  {a:"타락성익",b:"타천사",r:"폴른 세라핌",g:"전설"},
-  {a:"부패현자",b:"리치데몬",r:"어비스 리치",g:"전설"},
-  {a:"강철야수",b:"혈수",r:"마그마 펜리르",g:"전설"},
-  {a:"성기사",b:"타천사",r:"성흑기사",g:"전설"},
-  {a:"혈마",b:"혈천사",r:"혈옥군주",g:"전설"},
-  {a:"마전사",b:"금술사",r:"마검군주",g:"전설"},
-  {a:"사혈귀",b:"금술사",r:"금단의 현자",g:"전설"},
-  {a:"인페르노 군주",b:"혈옥군주",r:"종말의 화신",g:"신화"},
-  {a:"아비스 드라큘",b:"어비스 리치",r:"혈해마신",g:"신화"},
-  {a:"천뢰 펜리르",b:"마수",r:"폭천수왕",g:"신화"},
-  {a:"세라핌",b:"성흑기사",r:"천계의 사도",g:"신화"},
-  {a:"폴른 세라핌",b:"월식천사",r:"심연의 천사",g:"신화"},
-  {a:"어비스 리치",b:"금단의 현자",r:"죽음의 현신",g:"신화"},
-  {a:"혈옥군주",b:"리치데몬",r:"혈옥리치",g:"신화"},
-  {a:"성수",b:"마수",r:"혼돈야수",g:"신화"},
-  {a:"심연의 천사",b:"종말세라프",r:"영겁의 흑익",g:"불멸"},
-  {a:"영원의 성익",b:"천계의 사도",r:"빛의 의지",g:"불멸"},
-  {a:"죽음의 현신",b:"어비스 리치",r:"공허의 사도",g:"불멸"},
-  {a:"혼돈성기사",b:"성흑기사",r:"멸천기사",g:"불멸"}
-];
+                                                        ];
 const RECIPES=[
-  {r:"종말세라프",g:"전설",parts:[{u:"천사",n:1},{u:"악마",n:1},{u:"뱀파이어",n:1}]},
-  {r:"혼돈성기사",g:"신화",parts:[{u:"인간",n:1},{u:"천사",n:1},{u:"악마",n:1}]},
-  {r:"지옥파쇄자",g:"신화",parts:[{u:"오크",n:1},{u:"언데드",n:1},{u:"악마",n:1}]},
-  {r:"황금정령",g:"전설",isGoldUnit:true,parts:[{u:"금술사",n:1},{u:"인간",n:1},{u:"무속성",n:1}]},
-  {r:"영겁의 재",g:"불멸",parts:[{u:"종말의 화신",n:1},{u:"지옥파쇄자",n:1},{u:"무속성",n:1}]},
-  {r:"영겁혈제",g:"불멸",parts:[{u:"혈해마신",n:1},{u:"혈옥리치",n:1},{u:"무속성",n:1}]},
-  {r:"번개의 포식자",g:"불멸",parts:[{u:"폭천수왕",n:1},{u:"혼돈야수",n:1},{u:"무속성",n:1}]},
-  {r:"영원의 성익",g:"불멸",parts:[{u:"천계의 사도",n:1},{u:"세라핌",n:1},{u:"무속성",n:1}]},
-  {r:"흑월의 군주",g:"불멸",parts:[{u:"혈옥군주",n:1},{u:"월식천사",n:1},{u:"무속성",n:1}]}
+  // ── 영웅: 고급+고급+노말(쉬움) / 고급+고급+고급(보통) / 영웅급고급+고급+고급(어려움) 섞음
+  // [쉬움: 고급+고급+노말]
+  {r:"홍련학살자", g:"영웅",parts:[{u:"잿불파쇄자",n:1},{u:"혈전사",n:1},{u:"불정령",n:1}]},
+  {r:"해일군주",   g:"영웅",parts:[{u:"심해파수자",n:1},{u:"혈술사",n:1},{u:"물정령",n:1}]},
+  {r:"폭뢰야수",   g:"영웅",parts:[{u:"질풍송곳니",n:1},{u:"뇌광야수",n:1},{u:"번개정령",n:1}]},
+  {r:"부패현자",   g:"영웅",parts:[{u:"고목망령",n:1},{u:"사령견습",n:1},{u:"언데드",n:1}]},
+  {r:"강철야수",   g:"영웅",parts:[{u:"대지분쇄자",n:1},{u:"야수전사",n:1},{u:"오크",n:1}]},
+  // [보통: 고급+고급+고급]
+  {r:"성마전사",   g:"영웅",parts:[{u:"성전사",n:1},{u:"마전사",n:1},{u:"전쟁용병",n:1}]},
+  {r:"혈월성기사", g:"영웅",parts:[{u:"혈천사",n:1},{u:"사혈귀",n:1},{u:"혈수",n:1}]},
+  {r:"성광기사",   g:"영웅",parts:[{u:"성기사",n:1},{u:"속죄망령",n:1},{u:"사령견습",n:1}]},
+  {r:"암흑기사",   g:"영웅",parts:[{u:"타락성익",n:1},{u:"심연악마",n:1},{u:"저주야수",n:1}]},
+  {r:"신수호자",   g:"영웅",parts:[{u:"성익천사",n:1},{u:"성수",n:1},{u:"속죄망령",n:1}]},
+  {r:"정화자",     g:"영웅",parts:[{u:"속죄망령",n:1},{u:"성수",n:1},{u:"성기사",n:1}]},
+  // [어려움: 고급+고급+고급 (희귀 재료)]
+  {r:"성전기사",   g:"영웅",parts:[{u:"성전사",n:1},{u:"성기사",n:1},{u:"성익천사",n:1}]},
+  {r:"지옥기사",   g:"영웅",parts:[{u:"마전사",n:1},{u:"심연악마",n:1},{u:"금술사",n:1}]},
+  {r:"타락혈기사", g:"영웅",parts:[{u:"혈천사",n:1},{u:"타락성익",n:1},{u:"혈수",n:1}]},
+  {r:"흡혈마장",   g:"영웅",parts:[{u:"사혈귀",n:1},{u:"심연악마",n:1},{u:"혈수",n:1}]},
+
+  // ── 전설: 영웅+고급+노말 섞음 (난이도 다양) or 영웅+영웅+고급 (다양하게 섞음)
+  {r:"리치데몬",    g:"전설",parts:[{u:"부패현자",n:1},{u:"해골투사",n:1},{u:"언데드",n:1}]},
+  {r:"혈마",        g:"전설",parts:[{u:"타락혈기사",n:1},{u:"사혈귀",n:1},{u:"뱀파이어",n:1}]},
+  {r:"마수",        g:"전설",parts:[{u:"강철야수",n:1},{u:"야수전사",n:1},{u:"수인",n:1}]},
+  {r:"타천사",      g:"전설",parts:[{u:"성전기사",n:1},{u:"마전사",n:1},{u:"천사",n:1}]},
+  {r:"월식천사",    g:"전설",parts:[{u:"혈천사",n:1},{u:"속죄망령",n:1},{u:"사혈귀",n:1}]},
+  {r:"인페르노 군주",g:"전설",parts:[{u:"홍련학살자",n:1},{u:"잿불파쇄자",n:1},{u:"불정령",n:1}]},
+  {r:"아비스 드라큘",g:"전설",parts:[{u:"해일군주",n:1},{u:"혈술사",n:1},{u:"뱀파이어",n:1}]},
+  {r:"천뢰 펜리르", g:"전설",parts:[{u:"폭뢰야수",n:1},{u:"뇌광야수",n:1},{u:"번개정령",n:1}]},
+  {r:"세라핌",      g:"전설",parts:[{u:"성익천사",n:1},{u:"신수호자",n:1},{u:"천사",n:1}]},
+  {r:"폴른 세라핌", g:"전설",parts:[{u:"타락성익",n:1},{u:"심연악마",n:1},{u:"어둠정령",n:1}]},
+  {r:"어비스 리치", g:"전설",parts:[{u:"부패현자",n:1},{u:"사령견습",n:1},{u:"언데드",n:1}]},
+  {r:"마그마 펜리르",g:"전설",parts:[{u:"강철야수",n:1},{u:"홍련학살자",n:1},{u:"오크",n:1}]},
+  {r:"성흑기사",    g:"전설",parts:[{u:"성광기사",n:1},{u:"암흑기사",n:1},{u:"인간",n:1}]},
+  {r:"혈옥군주",    g:"전설",parts:[{u:"혈월성기사",n:1},{u:"혈천사",n:1},{u:"뱀파이어",n:1}]},
+  {r:"마검군주",    g:"전설",parts:[{u:"성마전사",n:1},{u:"금술사",n:1},{u:"인간",n:1}]},
+  {r:"금단의 현자", g:"전설",parts:[{u:"정화자",n:1},{u:"금술사",n:1},{u:"인간",n:1}]},
+  {r:"종말세라프",  g:"전설",parts:[{u:"신수호자",n:1},{u:"성마전사",n:1},{u:"천사",n:1}]},
+  {r:"황금정령",    g:"전설",isGoldUnit:true,parts:[{u:"금단의 현자",n:1},{u:"마검군주",n:1},{u:"무속성",n:1}]},
+
+  // ── 신화: 전설+영웅+영웅(쉬움) / 전설+전설+영웅(보통) / 전설+전설+전설(어려움)
+  // [쉬움: 전설+영웅+영웅]
+  {r:"종말의 화신", g:"신화",parts:[{u:"인페르노 군주",n:1},{u:"홍련학살자",n:1},{u:"강철야수",n:1}]},
+  {r:"혈해마신",    g:"신화",parts:[{u:"아비스 드라큘",n:1},{u:"해일군주",n:1},{u:"흡혈마장",n:1}]},
+  {r:"폭천수왕",    g:"신화",parts:[{u:"천뢰 펜리르",n:1},{u:"폭뢰야수",n:1},{u:"부패현자",n:1}]},
+  {r:"혼돈야수",    g:"신화",parts:[{u:"마수",n:1},{u:"마그마 펜리르",n:1},{u:"강철야수",n:1}]},
+  // [보통: 전설+전설+영웅]
+  {r:"천계의 사도", g:"신화",parts:[{u:"세라핌",n:1},{u:"종말세라프",n:1},{u:"신수호자",n:1}]},
+  {r:"심연의 천사", g:"신화",parts:[{u:"폴른 세라핌",n:1},{u:"월식천사",n:1},{u:"암흑기사",n:1}]},
+  {r:"혈옥리치",    g:"신화",parts:[{u:"혈옥군주",n:1},{u:"리치데몬",n:1},{u:"흡혈마장",n:1}]},
+  {r:"지옥파쇄자",  g:"신화",parts:[{u:"마수",n:1},{u:"타천사",n:1},{u:"암흑기사",n:1}]},
+  // [어려움: 전설+전설+전설]
+  {r:"죽음의 현신", g:"신화",parts:[{u:"어비스 리치",n:1},{u:"금단의 현자",n:1},{u:"마검군주",n:1}]},
+  {r:"혼돈성기사",  g:"신화",parts:[{u:"성흑기사",n:1},{u:"마검군주",n:1},{u:"종말세라프",n:1}]},
+
+  // ── 불멸: 신화+전설+전설(쉬움) / 신화+신화+전설(보통) / 신화+신화+신화(어려움)
+  // [쉬움: 신화+전설+전설]
+  {r:"영겁의 재",     g:"불멸",parts:[{u:"종말의 화신",n:1},{u:"인페르노 군주",n:1},{u:"마수",n:1}]},
+  {r:"영겁혈제",      g:"불멸",parts:[{u:"혈해마신",n:1},{u:"아비스 드라큘",n:1},{u:"혈옥군주",n:1}]},
+  {r:"번개의 포식자", g:"불멸",parts:[{u:"폭천수왕",n:1},{u:"천뢰 펜리르",n:1},{u:"마수",n:1}]},
+  // [보통: 신화+신화+전설]
+  {r:"영원의 성익",   g:"불멸",parts:[{u:"천계의 사도",n:1},{u:"심연의 천사",n:1},{u:"세라핌",n:1}]},
+  {r:"영겁의 흑익",   g:"불멸",parts:[{u:"심연의 천사",n:1},{u:"혼돈야수",n:1},{u:"폴른 세라핌",n:1}]},
+  {r:"공허의 사도",   g:"불멸",parts:[{u:"죽음의 현신",n:1},{u:"지옥파쇄자",n:1},{u:"어비스 리치",n:1}]},
+  {r:"흑월의 군주",   g:"불멸",parts:[{u:"혈옥리치",n:1},{u:"혼돈야수",n:1},{u:"월식천사",n:1}]},
+  // [어려움: 신화+신화+신화]
+  {r:"멸천기사",      g:"불멸",parts:[{u:"혼돈성기사",n:1},{u:"죽음의 현신",n:1},{u:"지옥파쇄자",n:1}]},
+  {r:"빛의 의지",     g:"불멸",parts:[{u:"천계의 사도",n:1},{u:"영원의 성익",n:1},{u:"심연의 천사",n:1}]},
 ];
 
 // 도감용: 등급별 전체 유닛 목록 (이름 + 재료 정보)
@@ -1661,24 +1723,68 @@ export default function App(){
   const [showAdminPwPrompt,setShowAdminPwPrompt]=useState(false);
   const [adminPwInput,setAdminPwInput]=useState('');
   const pendingNicknameRef=useRef('');
+  // 일반 닉네임 비밀번호 시스템
+  const [showUserPwPrompt,setShowUserPwPrompt]=useState(false);
+  const [nicknameErr,setNicknameErr]=useState(""); // 비밀번호 입력 모달
+  const [userPwInput,setUserPwInput]=useState('');
+  const [userPwMode,setUserPwMode]=useState('login'); // 'register' | 'login'
+  const [userPwMsg,setUserPwMsg]=useState(''); // 안내 메시지
   const ADMIN_PASSWORD="gkdlgkdl5!";
   const ADMIN_KEYWORDS=["운영","운영자","영자"];
   const containsAdminKeyword=(s)=>ADMIN_KEYWORDS.some(k=>s.includes(k));
 
+  // 닉네임 욕설/비속어 목록
+  const BANNED_WORDS=["씨발","시발","씨팔","시팔","씨빨","ㅅㅂ","ㅆㅂ","개새","개새끼","새끼","놈","년","미친","미친놈","미친년","병신","ㅂㅅ","지랄","ㅈㄹ","좆","보지","자지","쌍년","쌍놈","창녀","걸레","쓰레기","개같","개쓰레기","뒤져","뒤지","죽어","꺼져","닥쳐","fuck","shit","bitch","asshole","damn","bastard"];
+  // 자음/모음만 있는지 체크 (ㄱ-ㅎ: 자음, ㅏ-ㅣ: 모음)
+  const hasIncompleteKorean=(s)=>/[ㄱ-ㅎㅏ-ㅣ]/.test(s);
+  // 완성된 한글+영문+숫자+공백만 허용
+  const isValidNickname=(s)=>{
+    if(hasIncompleteKorean(s))return{ok:false,msg:"완성된 글자만 입력할 수 있어요 (자음/모음 단독 불가)"};
+    if(!/^[가-힣a-zA-Z0-9 _-]+$/.test(s))return{ok:false,msg:"특수문자는 사용할 수 없어요"};
+    if(s.length<1)return{ok:false,msg:"닉네임을 입력해주세요"};
+    const lower=s.toLowerCase();
+    const banned=BANNED_WORDS.find(w=>lower.includes(w.toLowerCase()));
+    if(banned)return{ok:false,msg:"사용할 수 없는 닉네임이에요"};
+    return{ok:true,msg:""};
+  };
   const handleNicknameChange=(val,maxLen)=>{
     const trimmedVal=maxLen?val.slice(0,maxLen):val;
     setNickname(trimmedVal);
+    // 실시간 자음/모음 체크
+    if(hasIncompleteKorean(trimmedVal)){setNicknameErr("자음/모음만 입력할 수 없어요");}
+    else{setNicknameErr("");}
   };
   // 입력 완료 시점(blur/확인버튼)에 운영자 키워드 체크
   const confirmNickname=()=>{
     const trimmedVal=nickname.trim();
+    if(!trimmedVal)return false;
+    // 닉네임 유효성 검사
+    if(!containsAdminKeyword(trimmedVal)){
+      const valid=isValidNickname(trimmedVal);
+      if(!valid.ok){alert(valid.msg);return false;}
+    }
     if(containsAdminKeyword(trimmedVal)){
       pendingNicknameRef.current=trimmedVal;
-      setNickname(''); // 인증 전까지 비워둠
+      setNickname('');
       setShowAdminPwPrompt(true);
       return false;
     }
-    return true;
+    // 일반 닉네임 비밀번호 체크
+    pendingNicknameRef.current=trimmedVal;
+    setNickname('');
+    const stored=localStorage.getItem('upw_'+trimmedVal);
+    if(stored){
+      // 기존 유저 → 로그인
+      setUserPwMode('login');
+      setUserPwMsg('');
+    } else {
+      // 신규 유저 → 등록
+      setUserPwMode('register');
+      setUserPwMsg('');
+    }
+    setUserPwInput('');
+    setShowUserPwPrompt(true);
+    return false;
   };
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
@@ -3680,8 +3786,9 @@ export default function App(){
             onBlur={confirmNickname}
             maxLength={12}
             placeholder="닉네임 입력 (최대 12자)"
-            style={{width:"100%",background:"#161b22",border:"1px solid #30363d",borderRadius:10,padding:"10px 14px",color:"#eee",fontSize:14,outline:"none",boxSizing:"border-box",textAlign:"center"}}
+            style={{width:"100%",background:"#161b22",border:`1px solid ${nicknameErr?"#ef4444":"#30363d"}`,borderRadius:10,padding:"10px 14px",color:"#eee",fontSize:14,outline:"none",boxSizing:"border-box",textAlign:"center"}}
           />
+          {nicknameErr&&<div style={{fontSize:11,color:"#ef4444",marginTop:4,textAlign:"center"}}>{nicknameErr}</div>}
         </div>
 
         <div style={{display:"flex",gap:8,marginBottom:8,width:"100%",maxWidth:340}}>
@@ -4021,6 +4128,67 @@ export default function App(){
                 if(adminPwInput===ADMIN_PASSWORD){setNickname(pendingNicknameRef.current);setShowAdminPwPrompt(false);setAdminPwInput('');setClearCount(999);setIsAdminMode(true);pushToast('👑 관리자 모드: 모든 기능 개방!','#f59e0b');}
                 else{alert("비밀번호가 틀렸습니다!");}
               }} style={{flex:1,background:"#f59e0b",border:"none",color:"#000",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 일반 닉네임 비밀번호 모달 */}
+      {showUserPwPrompt&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:16}}>
+          <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:340,padding:24}}>
+            <div style={{fontSize:16,fontWeight:"bold",color:"#e2e8f0",marginBottom:6,textAlign:"center"}}>
+              {userPwMode==="register"?"🔐 비밀번호 등록":"🔑 비밀번호 입력"}
+            </div>
+            <div style={{fontSize:12,color:"#64748b",marginBottom:16,textAlign:"center"}}>
+              {userPwMode==="register"
+                ?pendingNicknameRef.current+" 처음 접속입니다. 비밀번호를 등록해주세요."
+                :pendingNicknameRef.current+" 의 비밀번호를 입력하세요."}
+            </div>
+            {userPwMsg&&<div style={{fontSize:12,color:userPwMsg.includes("완료")||userPwMsg.includes("성공")?"#4ade80":"#f87171",marginBottom:10,textAlign:"center",background:userPwMsg.includes("완료")||userPwMsg.includes("성공")?"#052e16":"#450a0a",borderRadius:8,padding:"6px 10px"}}>{userPwMsg}</div>}
+            <input
+              type="password"
+              placeholder="비밀번호 입력 (4자 이상)..."
+              value={userPwInput}
+              onChange={e=>setUserPwInput(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter")document.getElementById("userPwConfirmBtn")?.click();}}
+              style={{width:"100%",background:"#0d1117",border:"1px solid #30363d",borderRadius:8,padding:"10px 12px",color:"#e2e8f0",fontSize:14,marginBottom:12,boxSizing:"border-box",outline:"none"}}
+              autoFocus
+            />
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{setShowUserPwPrompt(false);setUserPwInput("");setNickname("");}} style={{flex:1,background:"#21262d",border:"1px solid #30363d",color:"#aaa",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13}}>취소</button>
+              <button id="userPwConfirmBtn" onClick={()=>{
+                const pw=userPwInput.trim();
+                if(!pw||pw.length<4){setUserPwMsg("비밀번호는 4자 이상이어야 합니다.");return;}
+                const nick=pendingNicknameRef.current;
+                if(userPwMode==="register"){
+                  try{localStorage.setItem("upw_"+nick,pw);}catch{}
+                  setUserPwMsg("✅ 등록 완료! 접속합니다...");
+                  setTimeout(()=>{
+                    setNickname(nick);
+                    try{localStorage.setItem("nickname",nick);}catch{}
+                    const saved=loadClearCount(nick);setClearCount(saved);
+                    setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
+                    pushToast("환영합니다, "+nick+"!","#4ade80");
+                  },1000);
+                }else{
+                  let stored="";try{stored=localStorage.getItem("upw_"+nick)||"";}catch{}
+                  if(pw===stored){
+                    setUserPwMsg("✅ 로그인 성공! 접속합니다...");
+                    setTimeout(()=>{
+                      setNickname(nick);
+                      try{localStorage.setItem("nickname",nick);}catch{}
+                      const saved=loadClearCount(nick);setClearCount(saved);
+                      setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
+                      pushToast(nick+"님 접속!","#60a5fa");
+                    },800);
+                  }else{
+                    setUserPwMsg("❌ 비밀번호가 틀렸습니다.");
+                    setUserPwInput("");
+                  }
+                }
+              }} style={{flex:1.5,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:13,fontWeight:"bold"}}>
+                {userPwMode==="register"?"등록":"확인"}
+              </button>
             </div>
           </div>
         </div>
