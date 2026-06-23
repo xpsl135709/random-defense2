@@ -1762,6 +1762,10 @@ export default function App(){
     try{
     const c=cvs.current;if(!c)return;
     const ctx=c.getContext("2d"),g=G.current;
+    // ctx 상태 완전 초기화 (이전 프레임 오염 방지)
+    ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
+    ctx.shadowBlur=0;ctx.shadowColor="transparent";
+    ctx.setLineDash([]);ctx.lineWidth=1;
     ctx.clearRect(0,0,COLS*CS,ROWS*CS);
     ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,COLS*CS,ROWS*CS);
 
@@ -1964,7 +1968,7 @@ export default function App(){
         const hx=sh.col*CS+CS/2,hy=sh.row*CS+CS/2;
         const rng=Math.min((sh.range||3.0)*CS, COLS*CS); // 최대 맵 크기로 제한
         const gc=GC[sh.grade]||"#aaa";
-        if(!gc||isNaN(rng))return; // 안전장치
+        if(gc&&!isNaN(rng)){
         // 사거리 채우기
         ctx.save();
         ctx.beginPath();ctx.arc(hx,hy,rng,0,Math.PI*2);
@@ -1981,6 +1985,7 @@ export default function App(){
         ctx.fillText(`사거리 ${sh.range.toFixed(1)}`,hx,hy-rng-8);
         ctx.globalAlpha=1;ctx.textAlign="left";ctx.textBaseline="alphabetic";
         ctx.restore();
+        } // end if(gc&&!isNaN(rng))
       }
     }
 
