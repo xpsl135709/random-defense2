@@ -199,6 +199,14 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v9.2",
+    date:"2025-06-23",
+    title:"전설/신화/불멸 조합 표시 버그 수정",
+    changes:[
+      "🐛 전설/신화/불멸 조합이 재료 충족해도 안 뜨던 버그 수정 (본인 유닛 재료 카운트 계산 오류)",
+    ]
+  },
+  {
     version:"v9.1",
     date:"2025-06-23",
     title:"보스 약점 속성 정리",
@@ -3319,9 +3327,12 @@ export default function App(){
       if(!unlockedG.includes(recipe.g))return false;
       const usesMe=recipe.parts.some(p=>p.u===h.element);
       if(!usesMe)return false;
-      // 본인 제외 카운트 기준으로 재료 체크 (클릭한 유닛은 재료로 소모되므로)
-      const cntEx={...myElsCntEx};
-      return recipe.parts.every(p=>(cntEx[p.u]||0)>=p.n);
+      // 본인(클릭 유닛)은 이미 소모 확정 → 본인 재료 1개는 통과, 나머지만 myElsCntEx로 체크
+      let selfUsed=false;
+      return recipe.parts.every(p=>{
+        if(p.u===h.element&&!selfUsed){selfUsed=true;return true;}
+        return (myElsCntEx[p.u]||0)>=p.n;
+      });
     }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe})):[];
 
     return [...comboOpts,...recipeOpts];
