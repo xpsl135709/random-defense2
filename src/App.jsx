@@ -199,6 +199,20 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v8.9",
+    date:"2025-06-23",
+    title:"버그 수정 & 시스템 개선",
+    changes:[
+      "🐛 유닛 이미지 회전/기울어짐 버그 수정 (Canvas transform 누적 초기화)",
+      "🐛 보관함 넣기 시 대기중 유닛까지 포함되던 버그 수정 (배치 유닛만 보관함으로)",
+      "🎲 뽑기 결과 → 대기중 탭으로 이동 (조합/변환과 동일하게 통일)",
+      "⚗️ 혼돈야수(신화) 조합 재료 수정 (전설+영웅+영웅 쉬움 난이도로 정확하게)",
+      "⚗️ 빛의 의지(불멸) 조합 재료 수정 (순환참조 제거 → 혼돈성기사로 교체)",
+      "✅ 닉네임 완성된 한 글자 허용 (자음/모음 단독만 차단)",
+      "🔧 보관함 넣기 버튼 색상 오타 수정",
+    ]
+  },
+  {
     version:"v8.8",
     date:"2025-06-23",
     title:"클리어 횟수 서버 저장 & 랭킹 개선",
@@ -1898,6 +1912,7 @@ export default function App(){
     const c=cvs.current;if(!c)return;
     const ctx=c.getContext("2d"),g=G.current;
     // ctx 상태 완전 초기화 (이전 프레임 오염 방지)
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
     ctx.shadowBlur=0;ctx.shadowColor="transparent";
     ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle="#060d1a";
