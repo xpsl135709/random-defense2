@@ -199,6 +199,25 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v9.1",
+    date:"2025-06-23",
+    title:"보스 약점 속성 정리",
+    changes:[
+      "🐛 보스 약점에 삭제된 속성(얼음/소리/독/홍수/운석) 남아있던 버그 수정",
+      "⚔️ 보스 약점 속성을 현행 8속성+시간+무속성으로 통일",
+    ]
+  },
+  {
+    version:"v9.0",
+    date:"2025-06-23",
+    title:"조합 표시 버그 수정 & 코인상점 개선",
+    changes:[
+      "🐛 영웅→전설/전설→신화/신화→불멸 조합 옵션 안 뜨던 버그 수정 (재료 카운트 계산 오류)",
+      "🐛 코인상점 영웅 유닛 선택 목록 비어있던 버그 수정 (RECIPES 참조로 변경)",
+      "🎨 코인상점 유닛 선택 버튼 배경 흰색 버그 수정 (#161b22 어두운 배경으로 통일)",
+    ]
+  },
+  {
     version:"v8.9",
     date:"2025-06-23",
     title:"버그 수정 & 시스템 개선",
@@ -1265,7 +1284,7 @@ const HH=[
 // 랜덤 보스 생성
 const BOSS_NAMES=["화염군주","빙하제왕","번개신황","어둠군주","대지의왕","음파황제","독군주","시간신","빛의신황","혼돈마왕","심연군주","폭풍황제","독룡","운석신황","냉기제왕","번개마신","대지신","소리황제","시간마왕","혼돈신"];
 const BOSS_EMOJIS=["🔥","❄️","⚡","🌑","🪨","🔊","☠️","⏳","✨","💫","🌀","🌪️","🐉","☄️","🥶","💀","🌍","🎵","🕰️","🌈"];
-const BOSS_WEAK_POOL=["불","물","땅","바람","전기","얼음","빛","어둠","소리","독","나무","시간","홍수","운석","무속성"];
+const BOSS_WEAK_POOL=["불","물","땅","바람","전기","나무","빛","어둠","시간","무속성"];
 const BOSS_COLORS=["#f60","#0cf","#ff0","#a4f","#a73","#f8c","#8bc","#c084fc","#ffa","#fff","#628","#4fa","#f80","#fb923c","#8df","#f44","#4af","#f6f","#a855f7","#38bdf8"];
 
 const makeBoss=(round)=>{
@@ -3300,7 +3319,9 @@ export default function App(){
       if(!unlockedG.includes(recipe.g))return false;
       const usesMe=recipe.parts.some(p=>p.u===h.element);
       if(!usesMe)return false;
-      return recipe.parts.every(p=>(myCnt[p.u]||0)>=p.n);
+      // 본인 제외 카운트 기준으로 재료 체크 (클릭한 유닛은 재료로 소모되므로)
+      const cntEx={...myElsCntEx};
+      return recipe.parts.every(p=>(cntEx[p.u]||0)>=p.n);
     }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe})):[];
 
     return [...comboOpts,...recipeOpts];
@@ -4834,12 +4855,18 @@ export default function App(){
       {/* 모달들 */}
       {modal&&modal.type==="coinPick"&&(()=>{
         const item=modal.item;
-        const pool=item.grade==="노말"?BASE:item.grade==="고급"?[...new Set(COMBO.filter(r=>r.g==="고급").map(r=>r.r))]:item.grade==="영웅"?[...new Set(COMBO.filter(r=>r.g==="영웅").map(r=>r.r))]:[...new Set(RECIPES.filter(r=>r.g==="전설").map(r=>r.r))];
+        const pool=item.grade==="노말"
+          ?BASE
+          :item.grade==="고급"
+          ?[...new Set(COMBO.filter(r=>r.g==="고급").map(r=>r.r))]
+          :item.grade==="영웅"
+          ?[...new Set(RECIPES.filter(r=>r.g==="영웅").map(r=>r.r))]
+          :[...new Set(RECIPES.filter(r=>r.g==="전설").map(r=>r.r))];
         return(<Overlay>
           <div style={{fontSize:15,fontWeight:"bold",color:item.color,marginBottom:4,textAlign:"center"}}>{item.label}</div>
           <div style={{color:"#a78bfa",fontSize:13,marginBottom:10,textAlign:"center"}}>🪙 {item.cost}개 사용</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",marginBottom:12}}>
-            {pool.map(el=>(<button key={el} onClick={()=>buyCoinByElement(item,el)} style={{background:(EC[el]||"#888")+"33",border:`1px solid ${EC[el]||"#888"}`,borderRadius:10,padding:"8px 6px",cursor:"pointer",color:"#eee",fontSize:12,minWidth:52,textAlign:"center"}}><div style={{fontSize:18}}>{EE[el]||"?"}</div><div style={{fontSize:9,color:GC[item.grade]}}>{item.grade}</div><div style={{fontSize:9}}>{el}</div></button>))}
+            {pool.map(el=>(<button key={el} onClick={()=>buyCoinByElement(item,el)} style={{background:"#161b22",border:`1px solid ${EC[el]||GC[item.grade]||"#888"}`,borderRadius:10,padding:"8px 6px",cursor:"pointer",color:"#eee",fontSize:12,minWidth:52,textAlign:"center"}}><div style={{fontSize:18}}>{EE[el]||"?"}</div><div style={{fontSize:9,color:GC[item.grade]}}>{item.grade}</div><div style={{fontSize:9,color:"#aaa"}}>{el}</div></button>))}
           </div>
           <Btn bg="#444" onClick={()=>setModal("shop")} style={{width:"100%"}}>← 뒤로</Btn>
         </Overlay>);
