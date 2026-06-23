@@ -199,6 +199,19 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v9.4",
+    date:"2025-06-23",
+    title:"성능 최적화 & 안정성 개선",
+    changes:[
+      "🔧 RAF 중복 루프 방지 (autoStart/skipCountdown/pickHidden 통일)",
+      "🔧 autoStart에서 웨이브 타입(무리/속도 등) 미반영 버그 수정",
+      "🔧 게임루프 내 sync() 과다 호출 최적화",
+      "🔧 draw() 사거리 표시 ref로 처리 (불필요한 리렌더 방지)",
+      "🔧 skipRound 클리어 후 호출 방지 (victory 체크 추가)",
+      "🔧 doSell/doEnhance null 체크 보완",
+    ]
+  },
+  {
     version:"v9.3",
     date:"2025-06-23",
     title:"영웅 조합 표시 버그 완전 수정",
@@ -1770,6 +1783,8 @@ export default function App(){
     document.addEventListener('visibilitychange',onVisibility);
     return()=>document.removeEventListener('visibilitychange',onVisibility);
   },[]);
+  // ── RAF 안전 시작 헬퍼 (중복 루프 방지)
+  const startRAFRef=useRef(null);
   const cvs=useRef(null);
   const G=useRef(null);
   const raf=useRef(null);
@@ -1778,6 +1793,7 @@ export default function App(){
   const spR=useRef(1);
   const gameLoopRef=useRef(null);
   const safeDrawRef=useRef(null);
+  const selHeroRef=useRef(null);
   const randomPicksRef=useRef([]);
   const transformPicksRef=useRef([]);
 
@@ -1913,7 +1929,8 @@ export default function App(){
   const [comboFilter,setComboFilter]=useState("고급");
   const [comboSearch,setComboSearch]=useState("");
   const [speed,setSpeedState]=useState(1);
-  const [selHero,setSelHero]=useState(null);
+  const [selHero,setSelHeroState]=useState(null);
+  const setSelHero=(id)=>{setSelHeroState(id);selHeroRef.current=id;};
   const [countdown,setCountdown]=useState(0);
   const countdownRef=useRef(null);
   const countdownValRef=useRef(0);
@@ -2172,8 +2189,8 @@ export default function App(){
     }
 
     // 선택된 유닛 사거리 표시 (선택 중 + 재배치 중 모두)
-    if(g&&(selHero||drag)){
-      const sh=g.heroes.find(h=>h.id===(selHero||drag));
+    if(g&&(selHeroRef.current||dragR.current)){
+      const sh=g.heroes.find(h=>h.id===(selHeroRef.current||dragR.current));
       if(sh&&sh.col!==null&&sh.row!==null&&!isNaN(sh.col)&&!isNaN(sh.row)){
         const hx=sh.col*CS+CS/2,hy=sh.row*CS+CS/2;
         const rng=Math.min((sh.range||3.0)*CS, COLS*CS); // 최대 맵 크기로 제한
@@ -2811,7 +2828,7 @@ export default function App(){
     }
     g.enemies=[...g.enemies.filter(e=>!e.remove&&e.hp>0),...newEnemies];
     const newTotal=g.enemies.length;
-    if(newTotal!==g.total){g.total=newTotal;sync();}
+    g.total=newTotal;
     if(g.total>=30){g.over=true;g.running=false;sync();safeDraw();return;}
     g.gameTime=(g.gameTime||0)+dt;
     const buff=getBuff();
@@ -3030,6 +3047,7 @@ export default function App(){
       g.enemies.push(mkE("일반",g.round,false,true,g.rotMode?'ROT':g.mapKey,{}));g.midSpawned=true;
     }
     const spawnDone=(isBossRound&&g.bossSpawned)||(isMidRound&&g.midSpawned)||(!isBossRound&&!isMidRound&&g.spawnC>=g.maxSpawn);
+    if(newTotal!==ui.total)sync();
     // 회전 모드: 적 다 잡아도 타이머 끝날 때까지 대기
     const canClear=spawnDone&&g.enemies.length===0&&!g.cleared&&(!g.rotMode||countdownValRef.current===0);
     if(canClear){
@@ -3127,7 +3145,7 @@ export default function App(){
   // 라운드 강제 스킵 (현재 적 유지하면서 다음 라운드 즉시 시작)
   const skipRound=()=>{
     const g=G.current;
-    if(!g||!g.running||g.over||g.cleared)return;
+    if(!g||!g.running||g.over||g.cleared||g.victory)return;
     // 현재 라운드 클리어 골드 지급
     const isBossRound=g.round%10===0,isMidRound=g.round%5===0&&g.round%10!==0;
     const goldMul=1+(getBuff().goldMul||0);
@@ -3152,10 +3170,11 @@ export default function App(){
 
   const autoStart=(g)=>{
     const nb=g.round%10===0,nm=g.round%5===0&&g.round%10!==0;
-    g.maxSpawn=nb?1:nm?1:g.rotMode?20:15+g.round;
+    const wt=getWaveType(g.round);g.waveType=wt;
+    g.maxSpawn=nb?1:nm?1:wt==='horde'?Math.floor((15+g.round)*1.8):g.rotMode?20:15+g.round;
     g.running=true;g.spawnT=0;g.spawnC=0;g.bossSpawned=false;g.midSpawned=false;
     sync();
-    // 기존 루프가 있으면 취소 후 새로 시작 (중복 루프 방지)
+    // 중복 루프 방지
     if(raf.current)cancelAnimationFrame(raf.current);
     lt.current=performance.now();raf.current=requestAnimationFrame((t)=>gameLoopRef.current(t));
   };
@@ -3389,7 +3408,9 @@ export default function App(){
   const enhCost=(h)=>10*(h.enhLv+1);
   const canEnhance=(h)=>ENHANCE_GRADES.includes(h.grade)&&(h.enhLv||0)<maxEnh(h);
   const doEnhance=(heroId)=>{
-    const g=G.current,h=g.heroes.find(x=>x.id===heroId);
+    const g=G.current;
+    if(!g||g.over)return;
+    const h=g.heroes.find(x=>x.id===heroId);
     if(!h)return;
     if(!ENHANCE_GRADES.includes(h.grade)){pushToast("전설 이상 유닛만 강화 가능합니다","#ef4444");return;}
     if((h.enhLv||0)>=maxEnh(h)){pushToast(`최대 강화(${maxEnh(h)}강) 도달`,"#f59e0b");return;}
@@ -3400,7 +3421,9 @@ export default function App(){
   };
 
   const doSell=(heroId)=>{
-    const g=G.current,h=g.heroes.find(x=>x.id===heroId);
+    const g=G.current;
+    if(!g||g.over)return;
+    const h=g.heroes.find(x=>x.id===heroId);
     if(!h)return;
     g.gold+=SELL_PRICE[h.grade]||5;
     g.heroes=g.heroes.filter(x=>x.id!==heroId);
