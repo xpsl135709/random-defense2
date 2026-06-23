@@ -3298,7 +3298,7 @@ export default function App(){
   const doGradeEnhance=(grade)=>{
     const g=G.current;if(!g.gradeEnhLv)g.gradeEnhLv={};
     const lv=g.gradeEnhLv[grade]||0;
-    if(lv>=MAX_GRADE_ENH){pushToast(`최대 등급강화(${MAX_GRADE_ENH}강) 도달","#f59e0b");return;}
+    if(lv>=MAX_GRADE_ENH){pushToast(`최대 등급강화(${MAX_GRADE_ENH}강) 도달`,"#f59e0b");return;}
     const cost=GRADE_ENH_COST[grade]*(lv+1);
     if(g.gold<cost){pushToast(`골드 부족! (${cost}G 필요)`,"#ef4444");return;}
     g.gold-=cost;g.gradeEnhLv[grade]=(lv+1);
