@@ -199,6 +199,17 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v8.8",
+    date:"2025-06-23",
+    title:"클리어 횟수 서버 저장 & 랭킹 개선",
+    changes:[
+      "☁️ 클리어 횟수 Supabase 서버 저장 (기기 무관 유지)",
+      "🔄 로그인 시 서버에서 클리어 횟수 자동 동기화",
+      "🏆 랭킹에 닉네임별 클리어 횟수 표시",
+      "🚫 관리자 계정 랭킹 저장 제외",
+    ]
+  },
+  {
     version:"v8.7",
     date:"2025-06-23",
     title:"닉네임 필터 강화",
@@ -1705,6 +1716,24 @@ export default function App(){
   // 닉네임 기반 clearCount 로드 헬퍼
   const loadClearCount=(nick)=>{try{return parseInt(localStorage.getItem('cc_'+nick)||'0');}catch{return 0;}};
   const saveClearCount=(nick,n)=>{try{localStorage.setItem('cc_'+nick,String(n));}catch{}};
+  // 서버에서 clear_count 불러오기
+  const loadClearCountFromServer=async(nick)=>{
+    try{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/rankings?name=eq.${encodeURIComponent(nick)}&select=clear_count`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+      });
+      const data=await res.json();
+      if(data&&data[0]&&data[0].clear_count!=null){
+        const serverCount=parseInt(data[0].clear_count)||0;
+        // 로컬과 서버 중 더 큰 값 사용
+        const localCount=loadClearCount(nick);
+        const finalCount=Math.max(serverCount,localCount);
+        saveClearCount(nick,finalCount);
+        return finalCount;
+      }
+    }catch(e){console.error('loadClearCount server error',e);}
+    return loadClearCount(nick);
+  };
   const [showCheatModal,setShowCheatModal]=useState(false);
   const [showNicknamePrompt,setShowNicknamePrompt]=useState(false);
   const [cheatInput,setCheatInput]=useState('');
@@ -3497,6 +3526,8 @@ export default function App(){
     }
     const finalName=nickname.trim();
     const g=G.current;
+    if(isAdminMode)return; // 관리자 랭킹 저장 제외
+    const newClearCount=isVictory?clearCount:clearCount; // 이미 위에서 갱신됨
     const record={
       name:finalName,
       difficulty:g.difficulty||'hard',
@@ -3505,6 +3536,7 @@ export default function App(){
       coins:g.coins,
       map:currentMapName,
       victory:isVictory,
+      clear_count:newClearCount,
       updated_at:new Date().toISOString(),
     };
     try{
@@ -3868,6 +3900,7 @@ export default function App(){
                         <span style={{color:"#4af"}}>R{r.round}/{r.difficulty==='easy'?50:r.difficulty==='normal'?70:100}</span>
                         <span style={{color:"#fd0"}}>💰{r.gold}G</span>
                         <span style={{color:"#a78bfa"}}>🪙{r.coins}</span>
+                        <span style={{color:"#a78bfa",fontWeight:"bold"}}>🏆{r.clear_count||0}클리어</span>
                         <span style={{color:"#555"}}>{r.map}</span>
                       </div>
                     </div>
@@ -4177,7 +4210,7 @@ export default function App(){
                     setTimeout(()=>{
                       setNickname(nick);
                       try{localStorage.setItem("nickname",nick);}catch{}
-                      const saved=loadClearCount(nick);setClearCount(saved);
+                      loadClearCountFromServer(nick).then(cnt=>{setClearCount(cnt);});
                       setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
                       pushToast(nick+"님 접속!","#60a5fa");
                     },800);
