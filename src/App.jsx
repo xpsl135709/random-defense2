@@ -3255,8 +3255,8 @@ export default function App(){
       return false;
     }).map(r=>({...r,isRecipe:false}));
 
-    // RECIPES: 전설 이상만 (영웅→전설 포함)
-    const recipeOpts=(!targetGrade||["전설","신화","불멸"].includes(targetGrade))?RECIPES.filter(recipe=>{
+    // RECIPES: 영웅 이상 모두 포함
+    const recipeOpts=(!targetGrade||["영웅","전설","신화","불멸"].includes(targetGrade))?RECIPES.filter(recipe=>{
       if(recipe.g!==targetGrade)return false;
       if(!unlockedG.includes(recipe.g))return false;
       const usesMe=recipe.parts.some(p=>p.u===h.element);
@@ -3270,7 +3270,7 @@ export default function App(){
   const doCombine=(heroId,opt)=>{
     const g=G.current;
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
-    if(!unlockedG.includes(opt.g)){alert(`${opt.g} 등급이 아직 개방되지 않았습니다!`);setSelHero(null);return;}
+    if(!unlockedG.includes(opt.g)){pushToast(`${opt.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");setSelHero(null);return;}
     if(opt.isRecipe){
       // RECIPES 방식
       doRecipe(opt.recipe);
@@ -3298,13 +3298,13 @@ export default function App(){
   const doGradeEnhance=(grade)=>{
     const g=G.current;if(!g.gradeEnhLv)g.gradeEnhLv={};
     const lv=g.gradeEnhLv[grade]||0;
-    if(lv>=MAX_GRADE_ENH){alert(`최대 등급강화(${MAX_GRADE_ENH}강)에 도달했습니다!`);return;}
+    if(lv>=MAX_GRADE_ENH){pushToast(`최대 등급강화(${MAX_GRADE_ENH}강) 도달","#f59e0b");return;}
     const cost=GRADE_ENH_COST[grade]*(lv+1);
-    if(g.gold<cost){alert(`골드 부족! (${cost}G)`);return;}
+    if(g.gold<cost){pushToast(`골드 부족! (${cost}G 필요)`,"#ef4444");return;}
     g.gold-=cost;g.gradeEnhLv[grade]=(lv+1);
     const bonus=GRADE_ENH_BONUS[grade];
     for(const h of g.heroes){if(h.grade===grade){h.atk+=bonus.atk;h.spd=Math.min((h.spd||1)+bonus.spd,3.0);}}
-    sync();safeDraw();alert(`✅ ${grade} 강화 완료! ATK+${bonus.atk}/SPD+${(bonus.spd*100).toFixed(0)}% (Lv.${lv+1})`);
+    sync();safeDraw();pushToast(`✅ ${grade} 강화 완료! ATK+${bonus.atk} SPD+${(bonus.spd*100).toFixed(0)}% (Lv.${lv+1})`,"#4ade80");
   };
 
   const ENHANCE_GRADES=["전설","신화","불멸"]; // 강화 가능 등급
@@ -3314,10 +3314,10 @@ export default function App(){
   const doEnhance=(heroId)=>{
     const g=G.current,h=g.heroes.find(x=>x.id===heroId);
     if(!h)return;
-    if(!ENHANCE_GRADES.includes(h.grade)){alert("전설 이상 유닛만 강화 가능합니다!");return;}
-    if((h.enhLv||0)>=maxEnh(h)){alert(`최대 강화(${maxEnh(h)}강)에 도달했습니다!`);return;}
+    if(!ENHANCE_GRADES.includes(h.grade)){pushToast("전설 이상 유닛만 강화 가능합니다","#ef4444");return;}
+    if((h.enhLv||0)>=maxEnh(h)){pushToast(`최대 강화(${maxEnh(h)}강) 도달`,"#f59e0b");return;}
     const cost=enhCost(h);
-    if(g.gold<cost){alert(`골드 부족! (${cost}G)`);return;}
+    if(g.gold<cost){pushToast(`골드 부족! (${cost}G 필요)`,"#ef4444");return;}
     g.gold-=cost;h.enhLv=(h.enhLv||0)+1;h.atk+=5;h.spd=Math.min((h.spd||1)+0.02,2.5);
     sync();safeDraw();
   };
@@ -3372,12 +3372,12 @@ export default function App(){
   };
 
   const doRecipe=(recipe)=>{
-    const g=G.current;if(!canRecipe(recipe)){alert("재료 부족!");return;}
+    const g=G.current;if(!canRecipe(recipe)){pushToast("재료 부족!","#ef4444");return;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
-    if(!unlockedG.includes(recipe.g)){alert(`${recipe.g} 등급이 아직 개방되지 않았습니다!`);return;}
+    if(!unlockedG.includes(recipe.g)){pushToast(`${recipe.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     // 황금정령은 1개만 보유 가능
     if(recipe.r==="황금정령"&&g.heroes.some(h=>h.element==="황금정령")){
-      alert("황금정령은 1개만 보유할 수 있습니다!");return;
+      pushToast("황금정령은 1개만 보유할 수 있습니다","#f59e0b");return;
     }
     const remaining=[...g.heroes];
     for(const part of recipe.parts){let removed=0;for(let i=remaining.length-1;i>=0&&removed<part.n;i--){if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}}}
@@ -3387,7 +3387,7 @@ export default function App(){
   };
 
   const stackCombine=(el)=>{
-    const g=G.current;if(!g.stacks||!g.stacks[el]||g.stacks[el]<2){alert("스택에 2개 이상 필요");return;}
+    const g=G.current;if(!g.stacks||!g.stacks[el]||g.stacks[el]<2){pushToast("보관함에 2개 이상 필요합니다","#ef4444");return;}
     const newStacks={...g.stacks};newStacks[el]-=2;if(newStacks[el]===0)delete newStacks[el];g.stacks=newStacks;
     const recipes=COMBO.filter(r=>r.a===el&&r.b===el);
     let nh;
@@ -3411,7 +3411,7 @@ export default function App(){
           const firstHero=g.heroes.find(h=>h.id===prev[0]);
           const thisHero=g.heroes.find(h=>h.id===heroId);
           if(firstHero&&thisHero&&firstHero.grade!==thisHero.grade){
-            alert(`같은 등급끼리만 선택 가능합니다! (${firstHero.grade})`);
+            pushToast(`같은 등급끼리만 선택 가능합니다 (${firstHero.grade})`,"#ef4444");
             return prev;
           }
         }
@@ -3432,19 +3432,19 @@ export default function App(){
 
   const doRandomMerge=()=>{
     const g=G.current;const picks=randomPicksRef.current;
-    if(picks.length!==3){alert("3개를 선택하세요!");return;}
+    if(picks.length!==3){pushToast("3개를 선택해주세요","#ef4444");return;}
     const targets=picks.map(id=>g.heroes.find(h=>h.id===id)).filter(Boolean);
-    if(targets.length!==3){alert("선택한 유닛을 찾을 수 없습니다.");return;}
+    if(targets.length!==3){pushToast("선택한 유닛을 찾을 수 없습니다","#ef4444");return;}
     const grades=targets.map(t=>t.grade);
-    if(new Set(grades).size>1){alert("같은 등급끼리만 조합 가능합니다!");return;}
+    if(new Set(grades).size>1){pushToast("같은 등급끼리만 조합 가능합니다","#ef4444");return;}
     const fromGrade=grades[0];
     const nextGrade=NEXT_GRADE[fromGrade];
-    if(!nextGrade){alert("더 이상 조합할 수 없는 최고 등급입니다!");return;}
+    if(!nextGrade){pushToast("더 이상 조합할 수 없는 최고 등급입니다","#f59e0b");return;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
-    if(!unlockedG.includes(nextGrade)){alert(`${nextGrade} 등급이 아직 개방되지 않았습니다!`);return;}
+    if(!unlockedG.includes(nextGrade)){pushToast(`${nextGrade} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     const pool=getPoolByGrade(nextGrade);
     const result=pool.length?{r:pool[Math.floor(Math.random()*pool.length)],g:nextGrade}:null;
-    if(!result){alert("조합 가능한 결과가 없습니다!");return;}
+    if(!result){pushToast("조합 가능한 결과가 없습니다","#ef4444");return;}
     // 배치된 유닛 위치 우선 사용, 없으면 자동배치
     const placedTarget=targets.find(t=>t.col!==null);
     const nh=mkH(result.r,result.g,g.gradeEnhLv||{});
@@ -3469,7 +3469,7 @@ export default function App(){
           const firstHero=g.heroes.find(h=>h.id===prev[0]);
           const thisHero=g.heroes.find(h=>h.id===heroId);
           if(firstHero&&thisHero&&firstHero.grade!==thisHero.grade){
-            alert(`같은 등급끼리만 선택 가능합니다! (${firstHero.grade})`);
+            pushToast(`같은 등급끼리만 선택 가능합니다 (${firstHero.grade})`,"#ef4444");
             return prev;
           }
         }
@@ -3482,11 +3482,11 @@ export default function App(){
   // 변환: 같은 등급 2개 선택 → 같은 등급 내 무작위 다른 유닛 1개로 변환
   const doTransform=()=>{
     const g=G.current;const picks=transformPicksRef.current;
-    if(picks.length!==2){alert("2개를 선택하세요!");return;}
+    if(picks.length!==2){pushToast("2개를 선택해주세요","#ef4444");return;}
     const targets=picks.map(id=>g.heroes.find(h=>h.id===id)).filter(Boolean);
-    if(targets.length!==2){alert("선택한 유닛을 찾을 수 없습니다.");return;}
+    if(targets.length!==2){pushToast("선택한 유닛을 찾을 수 없습니다","#ef4444");return;}
     const grades=targets.map(t=>t.grade);
-    if(grades[0]!==grades[1]){alert("같은 등급끼리만 변환 가능합니다!");return;}
+    if(grades[0]!==grades[1]){pushToast("같은 등급끼리만 변환 가능합니다","#ef4444");return;}
     const grade=grades[0];
     const fullPool=getPoolByGrade(grade);
     // 가능하면 보유한 2개와 다른 유닛으로, 풀이 부족하면 전체 풀에서
@@ -3506,7 +3506,7 @@ export default function App(){
   const buyWithCoin=(item)=>{
     const g=G.current;if(g.coins<item.cost){pushToast(`🪙 코인 부족! (${item.cost}개 필요)`,"#ef4444");return;}
     const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
-    if(item.grade&&!unlockedG.includes(item.grade)){alert(`${item.grade} 등급이 아직 개방되지 않았습니다!`);return;}
+    if(item.grade&&!unlockedG.includes(item.grade)){pushToast(`${item.grade} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     if(item.element){g.coins-=item.cost;const h=mkH(item.element,item.grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes.push(h);setModal(null);sync();safeDraw();triggerSummon(item.element,item.grade);return;}
     setModal({type:"coinPick",item});
   };
@@ -3703,9 +3703,9 @@ export default function App(){
   const sendChatMessage=async()=>{
     const text=chatInput.trim();
     if(!text)return;
-    if(text.length>200){alert("메시지는 200자 이하로 입력해주세요!");return;}
+    if(text.length>200){pushToast("메시지는 200자 이하로 입력해주세요","#ef4444");return;}
     const finalName=nickname.trim();
-    if(!finalName){alert("닉네임을 먼저 입력해주세요!");return;}
+    if(!finalName){pushToast("닉네임을 먼저 입력해주세요","#ef4444");return;}
     setChatInput('');
     try{
       await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`,{
@@ -4903,7 +4903,7 @@ export default function App(){
             return(<button key={item.id} onClick={()=>!locked&&buyWithCoin(item)} disabled={ui.coins<item.cost||locked} style={{background:locked?"#21262d":ui.coins>=item.cost?item.color+"22":"#21262d",border:`1px solid ${locked?"#333":ui.coins>=item.cost?item.color:"#333"}`,borderRadius:8,padding:"9px 14px",cursor:locked||ui.coins<item.cost?"not-allowed":"pointer",color:locked?"#444":ui.coins>=item.cost?"#eee":"#555",fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{color:locked?"#444":item.color,fontWeight:"bold"}}>{locked?lockLabel:item.label}</span><span style={{color:locked?"#444":"#a78bfa",fontWeight:"bold"}}>🪙 {item.cost}</span></button>);})}
         </div>
         <div style={{display:"flex",gap:6}}>
-          <Btn bg={ui.round>=10?"#1a3a2a":"#21262d"} onClick={()=>{if(ui.round<10){alert("도박장은 10라운드 이후!");return;}setModal("gamble");}} style={{flex:1,color:ui.round>=10?undefined:"#555"}}>{ui.round>=10?"🎲 도박장":"🔒 도박장(10R~)"}</Btn>
+          <Btn bg={ui.round>=10?"#1a3a2a":"#21262d"} onClick={()=>{if(ui.round<10){pushToast("도박장은 10라운드 이후 사용 가능합니다","#f59e0b");return;}setModal("gamble");}} style={{flex:1,color:ui.round>=10?undefined:"#555"}}>{ui.round>=10?"🎲 도박장":"🔒 도박장(10R~)"}</Btn>
           <Btn bg="#333" onClick={()=>setModal(null)} style={{flex:1}}>닫기</Btn>
         </div>
       </Overlay>)}
