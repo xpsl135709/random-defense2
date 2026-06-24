@@ -4133,7 +4133,7 @@ export default function App(){
       {/* 타이틀 화면 - 이미지 위에 투명 버튼 오버레이 */}
       <div style={{position:"relative",width:"100%",height:"100dvh",maxHeight:"100dvh",overflow:"hidden",background:"#0a0d1a"}}>
         {/* 배경 이미지 */}
-        <img src="/title-bg2.PNG" alt="" style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",height:"100%",width:"auto",maxWidth:"none",objectFit:"cover",objectPosition:"center top",pointerEvents:"none",userSelect:"none"}}/>
+        <img src="/title-bg.PNG" alt="" style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",height:"100%",width:"auto",maxWidth:"none",objectFit:"cover",objectPosition:"center top",pointerEvents:"none",userSelect:"none"}}/>
 
         {/* 투명 버튼 오버레이 레이어 */}
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start"}}>
