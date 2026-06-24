@@ -1798,7 +1798,7 @@ export default function App(){
   const randomPicksRef=useRef([]);
   const transformPicksRef=useRef([]);
 
-  // 게임 화면 단계: 'title' | 'hidden' | 'game'
+  // 게임 화면 단계: 'title' | 'diff' | 'hidden' | 'game'
   const [phase,setPhase]=useState('title');
   const [difficulty,setDifficulty]=useState('easy');
   const [clearCount,setClearCount]=useState(()=>{try{const nick=localStorage.getItem("nickname")||"";return nick?parseInt(localStorage.getItem("cc_"+nick)||"0"):0;}catch{return 0;}});
@@ -3261,7 +3261,7 @@ export default function App(){
     setSpeedState(1);setSelHero(null);setCountdown(0);setRandomPicks([]);setTransformPicks([]);setStacks({});
     setSummonAnim(null);dragR.current=null;spR.current=1;
     sync();
-    setPhase('hidden');
+    setPhase('diff');
   };
 
   const startRotation=()=>{
@@ -4117,7 +4117,7 @@ export default function App(){
   if(phase==='title'){
     return(
       <>
-      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",overflow:"hidden",boxSizing:"border-box"}}>
+      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"52px 16px 12px",overflow:"hidden",boxSizing:"border-box"}}>
         <div style={{fontSize:40,marginBottom:4,filter:"drop-shadow(0 0 20px #3b82f6)"}}>🗡️</div>
         <div style={{fontSize:24,fontWeight:"bold",background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:2,letterSpacing:3}}>랜덤 디펜스</div>
         <div style={{fontSize:11,color:"#374151",marginBottom:6,letterSpacing:4}}>RANDOM DEFENSE</div>
@@ -4800,55 +4800,92 @@ export default function App(){
   // ══════════════════════════════════════════
   // 히든영웅 선택 화면
   // ══════════════════════════════════════════
-  if(phase==='hidden'){
+  // ── 난이도 선택 화면
+  if(phase==='diff'){
     return(
-      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",overflow:"hidden",boxSizing:"border-box"}}>
-        <div style={{width:"100%",maxWidth:400,background:"#161b22",borderRadius:16,padding:20,border:"1px solid #30363d"}}>
-          <div style={{textAlign:"center",marginBottom:4}}>
-            <div style={{fontSize:11,color:"#4af",marginBottom:4}}>🗺️ {currentMapName} 맵</div>
-            <div style={{fontSize:18,fontWeight:"bold",marginBottom:4}}>👑 히든영웅 선택</div>
-            <div style={{fontSize:12,color:"#666",marginBottom:12}}>영웅을 선택하면 게임이 시작됩니다</div>
+      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"52px 16px 16px",boxSizing:"border-box"}}>
+        <div style={{width:"100%",maxWidth:400,background:"#161b22",borderRadius:16,padding:24,border:"1px solid #30363d"}}>
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:11,color:"#4af",marginBottom:6}}>🗺️ {currentMapName} 맵</div>
+            <div style={{fontSize:22,fontWeight:"bold",marginBottom:4}}>⚔️ 난이도 선택</div>
+            <div style={{fontSize:12,color:"#666"}}>난이도를 선택해주세요</div>
           </div>
-          {/* 난이도 선택 */}
-          <div style={{marginBottom:14}}>
-            <div style={{fontSize:11,color:"#888",marginBottom:6,textAlign:"center"}}>⚔️ 난이도</div>
-            <div style={{display:"flex",gap:6}}>
-              {[
-                {key:'easy',label:'쉬움',desc:'공격력 ×2.2',color:'#4f8',icon:'🌱',need:0},
-                {key:'normal',label:'보통',desc:'공격력 ×1.5',color:'#4af',icon:'⚔️',need:1},
-                {key:'hard',label:'어려움',desc:'공격력 ×1.3',color:'#f44',icon:'💀',need:5},
-              ].map(d=>{
-                const unlocked=clearCount>=d.need;
-                return(
-                  <button key={d.key} onClick={()=>unlocked&&setDifficulty(d.key)}
-                    style={{flex:1,background:difficulty===d.key&&unlocked?d.color+'22':'#21262d',
-                      border:`2px solid ${difficulty===d.key&&unlocked?d.color:'#30363d'}`,
-                      borderRadius:10,padding:"8px 4px",cursor:unlocked?"pointer":"not-allowed",textAlign:"center",opacity:unlocked?1:0.4}}>
-                    <div style={{fontSize:18,marginBottom:2}}>{unlocked?d.icon:"🔒"}</div>
-                    <div style={{fontSize:12,fontWeight:"bold",color:difficulty===d.key&&unlocked?d.color:'#aaa'}}>{unlocked?d.label:`${d.need}클리어`}</div>
-                    <div style={{fontSize:9,color:"#555",marginTop:1}}>{unlocked?d.desc:"잠김"}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {HH.map(h=>{
-              const unlocked=clearCount>=h.unlockAt;
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+            {[
+              {key:'easy',label:'🌱 쉬움',desc:'공격력 ×2.2 · 입문자 추천',color:'#4f8',need:0},
+              {key:'normal',label:'⚔️ 보통',desc:'공격력 ×1.5 · 1클리어 해금',color:'#4af',need:1},
+              {key:'hard',label:'💀 어려움',desc:'공격력 ×1.3 · 5클리어 해금',color:'#f44',need:5},
+            ].map(d=>{
+              const unlocked=clearCount>=d.need;
               return(
-                <button key={h.id} onClick={()=>unlocked&&pickHidden(h)}
-                  style={{background:unlocked?`${h.color}18`:"#1a1a2e",border:`2px solid ${unlocked?h.color:"#333"}`,borderRadius:10,padding:"12px 16px",cursor:unlocked?"pointer":"not-allowed",color:unlocked?"#eee":"#555",textAlign:"left",display:"flex",alignItems:"center",gap:12,opacity:unlocked?1:0.5}}>
-                  <span style={{fontSize:28}}>{unlocked?h.emoji:"🔒"}</span>
+                <button key={d.key} onClick={()=>unlocked&&setDifficulty(d.key)}
+                  style={{background:difficulty===d.key&&unlocked?d.color+'22':'#21262d',
+                    border:`2px solid ${difficulty===d.key&&unlocked?d.color:'#30363d'}`,
+                    borderRadius:12,padding:"14px 18px",cursor:unlocked?"pointer":"not-allowed",
+                    textAlign:"left",display:"flex",alignItems:"center",gap:14,opacity:unlocked?1:0.4}}>
+                  <div style={{fontSize:32}}>{unlocked?d.label.split(' ')[0]:"🔒"}</div>
                   <div style={{flex:1}}>
-                    <div style={{fontWeight:"bold",fontSize:15,color:unlocked?h.color:"#444"}}>{unlocked?h.name:`${h.unlockAt}클리어 후 개방`}</div>
-                    <div style={{fontSize:11,color:unlocked?"#aaa":"#333",marginTop:2}}>{unlocked?h.desc:`${h.unlockAt}번 클리어하면 해금됩니다`}</div>
+                    <div style={{fontSize:15,fontWeight:"bold",color:difficulty===d.key&&unlocked?d.color:'#aaa'}}>
+                      {unlocked?d.label.split(' ').slice(1).join(' '):`${d.need}클리어 후 개방`}
+                    </div>
+                    <div style={{fontSize:11,color:"#666",marginTop:3}}>{unlocked?d.desc:`${d.need}번 클리어하면 해금됩니다`}</div>
                   </div>
-                  {unlocked&&<span style={{fontSize:10,color:h.color,background:`${h.color}22`,borderRadius:4,padding:"2px 6px"}}>선택</span>}
+                  {difficulty===d.key&&unlocked&&<span style={{fontSize:18,color:d.color}}>✓</span>}
                 </button>
               );
             })}
           </div>
-          <button onClick={()=>setPhase('title')} style={{marginTop:12,background:"#21262d",border:"1px solid #30363d",color:"#666",borderRadius:8,padding:"8px",cursor:"pointer",fontSize:12,width:"100%"}}>← 타이틀로</button>
+          <button onClick={()=>setPhase('hidden')}
+            style={{width:"100%",background:"linear-gradient(135deg,#1f6feb,#6e40c9)",border:"none",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:16,fontWeight:"bold",marginBottom:10}}>
+            다음 → 영웅 선택
+          </button>
+          <button onClick={()=>setPhase('title')}
+            style={{width:"100%",background:"#21262d",border:"1px solid #30363d",color:"#666",borderRadius:10,padding:"10px",cursor:"pointer",fontSize:13}}>
+            ← 타이틀로
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 히든영웅 선택 화면
+  if(phase==='hidden'){
+    return(
+      <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"52px 12px 10px",boxSizing:"border-box",overflow:"hidden"}}>
+        <div style={{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",height:"100%",maxHeight:"100%"}}>
+          {/* 헤더 */}
+          <div style={{textAlign:"center",marginBottom:8,flexShrink:0}}>
+            <div style={{fontSize:10,color:"#4af",marginBottom:2}}>🗺️ {currentMapName} · {difficulty==='easy'?'🌱 쉬움':difficulty==='normal'?'⚔️ 보통':'💀 어려움'}</div>
+            <div style={{fontSize:17,fontWeight:"bold"}}>👑 히든영웅 선택</div>
+          </div>
+          {/* 영웅 목록 */}
+          <div style={{display:"flex",flexDirection:"column",gap:5,flex:1,minHeight:0}}>
+            {HH.map(h=>{
+              const unlocked=clearCount>=h.unlockAt;
+              if(unlocked){
+                return(
+                  <button key={h.id} onClick={()=>pickHidden(h)}
+                    style={{background:`${h.color}18`,border:`2px solid ${h.color}`,borderRadius:10,padding:"10px 14px",cursor:"pointer",color:"#eee",textAlign:"left",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+                    <span style={{fontSize:24,flexShrink:0}}>{h.emoji}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:"bold",fontSize:14,color:h.color}}>{h.name}</div>
+                      <div style={{fontSize:11,color:"#aaa",marginTop:1}}>{h.desc}</div>
+                    </div>
+                    <span style={{fontSize:10,color:h.color,background:`${h.color}22`,borderRadius:4,padding:"2px 8px",flexShrink:0}}>선택</span>
+                  </button>
+                );
+              }else{
+                return(
+                  <div key={h.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",opacity:0.7}}>
+                    <span style={{fontSize:14}}>🔒</span>
+                    <span style={{fontSize:11,color:"#888"}}>{h.unlockAt}클리어 후 개방</span>
+                  </div>
+                );
+              }
+            })}
+          </div>
+          {/* 뒤로가기 */}
+          <button onClick={()=>setPhase('diff')} style={{marginTop:8,background:"#21262d",border:"1px solid #30363d",color:"#666",borderRadius:8,padding:"8px",cursor:"pointer",fontSize:12,width:"100%",flexShrink:0}}>← 난이도 다시 선택</button>
         </div>
       </div>
     );
@@ -4858,7 +4895,7 @@ export default function App(){
   // 게임 화면
   // ══════════════════════════════════════════
   return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",height:"100dvh",maxHeight:"100dvh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"0",overflow:"hidden",boxSizing:"border-box"}}>
+    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",height:"100dvh",maxHeight:"100dvh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"52px 0 0",overflow:"hidden",boxSizing:"border-box"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
       {showChat&&(
