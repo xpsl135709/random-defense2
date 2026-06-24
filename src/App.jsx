@@ -4130,127 +4130,110 @@ export default function App(){
   if(phase==='title'){
     return(
       <>
-      {/* 타이틀 화면 - 이미지 위에 투명 버튼 오버레이 */}
-      <div style={{position:"relative",width:"100%",height:"100dvh",maxHeight:"100dvh",overflow:"hidden",background:"#0a0d1a"}}>
-        {/* 배경 이미지 */}
-        <img src="/title-bg.PNG" alt="" style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",height:"100%",width:"auto",maxWidth:"none",objectFit:"cover",objectPosition:"center top",pointerEvents:"none",userSelect:"none"}}/>
+      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#111318",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"0",overflow:"hidden",boxSizing:"border-box"}}>
 
-        {/* 투명 버튼 오버레이 레이어 */}
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start"}}>
-
-          {/* 상단: 클리어/접속자 정보 - 이미지 상단 패널 위치 */}
-          <div style={{width:"100%",maxWidth:480,padding:"0 16px",position:"absolute",top:"47%"}}>
-
-            {/* 클리어 + 힌트 줄 */}
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-              <button
-                onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
-                onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
-                onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
-                onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
-                style={{background:"rgba(0,0,0,0)",border:"none",cursor:"pointer",padding:0,userSelect:"none"}}>
-                <span style={{background:"rgba(0,0,0,0.01)",borderRadius:8,padding:"5px 10px",fontSize:13,color:"rgba(0,0,0,0)",fontWeight:"600"}}>🏆 {clearCount}클리어</span>
-              </button>
-            </div>
-
-            {/* 접속자 줄 */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-              <div style={{display:"flex",alignItems:"center",gap:4}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:"rgba(0,0,0,0)",flexShrink:0}}/>
-                <span style={{fontSize:11,color:"rgba(0,0,0,0)"}}>{onlineUsers.length}명 접속중</span>
-              </div>
-              {/* 닉네임 설정 버튼 */}
-              <button onClick={()=>setShowNicknamePrompt(true)}
-                style={{background:"rgba(255,255,255,0)",border:"none",borderRadius:6,padding:"4px 8px",color:"rgba(0,0,0,0)",fontSize:12,cursor:"pointer"}}>
-                ⚙️ 닉네임 설정
-              </button>
-            </div>
-
-            {/* 닉네임 표시 태그 */}
-            <div style={{marginBottom:0}}>
-              <span style={{background:"rgba(0,0,0,0)",border:"none",borderRadius:6,padding:"3px 10px",fontSize:12,color:"rgba(0,0,0,0)"}}>
-                🎮 {nickname.trim()||'닉네임없음'}
-              </span>
+        {/* 상단 헤더 */}
+        <div style={{width:"100%",maxWidth:420,padding:"20px 20px 0",flexShrink:0}}>
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:28,fontWeight:"800",color:"#f1f5f9",letterSpacing:-0.5,lineHeight:1.1}}>랜덤 디펜스</div>
+            <div style={{fontSize:12,color:"#64748b",marginTop:3,letterSpacing:1}}>RANDOM DEFENSE · 타워 디펜스</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+            <button onClick={()=>setShowNicknamePrompt(true)}
+              style={{background:"#1e2433",border:`1px solid ${nickname.trim()?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"6px 12px",color:nickname.trim()?"#93c5fd":"#475569",fontSize:13,cursor:"pointer",fontWeight:nickname.trim()?"600":"normal",flexShrink:0}}>
+              {nickname.trim()?`👤 ${nickname.trim()}`:"👤 닉네임 설정"}
+            </button>
+            <span
+              onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+              onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+              onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+              onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+              style={{background:"#1e2433",border:"1px solid #2d3748",borderRadius:8,padding:"6px 10px",fontSize:12,color:"#f59e0b",fontWeight:"600",userSelect:"none",flexShrink:0}}>
+              🏆 {clearCount}클리어
+            </span>
+            <div style={{flex:1,display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e",flexShrink:0}}/>
+              <span style={{fontSize:11,color:"#64748b"}}>{onlineUsers.length}명 접속중</span>
             </div>
           </div>
-
-          {/* 맵설정 텍스트 위치 */}
-          <div style={{position:"absolute",top:"59%",width:"100%",maxWidth:480,padding:"0 16px",display:"flex",flexDirection:"column",gap:0}}>
-            {/* 랜덤맵 버튼 */}
-            <div style={{display:"flex",gap:8,marginBottom:4}}>
-              <button onClick={()=>setMapMode('random')}
-                style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"14px 0",cursor:"pointer",borderRadius:10}}/>
-              <button onClick={()=>setMapMode('pick')}
-                style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"14px 0",cursor:"pointer",borderRadius:10}}/>
-            </div>
-            {/* 맵 5개 */}
-            <div style={{display:"flex",gap:4,marginBottom:0}}>
-              {(['B','C','D','E','F']).map((k,i)=>(
-                <button key={k} onClick={()=>{setSelectedMap(k);if(mapMode==='random')setMapMode('pick');}}
-                  style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"18px 0",cursor:"pointer",borderRadius:8}}/>
-              ))}
-            </div>
-          </div>
-
-          {/* 닉네임 입력칸 위치 */}
-          <button onClick={()=>setShowNicknamePrompt(true)}
-            style={{position:"absolute",top:"72.5%",left:"50%",transform:"translateX(-50%)",width:"calc(100% - 48px)",maxWidth:420,background:"rgba(0,0,0,0)",border:"none",padding:"14px 0",cursor:"pointer",borderRadius:10}}>
-            <span style={{color:"rgba(0,0,0,0)",fontSize:16}}>{nickname.trim()||'닉네임 설정'}</span>
-          </button>
-
-          {/* 멀티플레이 버튼 */}
-          <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
-            style={{position:"absolute",top:"79%",left:"50%",transform:"translateX(-50%)",width:"calc(100% - 48px)",maxWidth:420,background:"rgba(0,0,0,0)",border:"none",padding:"14px 0",cursor:"pointer",borderRadius:10}}/>
-
-          {/* 게임시작 + 회전모드 */}
-          <div style={{position:"absolute",top:"86%",left:"50%",transform:"translateX(-50%)",width:"calc(100% - 48px)",maxWidth:420,display:"flex",gap:10}}>
-            <button onClick={()=>startGame(null)}
-              style={{flex:3,background:"rgba(0,0,0,0)",border:"none",padding:"16px 0",cursor:"pointer",borderRadius:12}}/>
-            <button onClick={()=>startRotation()}
-              style={{flex:2,background:"rgba(0,0,0,0)",border:"none",padding:"16px 0",cursor:"pointer",borderRadius:12}}/>
-          </div>
-
-          {/* 하단 유틸 4개 */}
-          <div style={{position:"absolute",top:"93%",left:"50%",transform:"translateX(-50%)",width:"calc(100% - 32px)",maxWidth:440,display:"flex",gap:6}}>
-            <button onClick={()=>{setShowRanking(true);loadRanking();}} style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"12px 0",cursor:"pointer",borderRadius:8}}/>
-            <button onClick={()=>setShowGuide(true)} style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"12px 0",cursor:"pointer",borderRadius:8}}/>
-            <button onClick={()=>{setShowDex(true);setDexTab('dex');}} style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"12px 0",cursor:"pointer",borderRadius:8}}/>
-            <button onClick={()=>setShowPatch(true)} style={{flex:1,background:"rgba(0,0,0,0)",border:"none",padding:"12px 0",cursor:"pointer",borderRadius:8}}/>
-          </div>
-
-          {/* 닉네임 실제 텍스트 오버레이 (이미지 닉네임 칸 위에 표시) */}
-          {nickname.trim()&&(
-            <div style={{position:"absolute",top:"73%",left:"50%",transform:"translateX(-50%)",pointerEvents:"none",color:"#c8d6e8",fontSize:15,fontWeight:"600",textShadow:"0 1px 4px rgba(0,0,0,0.8)"}}>
-              👤 {nickname.trim()}
-            </div>
-          )}
-
-          {/* 클리어 수 실제 텍스트 */}
-          <div style={{position:"absolute",top:"47.5%",left:"16px",pointerEvents:"none"}}>
-            <span style={{color:"#f59e0b",fontSize:13,fontWeight:"700",textShadow:"0 1px 6px rgba(0,0,0,0.9)"}}>🏆 {clearCount}클리어</span>
-          </div>
-
-          {/* 접속자 수 */}
-          <div style={{position:"absolute",top:"50%",left:"16px",pointerEvents:"none",display:"flex",alignItems:"center",gap:4}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e"}}/>
-            <span style={{color:"#94a3b8",fontSize:11,textShadow:"0 1px 4px rgba(0,0,0,0.9)"}}>{onlineUsers.length}명 접속중{totalUsersCount!==null?` · 누적 ${totalUsersCount}명`:""}</span>
-          </div>
-
-          {/* 접속자 닉네임 태그들 */}
           {onlineUsers.length>0&&(
-            <div style={{position:"absolute",top:"52.5%",left:"16px",right:"16px",display:"flex",flexWrap:"wrap",gap:4,pointerEvents:"none"}}>
-              {onlineUsers.slice(0,6).map(u=>(
-                <span key={u.name} style={{background:"rgba(0,0,0,0.5)",border:`1px solid ${u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#94a3b8"}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:14}}>
+              {onlineUsers.map(u=>(
+                <span key={u.name} style={{background:u.in_game?"#0f2d1a":"#1a1f2e",border:`1px solid ${u.in_game?"#16a34a":"#2d3748"}`,borderRadius:6,padding:"2px 8px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#64748b"}}>
                   {containsAdminKeyword(u.name)?"👑 ":u.in_game?"🎮 ":""}{u.name}
                 </span>
               ))}
             </div>
           )}
+        </div>
 
-          {/* 맵 선택 상태 표시 */}
-          <div style={{position:"absolute",top:"67%",left:"50%",transform:"translateX(-50%)",pointerEvents:"none",fontSize:10,color:"rgba(150,180,220,0.8)"}}>
-            {mapMode==='random'?'🎲 랜덤맵':`🗺️ ${MAP_DEFS[selectedMap]?.name} 선택됨`}
+        <div style={{width:"100%",maxWidth:420,flex:1,overflowY:"auto",padding:"0 20px 20px",boxSizing:"border-box"}}>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:11,color:"#64748b",marginBottom:6,fontWeight:"600",letterSpacing:0.5}}>맵 선택</div>
+            <div style={{display:"flex",gap:6,marginBottom:6}}>
+              {[{key:"random",label:"🎲 랜덤"},{key:"pick",label:"🗺️ 직접 선택"}].map(m=>(
+                <button key={m.key} onClick={()=>setMapMode(m.key)}
+                  style={{flex:1,background:mapMode===m.key?"#1e3a5f":"#1a1f2e",border:`1px solid ${mapMode===m.key?"#3b82f6":"#2d3748"}`,color:mapMode===m.key?"#93c5fd":"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:mapMode===m.key?"600":"normal"}}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:5}}>
+              {[{key:"B",label:"S자",icon:"〰️"},{key:"C",label:"분기",icon:"🔀"},{key:"D",label:"나선",icon:"🌀"},{key:"E",label:"역방향",icon:"⬆️"},{key:"F",label:"X자",icon:"❌"}].map(m=>(
+                mapMode==='pick'
+                  ?<button key={m.key} onClick={()=>setSelectedMap(m.key)}
+                    style={{flex:1,background:selectedMap===m.key?"#1e3a5f":"#1a1f2e",border:`1px solid ${selectedMap===m.key?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"7px 4px",textAlign:"center",cursor:"pointer"}}>
+                    <div style={{fontSize:14}}>{m.icon}</div>
+                    <div style={{fontSize:9,color:selectedMap===m.key?"#93c5fd":"#475569",marginTop:2}}>{m.label}</div>
+                  </button>
+                  :<div key={m.key} style={{flex:1,background:"#1a1f2e",border:"1px solid #2d3748",borderRadius:8,padding:"7px 4px",textAlign:"center"}}>
+                    <div style={{fontSize:14}}>{m.icon}</div>
+                    <div style={{fontSize:9,color:"#475569",marginTop:2}}>{m.label}</div>
+                  </div>
+              ))}
+            </div>
+            {mapMode==='pick'&&<div style={{fontSize:10,color:"#475569",marginTop:4,textAlign:"center"}}>{MAP_DEFS[selectedMap].name} 맵 선택됨</div>}
+            {mapMode==='random'&&<div style={{fontSize:10,color:"#475569",marginTop:4,textAlign:"center"}}>매 게임 5종 맵 중 랜덤</div>}
           </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:10}}>
+            <button onClick={()=>startGame(null)}
+              style={{width:"100%",background:"#1d4ed8",border:"2px solid #3b82f6",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:16,fontWeight:"700",boxShadow:"0 4px 20px rgba(29,78,216,0.5)"}}>
+              ⚔️ 게임 시작
+            </button>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>startRotation()}
+                style={{flex:1,background:"#1a1f2e",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:10,padding:"11px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
+                🔄 회전 모드
+              </button>
+              <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
+                style={{flex:1,background:"#14532d",border:"1px solid #166534",color:"#4ade80",borderRadius:10,padding:"11px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
+                👥 멀티플레이
+              </button>
+            </div>
+          </div>
+
+          <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+            {[
+              {label:"🏆 랭킹",fn:()=>{setShowRanking(true);loadRanking();}},
+              {label:"📖 설명",fn:()=>setShowGuide(true)},
+              {label:"📔 도감",fn:()=>{setShowDex(true);setDexTab('dex');}},
+              {label:"📋 패치노트",fn:()=>setShowPatch(true)},
+            ].map(b=>(
+              <button key={b.label} onClick={b.fn}
+                style={{background:"#1a1f2e",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12}}>
+                {b.label}
+              </button>
+            ))}
+          </div>
+
+          {clearCount<5&&(
+            <div style={{marginTop:12,textAlign:"center",fontSize:11,color:"#475569"}}>
+              {clearCount<1&&"쉬움 클리어 시 전설 등급·보통 난이도 개방"}
+              {clearCount>=1&&clearCount<3&&`${3-clearCount}클리어 후 신화 등급 개방`}
+              {clearCount>=3&&clearCount<5&&`${5-clearCount}클리어 후 불멸·어려움 개방`}
+            </div>
+          )}
         </div>
       </div>
 
