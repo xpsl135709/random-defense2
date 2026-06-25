@@ -3680,15 +3680,15 @@ export default function App(){
   const saveRecord=async(isVictory)=>{
     if(savedThisGameRef.current)return; // 같은 게임에서 중복 저장 방지
     savedThisGameRef.current=true;
+    let newClearCount=clearCount;
     if(isVictory){
-      const newCount=isAdminMode?clearCount:clearCount+1;
-      setClearCount(newCount);
-      if(!isAdminMode)saveClearCount(nickname,newCount);
+      newClearCount=isAdminMode?clearCount:clearCount+1;
+      setClearCount(newClearCount);
+      if(!isAdminMode)saveClearCount(nickname,newClearCount);
     }
     const finalName=nickname.trim();
     const g=G.current;
     if(isAdminMode)return; // 관리자 랭킹 저장 제외
-    const newClearCount=isVictory?clearCount:clearCount; // 이미 위에서 갱신됨
     const record={
       name:finalName,
       difficulty:g.difficulty||'hard',
