@@ -4130,36 +4130,39 @@ export default function App(){
   if(phase==='title'){
     return(
       <>
-      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#111318",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"0",overflow:"hidden",boxSizing:"border-box"}}>
+      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#0a0c14",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",overflow:"hidden",boxSizing:"border-box"}}>
 
-        {/* 상단 헤더 */}
-        <div style={{width:"100%",maxWidth:420,padding:"20px 20px 0",flexShrink:0}}>
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:28,fontWeight:"800",color:"#f1f5f9",letterSpacing:-0.5,lineHeight:1.1}}>랜덤 디펜스</div>
-            <div style={{fontSize:12,color:"#64748b",marginTop:3,letterSpacing:1}}>RANDOM DEFENSE · 타워 디펜스</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-            <button onClick={()=>setShowNicknamePrompt(true)}
-              style={{background:"#1e2433",border:`1px solid ${nickname.trim()?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"6px 12px",color:nickname.trim()?"#93c5fd":"#475569",fontSize:13,cursor:"pointer",fontWeight:nickname.trim()?"600":"normal",flexShrink:0}}>
-              {nickname.trim()?`👤 ${nickname.trim()}`:"👤 닉네임 설정"}
-            </button>
-            <span
-              onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
-              onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
-              onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
-              onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
-              style={{background:"#1e2433",border:"1px solid #2d3748",borderRadius:8,padding:"6px 10px",fontSize:12,color:"#f59e0b",fontWeight:"600",userSelect:"none",flexShrink:0}}>
-              🏆 {clearCount}클리어
-            </span>
-            <div style={{flex:1,display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
+        {/* 상단 이미지 배경 영역 */}
+        <div style={{width:"100%",position:"relative",flexShrink:0,height:"52%"}}>
+          <img src="/title-bg.PNG" alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+          {/* 하단 페이드 */}
+          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"50%",background:"linear-gradient(to bottom,rgba(10,12,20,0) 0%,rgba(10,12,20,1) 100%)"}}/>
+          {/* 상단 정보 */}
+          <div style={{position:"absolute",top:12,left:12,right:12,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              <button onClick={()=>setShowNicknamePrompt(true)}
+                style={{background:"rgba(0,0,0,0.55)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"5px 10px",color:nickname.trim()?"#93c5fd":"#888",fontSize:12,cursor:"pointer",fontWeight:nickname.trim()?"600":"normal",backdropFilter:"blur(4px)",textAlign:"left"}}>
+                👤 {nickname.trim()||"닉네임 설정"}
+              </button>
+              <span
+                onTouchStart={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+                onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+                onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
+                onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
+                style={{background:"rgba(0,0,0,0.55)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#f59e0b",fontWeight:"600",userSelect:"none",backdropFilter:"blur(4px)",display:"inline-block"}}>
+                🏆 {clearCount}클리어
+              </span>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,0,0,0.5)",borderRadius:8,padding:"5px 9px",backdropFilter:"blur(4px)"}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e",flexShrink:0}}/>
-              <span style={{fontSize:11,color:"#64748b"}}>{onlineUsers.length}명 접속중</span>
+              <span style={{fontSize:11,color:"#94a3b8"}}>{onlineUsers.length}명 접속중</span>
             </div>
           </div>
+          {/* 접속자 태그 */}
           {onlineUsers.length>0&&(
-            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:14}}>
-              {onlineUsers.map(u=>(
-                <span key={u.name} style={{background:u.in_game?"#0f2d1a":"#1a1f2e",border:`1px solid ${u.in_game?"#16a34a":"#2d3748"}`,borderRadius:6,padding:"2px 8px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#64748b"}}>
+            <div style={{position:"absolute",bottom:16,left:12,right:12,display:"flex",flexWrap:"wrap",gap:4}}>
+              {onlineUsers.slice(0,5).map(u=>(
+                <span key={u.name} style={{background:"rgba(0,0,0,0.6)",border:`1px solid ${u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#94a3b8",backdropFilter:"blur(4px)"}}>
                   {containsAdminKeyword(u.name)?"👑 ":u.in_game?"🎮 ":""}{u.name}
                 </span>
               ))}
@@ -4167,53 +4170,54 @@ export default function App(){
           )}
         </div>
 
-        <div style={{width:"100%",maxWidth:420,flex:1,overflowY:"auto",padding:"0 20px 20px",boxSizing:"border-box"}}>
-          <div style={{marginBottom:14}}>
-            <div style={{fontSize:11,color:"#64748b",marginBottom:6,fontWeight:"600",letterSpacing:0.5}}>맵 선택</div>
-            <div style={{display:"flex",gap:6,marginBottom:6}}>
+        {/* 하단 버튼 영역 */}
+        <div style={{width:"100%",maxWidth:420,flex:1,overflowY:"auto",padding:"8px 16px 16px",boxSizing:"border-box"}}>
+
+          {/* 맵 선택 */}
+          <div style={{marginBottom:10}}>
+            <div style={{display:"flex",gap:6,marginBottom:5}}>
               {[{key:"random",label:"🎲 랜덤"},{key:"pick",label:"🗺️ 직접 선택"}].map(m=>(
                 <button key={m.key} onClick={()=>setMapMode(m.key)}
-                  style={{flex:1,background:mapMode===m.key?"#1e3a5f":"#1a1f2e",border:`1px solid ${mapMode===m.key?"#3b82f6":"#2d3748"}`,color:mapMode===m.key?"#93c5fd":"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:mapMode===m.key?"600":"normal"}}>
+                  style={{flex:1,background:mapMode===m.key?"#1e3a5f":"#161b26",border:`1px solid ${mapMode===m.key?"#3b82f6":"#2d3748"}`,color:mapMode===m.key?"#93c5fd":"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:mapMode===m.key?"600":"normal"}}>
                   {m.label}
                 </button>
               ))}
             </div>
-            <div style={{display:"flex",gap:5}}>
-              {[{key:"B",label:"S자",icon:"〰️"},{key:"C",label:"분기",icon:"🔀"},{key:"D",label:"나선",icon:"🌀"},{key:"E",label:"역방향",icon:"⬆️"},{key:"F",label:"X자",icon:"❌"}].map(m=>(
-                mapMode==='pick'
-                  ?<button key={m.key} onClick={()=>setSelectedMap(m.key)}
-                    style={{flex:1,background:selectedMap===m.key?"#1e3a5f":"#1a1f2e",border:`1px solid ${selectedMap===m.key?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"7px 4px",textAlign:"center",cursor:"pointer"}}>
-                    <div style={{fontSize:14}}>{m.icon}</div>
-                    <div style={{fontSize:9,color:selectedMap===m.key?"#93c5fd":"#475569",marginTop:2}}>{m.label}</div>
+            {mapMode==='pick'&&(
+              <div style={{display:"flex",gap:5}}>
+                {[{key:"B",label:"S자",icon:"〰️"},{key:"C",label:"분기",icon:"🔀"},{key:"D",label:"나선",icon:"🌀"},{key:"E",label:"역방향",icon:"⬆️"},{key:"F",label:"X자",icon:"❌"}].map(m=>(
+                  <button key={m.key} onClick={()=>setSelectedMap(m.key)}
+                    style={{flex:1,background:selectedMap===m.key?"#1e3a5f":"#161b26",border:`1px solid ${selectedMap===m.key?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"6px 4px",textAlign:"center",cursor:"pointer"}}>
+                    <div style={{fontSize:13}}>{m.icon}</div>
+                    <div style={{fontSize:9,color:selectedMap===m.key?"#93c5fd":"#475569",marginTop:1}}>{m.label}</div>
                   </button>
-                  :<div key={m.key} style={{flex:1,background:"#1a1f2e",border:"1px solid #2d3748",borderRadius:8,padding:"7px 4px",textAlign:"center"}}>
-                    <div style={{fontSize:14}}>{m.icon}</div>
-                    <div style={{fontSize:9,color:"#475569",marginTop:2}}>{m.label}</div>
-                  </div>
-              ))}
-            </div>
-            {mapMode==='pick'&&<div style={{fontSize:10,color:"#475569",marginTop:4,textAlign:"center"}}>{MAP_DEFS[selectedMap].name} 맵 선택됨</div>}
-            {mapMode==='random'&&<div style={{fontSize:10,color:"#475569",marginTop:4,textAlign:"center"}}>매 게임 5종 맵 중 랜덤</div>}
+                ))}
+              </div>
+            )}
+            {mapMode==='random'&&<div style={{fontSize:10,color:"#475569",textAlign:"center",marginTop:2}}>매 게임 5종 맵 중 랜덤 · {MAP_DEFS[selectedMap]?.name}</div>}
+            {mapMode==='pick'&&<div style={{fontSize:10,color:"#475569",textAlign:"center",marginTop:3}}>{MAP_DEFS[selectedMap]?.name} 선택됨</div>}
           </div>
 
-          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:10}}>
+          {/* 메인 버튼 */}
+          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:8}}>
             <button onClick={()=>startGame(null)}
-              style={{width:"100%",background:"#1d4ed8",border:"2px solid #3b82f6",color:"#fff",borderRadius:12,padding:"14px 0",cursor:"pointer",fontSize:16,fontWeight:"700",boxShadow:"0 4px 20px rgba(29,78,216,0.5)"}}>
+              style={{width:"100%",background:"linear-gradient(135deg,#1d4ed8,#2563eb)",border:"1px solid #3b82f6",color:"#fff",borderRadius:12,padding:"13px 0",cursor:"pointer",fontSize:16,fontWeight:"700",boxShadow:"0 4px 20px rgba(29,78,216,0.4)"}}>
               ⚔️ 게임 시작
             </button>
-            <div style={{display:"flex",gap:8}}>
+            <div style={{display:"flex",gap:7}}>
               <button onClick={()=>startRotation()}
-                style={{flex:1,background:"#1a1f2e",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:10,padding:"11px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
+                style={{flex:1,background:"#161b26",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
                 🔄 회전 모드
               </button>
               <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
-                style={{flex:1,background:"#14532d",border:"1px solid #166534",color:"#4ade80",borderRadius:10,padding:"11px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
+                style={{flex:1,background:"#0d2d1a",border:"1px solid #166534",color:"#4ade80",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
                 👥 멀티플레이
               </button>
             </div>
           </div>
 
-          <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+          {/* 유틸 버튼 */}
+          <div style={{display:"flex",gap:5,justifyContent:"center"}}>
             {[
               {label:"🏆 랭킹",fn:()=>{setShowRanking(true);loadRanking();}},
               {label:"📖 설명",fn:()=>setShowGuide(true)},
@@ -4221,14 +4225,14 @@ export default function App(){
               {label:"📋 패치노트",fn:()=>setShowPatch(true)},
             ].map(b=>(
               <button key={b.label} onClick={b.fn}
-                style={{background:"#1a1f2e",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12}}>
+                style={{flex:1,background:"#161b26",border:"1px solid #2d3748",color:"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:11}}>
                 {b.label}
               </button>
             ))}
           </div>
 
           {clearCount<5&&(
-            <div style={{marginTop:12,textAlign:"center",fontSize:11,color:"#475569"}}>
+            <div style={{marginTop:8,textAlign:"center",fontSize:10,color:"#475569"}}>
               {clearCount<1&&"쉬움 클리어 시 전설 등급·보통 난이도 개방"}
               {clearCount>=1&&clearCount<3&&`${3-clearCount}클리어 후 신화 등급 개방`}
               {clearCount>=3&&clearCount<5&&`${5-clearCount}클리어 후 불멸·어려움 개방`}
