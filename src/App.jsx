@@ -200,29 +200,17 @@ function buildMap(mapKey){
 const PATCH_NOTES=[
   {
     version:"v9.6",
-    date:"2025-06-24",
-    title:"타이틀 화면 리뉴얼 & UI 개선",
+    date:"2025-06-25",
+    title:"타이틀 리뉴얼 & 버그 수정",
     changes:[
-      "🎨 타이틀 화면 배경 이미지 적용 (판타지 아트)",
-      "🎨 타이틀 화면 레이아웃 전면 재설계 (게임앱 스타일)",
+      "🎨 타이틀 화면 배경 이미지 적용 (전체화면 + 반투명 버튼)",
       "🎮 난이도 선택 화면 분리 (게임 시작 → 난이도 → 히든영웅 순서)",
-      "👑 히든영웅 선택 화면 한 화면에 모두 표시 (스크롤 제거)",
-      "🔒 잠긴 히든영웅 작게 표시, 해금 영웅만 크게 강조",
-      "🐛 게임/타이틀/난이도/히든영웅 화면 상단 짤림 수정",
-    ]
-  },
-  {
-    version:"v9.5",
-    date:"2025-06-24",
-    title:"멀티플레이 & UI 개선",
-    changes:[
-      "👥 멀티플레이 모드 추가 (경쟁 방식)",
-      "🌐 공개방 / 🔒 비공개방 분리 (비공개는 코드 직접 지정)",
-      "🚪 공개방 목록에서 방 탭 → 참가 확인 팝업",
-      "⏭️ 멀티 라운드 스킵: 본인 적 전부 처치 시 스킵 버튼 활성화 → 전원 강제 다음 라운드",
-      "👤 닉네임 입력 → 클릭 시 모달 팝업 + 확인 버튼으로 변경",
-      "🐛 닉네임 설정 후 비밀번호 완료 시 닉네임 모달 다시 뜨던 버그 수정",
-      "🐛 멀티 방 만들기 버튼 안 눌리던 버그 수정",
+      "👑 히든영웅 선택 화면 한 화면에 모두 표시, 잠긴 영웅 작게 표시",
+      "👥 멀티플레이 공개방/비공개방 분리, 방 참가 확인 팝업 추가",
+      "👤 닉네임 클릭 시 모달 팝업 + 확인 버튼, 비밀번호 완료 후 재표시 버그 수정",
+      "🐛 전설/신화/불멸 조합 안 되던 버그 수정 (unlockedGrades 기본값 오류)",
+      "🐛 멀티 방 만들기 버튼 오류 수정 (is_private 컬럼 제거)",
+      "🐛 게임/타이틀 화면 상단 짤림 수정",
     ]
   },
   {
@@ -3400,7 +3388,7 @@ export default function App(){
     for(const hero of g.heroes) myCnt[hero.element]=(myCnt[hero.element]||0)+1;
     const myElsCntEx={};
     for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
-    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
     // 등급별 조합 결과 등급 매핑: 내 등급 → 만들 수 있는 결과 등급
     const GRADE_RESULT={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
     const targetGrade=GRADE_RESULT[h.grade]; // 이 등급만 결과로 허용
@@ -3437,7 +3425,7 @@ export default function App(){
 
   const doCombine=(heroId,opt)=>{
     const g=G.current;
-    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
     if(!unlockedG.includes(opt.g)){pushToast(`${opt.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");setSelHero(null);return;}
     if(opt.isRecipe){
       // RECIPES 방식
@@ -3545,7 +3533,7 @@ export default function App(){
 
   const doRecipe=(recipe)=>{
     const g=G.current;if(!canRecipe(recipe)){pushToast("재료 부족!","#ef4444");return;}
-    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
     if(!unlockedG.includes(recipe.g)){pushToast(`${recipe.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     // 황금정령은 1개만 보유 가능
     if(recipe.r==="황금정령"&&g.heroes.some(h=>h.element==="황금정령")){
@@ -3612,7 +3600,7 @@ export default function App(){
     const fromGrade=grades[0];
     const nextGrade=NEXT_GRADE[fromGrade];
     if(!nextGrade){pushToast("더 이상 조합할 수 없는 최고 등급입니다","#f59e0b");return;}
-    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
     if(!unlockedG.includes(nextGrade)){pushToast(`${nextGrade} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     const pool=getPoolByGrade(nextGrade);
     const result=pool.length?{r:pool[Math.floor(Math.random()*pool.length)],g:nextGrade}:null;
@@ -3677,7 +3665,7 @@ export default function App(){
 
   const buyWithCoin=(item)=>{
     const g=G.current;if(g.coins<item.cost){pushToast(`🪙 코인 부족! (${item.cost}개 필요)`,"#ef4444");return;}
-    const unlockedG=g.unlockedGrades||["노말","고급","영웅"];
+    const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
     if(item.grade&&!unlockedG.includes(item.grade)){pushToast(`${item.grade} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
     if(item.element){g.coins-=item.cost;const h=mkH(item.element,item.grade,g.gradeEnhLv||{});const pos=autoPlace(g.heroes);if(pos){h.col=pos[0];h.row=pos[1];}g.heroes.push(h);setModal(null);sync();safeDraw();triggerSummon(item.element,item.grade);return;}
     setModal({type:"coinPick",item});
@@ -4130,18 +4118,21 @@ export default function App(){
   if(phase==='title'){
     return(
       <>
-      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#0a0c14",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",overflow:"hidden",boxSizing:"border-box"}}>
+      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",height:"100dvh",maxHeight:"100dvh",color:"#eee",overflow:"hidden",boxSizing:"border-box",position:"relative"}}>
 
-        {/* 상단 이미지 배경 영역 */}
-        <div style={{width:"100%",position:"relative",flexShrink:0,height:"52%"}}>
-          <img src="/title-bg.png" alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
-          {/* 하단 페이드 */}
-          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"50%",background:"linear-gradient(to bottom,rgba(10,12,20,0) 0%,rgba(10,12,20,1) 100%)"}}/>
+        {/* 전체 배경 이미지 */}
+        <img src="/title-bg.png" alt="" style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",zIndex:0,pointerEvents:"none"}}/>
+        {/* 전체 어둠 오버레이 - 하단으로 갈수록 진하게 */}
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.3) 45%,rgba(0,0,0,0.75) 65%,rgba(0,0,0,0.88) 100%)",zIndex:1,pointerEvents:"none"}}/>
+
+        {/* 콘텐츠 레이어 */}
+        <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
+
           {/* 상단 정보 */}
-          <div style={{position:"absolute",top:12,left:12,right:12,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div style={{width:"100%",maxWidth:440,padding:"12px 14px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0}}>
             <div style={{display:"flex",flexDirection:"column",gap:4}}>
               <button onClick={()=>setShowNicknamePrompt(true)}
-                style={{background:"rgba(0,0,0,0.55)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"5px 10px",color:nickname.trim()?"#93c5fd":"#888",fontSize:12,cursor:"pointer",fontWeight:nickname.trim()?"600":"normal",backdropFilter:"blur(4px)",textAlign:"left"}}>
+                style={{background:"rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"5px 10px",color:nickname.trim()?"#93c5fd":"#aaa",fontSize:12,cursor:"pointer",fontWeight:nickname.trim()?"600":"normal",backdropFilter:"blur(6px)",textAlign:"left"}}>
                 👤 {nickname.trim()||"닉네임 설정"}
               </button>
               <span
@@ -4149,95 +4140,100 @@ export default function App(){
                 onTouchEnd={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
                 onMouseDown={()=>{cheatPressTimer.current=setTimeout(()=>{setCheatInput(String(clearCount));setShowCheatModal(true);},2500);}}
                 onMouseUp={()=>{if(cheatPressTimer.current)clearTimeout(cheatPressTimer.current);}}
-                style={{background:"rgba(0,0,0,0.55)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#f59e0b",fontWeight:"600",userSelect:"none",backdropFilter:"blur(4px)",display:"inline-block"}}>
+                style={{background:"rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#f59e0b",fontWeight:"600",userSelect:"none",backdropFilter:"blur(6px)",display:"inline-block",cursor:"pointer"}}>
                 🏆 {clearCount}클리어
               </span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,0,0,0.5)",borderRadius:8,padding:"5px 9px",backdropFilter:"blur(4px)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,0,0,0.5)",borderRadius:8,padding:"5px 9px",backdropFilter:"blur(6px)"}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e",flexShrink:0}}/>
               <span style={{fontSize:11,color:"#94a3b8"}}>{onlineUsers.length}명 접속중</span>
             </div>
           </div>
+
           {/* 접속자 태그 */}
           {onlineUsers.length>0&&(
-            <div style={{position:"absolute",bottom:16,left:12,right:12,display:"flex",flexWrap:"wrap",gap:4}}>
+            <div style={{width:"100%",maxWidth:440,padding:"6px 14px 0",display:"flex",flexWrap:"wrap",gap:4,flexShrink:0}}>
               {onlineUsers.slice(0,5).map(u=>(
-                <span key={u.name} style={{background:"rgba(0,0,0,0.6)",border:`1px solid ${u.in_game?"#22c55e":"#334155"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#94a3b8",backdropFilter:"blur(4px)"}}>
+                <span key={u.name} style={{background:"rgba(0,0,0,0.55)",border:`1px solid ${u.in_game?"#22c55e":"rgba(255,255,255,0.12)"}`,borderRadius:6,padding:"2px 7px",fontSize:10,color:containsAdminKeyword(u.name)?"#fbbf24":u.in_game?"#4ade80":"#94a3b8",backdropFilter:"blur(4px)"}}>
                   {containsAdminKeyword(u.name)?"👑 ":u.in_game?"🎮 ":""}{u.name}
                 </span>
               ))}
             </div>
           )}
-        </div>
 
-        {/* 하단 버튼 영역 */}
-        <div style={{width:"100%",maxWidth:420,flex:1,overflowY:"auto",padding:"8px 16px 16px",boxSizing:"border-box"}}>
+          {/* 스페이서 - 이미지 캐릭터 영역 */}
+          <div style={{flex:1}}/>
 
-          {/* 맵 선택 */}
-          <div style={{marginBottom:10}}>
-            <div style={{display:"flex",gap:6,marginBottom:5}}>
-              {[{key:"random",label:"🎲 랜덤"},{key:"pick",label:"🗺️ 직접 선택"}].map(m=>(
-                <button key={m.key} onClick={()=>setMapMode(m.key)}
-                  style={{flex:1,background:mapMode===m.key?"#1e3a5f":"#161b26",border:`1px solid ${mapMode===m.key?"#3b82f6":"#2d3748"}`,color:mapMode===m.key?"#93c5fd":"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:mapMode===m.key?"600":"normal"}}>
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            {mapMode==='pick'&&(
-              <div style={{display:"flex",gap:5}}>
-                {[{key:"B",label:"S자",icon:"〰️"},{key:"C",label:"분기",icon:"🔀"},{key:"D",label:"나선",icon:"🌀"},{key:"E",label:"역방향",icon:"⬆️"},{key:"F",label:"X자",icon:"❌"}].map(m=>(
-                  <button key={m.key} onClick={()=>setSelectedMap(m.key)}
-                    style={{flex:1,background:selectedMap===m.key?"#1e3a5f":"#161b26",border:`1px solid ${selectedMap===m.key?"#3b82f6":"#2d3748"}`,borderRadius:8,padding:"6px 4px",textAlign:"center",cursor:"pointer"}}>
-                    <div style={{fontSize:13}}>{m.icon}</div>
-                    <div style={{fontSize:9,color:selectedMap===m.key?"#93c5fd":"#475569",marginTop:1}}>{m.label}</div>
+          {/* 하단 버튼 영역 */}
+          <div style={{width:"100%",maxWidth:440,padding:"0 14px 20px",flexShrink:0}}>
+
+            {/* 맵 선택 */}
+            <div style={{marginBottom:8}}>
+              <div style={{display:"flex",gap:6,marginBottom:5}}>
+                {[{key:"random",label:"🎲 랜덤"},{key:"pick",label:"🗺️ 직접 선택"}].map(m=>(
+                  <button key={m.key} onClick={()=>setMapMode(m.key)}
+                    style={{flex:1,background:mapMode===m.key?"rgba(30,58,95,0.85)":"rgba(20,25,40,0.7)",border:`1px solid ${mapMode===m.key?"#3b82f6":"rgba(255,255,255,0.12)"}`,color:mapMode===m.key?"#93c5fd":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:mapMode===m.key?"600":"normal",backdropFilter:"blur(6px)"}}>
+                    {m.label}
                   </button>
                 ))}
               </div>
+              {mapMode==='pick'&&(
+                <div style={{display:"flex",gap:5,marginBottom:4}}>
+                  {[{key:"B",label:"S자",icon:"〰️"},{key:"C",label:"분기",icon:"🔀"},{key:"D",label:"나선",icon:"🌀"},{key:"E",label:"역방향",icon:"⬆️"},{key:"F",label:"X자",icon:"❌"}].map(m=>(
+                    <button key={m.key} onClick={()=>setSelectedMap(m.key)}
+                      style={{flex:1,background:selectedMap===m.key?"rgba(30,58,95,0.85)":"rgba(20,25,40,0.7)",border:`1px solid ${selectedMap===m.key?"#3b82f6":"rgba(255,255,255,0.12)"}`,borderRadius:8,padding:"6px 4px",textAlign:"center",cursor:"pointer",backdropFilter:"blur(6px)"}}>
+                      <div style={{fontSize:13}}>{m.icon}</div>
+                      <div style={{fontSize:9,color:selectedMap===m.key?"#93c5fd":"#64748b",marginTop:1}}>{m.label}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{fontSize:10,color:"rgba(150,163,190,0.8)",textAlign:"center"}}>
+                {mapMode==='random'?`🎲 랜덤맵`:`🗺️ ${MAP_DEFS[selectedMap]?.name} 선택됨`}
+              </div>
+            </div>
+
+            {/* 메인 버튼 */}
+            <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:7}}>
+              <button onClick={()=>startGame(null)}
+                style={{width:"100%",background:"linear-gradient(135deg,rgba(29,78,216,0.92),rgba(37,99,235,0.92))",border:"1px solid rgba(59,130,246,0.8)",color:"#fff",borderRadius:12,padding:"13px 0",cursor:"pointer",fontSize:16,fontWeight:"700",backdropFilter:"blur(6px)",boxShadow:"0 4px 20px rgba(29,78,216,0.5)"}}>
+                ⚔️ 게임 시작
+              </button>
+              <div style={{display:"flex",gap:7}}>
+                <button onClick={()=>startRotation()}
+                  style={{flex:1,background:"rgba(20,25,40,0.75)",border:"1px solid rgba(255,255,255,0.15)",color:"#cbd5e1",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600",backdropFilter:"blur(6px)"}}>
+                  🔄 회전 모드
+                </button>
+                <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
+                  style={{flex:1,background:"rgba(13,45,26,0.85)",border:"1px solid rgba(22,101,52,0.8)",color:"#4ade80",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600",backdropFilter:"blur(6px)"}}>
+                  👥 멀티플레이
+                </button>
+              </div>
+            </div>
+
+            {/* 유틸 버튼 */}
+            <div style={{display:"flex",gap:5}}>
+              {[
+                {label:"🏆 랭킹",fn:()=>{setShowRanking(true);loadRanking();}},
+                {label:"📖 설명",fn:()=>setShowGuide(true)},
+                {label:"📔 도감",fn:()=>{setShowDex(true);setDexTab('dex');}},
+                {label:"📋 패치노트",fn:()=>setShowPatch(true)},
+              ].map(b=>(
+                <button key={b.label} onClick={b.fn}
+                  style={{flex:1,background:"rgba(20,25,40,0.75)",border:"1px solid rgba(255,255,255,0.1)",color:"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:11,backdropFilter:"blur(6px)"}}>
+                  {b.label}
+                </button>
+              ))}
+            </div>
+
+            {clearCount<5&&(
+              <div style={{marginTop:7,textAlign:"center",fontSize:10,color:"rgba(120,140,170,0.8)"}}>
+                {clearCount<1&&"쉬움 클리어 시 전설 등급·보통 난이도 개방"}
+                {clearCount>=1&&clearCount<3&&`${3-clearCount}클리어 후 신화 등급 개방`}
+                {clearCount>=3&&clearCount<5&&`${5-clearCount}클리어 후 불멸·어려움 개방`}
+              </div>
             )}
-            {mapMode==='random'&&<div style={{fontSize:10,color:"#475569",textAlign:"center",marginTop:2}}>매 게임 5종 맵 중 랜덤 · {MAP_DEFS[selectedMap]?.name}</div>}
-            {mapMode==='pick'&&<div style={{fontSize:10,color:"#475569",textAlign:"center",marginTop:3}}>{MAP_DEFS[selectedMap]?.name} 선택됨</div>}
           </div>
-
-          {/* 메인 버튼 */}
-          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:8}}>
-            <button onClick={()=>startGame(null)}
-              style={{width:"100%",background:"linear-gradient(135deg,#1d4ed8,#2563eb)",border:"1px solid #3b82f6",color:"#fff",borderRadius:12,padding:"13px 0",cursor:"pointer",fontSize:16,fontWeight:"700",boxShadow:"0 4px 20px rgba(29,78,216,0.4)"}}>
-              ⚔️ 게임 시작
-            </button>
-            <div style={{display:"flex",gap:7}}>
-              <button onClick={()=>startRotation()}
-                style={{flex:1,background:"#161b26",border:"1px solid #2d3748",color:"#94a3b8",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
-                🔄 회전 모드
-              </button>
-              <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
-                style={{flex:1,background:"#0d2d1a",border:"1px solid #166534",color:"#4ade80",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600"}}>
-                👥 멀티플레이
-              </button>
-            </div>
-          </div>
-
-          {/* 유틸 버튼 */}
-          <div style={{display:"flex",gap:5,justifyContent:"center"}}>
-            {[
-              {label:"🏆 랭킹",fn:()=>{setShowRanking(true);loadRanking();}},
-              {label:"📖 설명",fn:()=>setShowGuide(true)},
-              {label:"📔 도감",fn:()=>{setShowDex(true);setDexTab('dex');}},
-              {label:"📋 패치노트",fn:()=>setShowPatch(true)},
-            ].map(b=>(
-              <button key={b.label} onClick={b.fn}
-                style={{flex:1,background:"#161b26",border:"1px solid #2d3748",color:"#64748b",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:11}}>
-                {b.label}
-              </button>
-            ))}
-          </div>
-
-          {clearCount<5&&(
-            <div style={{marginTop:8,textAlign:"center",fontSize:10,color:"#475569"}}>
-              {clearCount<1&&"쉬움 클리어 시 전설 등급·보통 난이도 개방"}
-              {clearCount>=1&&clearCount<3&&`${3-clearCount}클리어 후 신화 등급 개방`}
-              {clearCount>=3&&clearCount<5&&`${5-clearCount}클리어 후 불멸·어려움 개방`}
-            </div>
-          )}
         </div>
       </div>
 
