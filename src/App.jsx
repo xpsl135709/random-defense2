@@ -3300,7 +3300,7 @@ export default function App(){
     setPhase('hidden');
   };
 
-  const pickHidden=(h)=>{
+  const pickHidden=async(h)=>{
     const g=G.current;
     g.hiddenHero={...h,id:h.id};
     // 난이도 최종 반영
@@ -3308,6 +3308,16 @@ export default function App(){
     g.diffMul=difficulty==='easy'?2.2:difficulty==='normal'?1.5:1.3;
     // 수호자: 시작 라이프 추가
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;sync();}
+    // 멀티: 방장이 히든영웅 선택 시 rooms에 저장 → 게스트 자동 적용
+    if(g.multiRoomId&&isHostRef.current){
+      try{
+        await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${g.multiRoomId}`,{
+          method:'PATCH',
+          headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+          body:JSON.stringify({hidden_hero:h.id}),
+        });
+      }catch(e){}
+    }
     // 미배치 유닛 자동 배치
     for(const hero of g.heroes){
       if(hero.col===null){
@@ -3906,12 +3916,18 @@ export default function App(){
       const g=G.current;
       if(!g||g.over)return;
       try{
-        const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${roomId}&select=round`,{
+        const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${roomId}&select=round,hidden_hero`,{
           headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
         });
         const data=await res.json();
         if(!data||!data[0])return;
         const serverRound=data[0].round;
+        // 게스트: hidden_hero 감지 → 자동 픽
+        if(!isHostRef.current&&data[0].hidden_hero&&!g.hiddenHero){
+          const heroData=HH.find(h=>h.id===data[0].hidden_hero);
+          if(heroData)pickHidden(heroData);
+          return;
+        }
         // 이미 처리한 라운드는 무시 (중복 방지)
         if(serverRound===lastSeenRound)return;
         if(serverRound>g.round){
@@ -4097,8 +4113,8 @@ export default function App(){
     const g=initGame(diff);
     g.mapKey=mapKey;
     g.clearCount=clearCount;
-    g.unlockedEls=UNLOCK_ELEMENTS(clearCount);
-    g.unlockedGrades=UNLOCK_GRADES(clearCount);
+    g.unlockedEls=UNLOCK_ELEMENTS(99); // 멀티: 클리어 수 무관 전체 개방
+    g.unlockedGrades=UNLOCK_GRADES(99); // 멀티: 클리어 수 무관 전체 개방
     g.diffMul=diff==='easy'?2.2:diff==='normal'?1.5:1.3;
     g.multiRoomId=rid;
     g.multiNickname=nickname.trim();
@@ -4780,33 +4796,38 @@ export default function App(){
               <span style={{color:"#555",marginLeft:8}}>· 친구에게 공유하세요</span>
             </div>
 
-            {/* 난이도 설정 - 방장만 */}
-            <div style={{marginBottom:10}}>
-              <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚔️ 난이도 {!isHostRef.current&&<span style={{color:"#555"}}>(방장이 설정)</span>}</div>
-              <div style={{display:"flex",gap:6}}>
-                {[{key:'easy',label:'🌱 쉬움',color:'#4ade80'},{key:'normal',label:'⚔️ 보통',color:'#60a5fa'},{key:'hard',label:'💀 어려움',color:'#f87171'}].map(d=>(
-                  <button key={d.key}
-                    onClick={()=>{if(isHostRef.current)setDifficulty(d.key);}}
-                    style={{flex:1,background:difficulty===d.key?`${d.color}22`:"#0d1117",border:`2px solid ${difficulty===d.key?d.color:"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:isHostRef.current?"pointer":"default",textAlign:"center"}}>
-                    <div style={{fontSize:11,color:difficulty===d.key?d.color:"#555",fontWeight:"bold"}}>{d.label}</div>
-                  </button>
-                ))}
+            {/* 난이도/속도 설정 - 방장만 표시 */}
+            {isHostRef.current&&(
+              <>
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚔️ 난이도</div>
+                <div style={{display:"flex",gap:6}}>
+                  {[{key:'easy',label:'🌱 쉬움',color:'#4ade80'},{key:'normal',label:'⚔️ 보통',color:'#60a5fa'},{key:'hard',label:'💀 어려움',color:'#f87171'}].map(d=>(
+                    <button key={d.key} onClick={()=>setDifficulty(d.key)}
+                      style={{flex:1,background:difficulty===d.key?`${d.color}22`:"#0d1117",border:`2px solid ${difficulty===d.key?d.color:"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
+                      <div style={{fontSize:11,color:difficulty===d.key?d.color:"#555",fontWeight:"bold"}}>{d.label}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* 게임 속도 설정 - 방장만 */}
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚡ 게임 속도 {!isHostRef.current&&<span style={{color:"#555"}}>(방장이 설정)</span>}</div>
-              <div style={{display:"flex",gap:6}}>
-                {[{s:1,label:'1x'},{s:2,label:'2x'},{s:3,label:'3x'}].map(sp=>(
-                  <button key={sp.s}
-                    onClick={()=>{if(isHostRef.current)setMultiSpeed(sp.s);}}
-                    style={{flex:1,background:multiSpeed===sp.s?"#1e3a5f":"#0d1117",border:`2px solid ${multiSpeed===sp.s?"#3b82f6":"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:isHostRef.current?"pointer":"default",textAlign:"center"}}>
-                    <div style={{fontSize:13,color:multiSpeed===sp.s?"#93c5fd":"#555",fontWeight:"bold"}}>{sp.label}</div>
-                  </button>
-                ))}
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚡ 게임 속도</div>
+                <div style={{display:"flex",gap:6}}>
+                  {[{s:1,label:'1x'},{s:2,label:'2x'},{s:3,label:'3x'},{s:4,label:'4x'}].map(sp=>(
+                    <button key={sp.s} onClick={()=>setMultiSpeed(sp.s)}
+                      style={{flex:1,background:multiSpeed===sp.s?"#1e3a5f":"#0d1117",border:`2px solid ${multiSpeed===sp.s?"#3b82f6":"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
+                      <div style={{fontSize:13,color:multiSpeed===sp.s?"#93c5fd":"#555",fontWeight:"bold"}}>{sp.label}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+              </>
+            )}
+            {!isHostRef.current&&roomInfo&&(
+              <div style={{marginBottom:12,background:"#0d1117",borderRadius:8,padding:"8px 12px",border:"1px solid #21262d",fontSize:11,color:"#555"}}>
+                {difficulty==='easy'?'🌱 쉬움':difficulty==='normal'?'⚔️ 보통':'💀 어려움'} · {multiSpeed}x 속도 (방장 설정)
+              </div>
+            )}
 
             {/* 참가자 목록 */}
             <div style={{marginBottom:14}}>
@@ -4893,6 +4914,18 @@ export default function App(){
 
   // ── 히든영웅 선택 화면
   if(phase==='hidden'){
+    // 멀티 게스트: 방장이 히든영웅 고를 때까지 대기
+    if(G.current?.multiRoomId&&!isHostRef.current){
+      return(
+        <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,boxSizing:"border-box"}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:16}}>👑</div>
+            <div style={{fontSize:18,fontWeight:"bold",marginBottom:8}}>방장이 영웅을 선택 중...</div>
+            <div style={{fontSize:13,color:"#555"}}>방장이 히든영웅을 선택하면 자동으로 게임이 시작됩니다</div>
+          </div>
+        </div>
+      );
+    }
     return(
       <div style={{fontFamily:"sans-serif",background:"#0d1117",height:"100dvh",maxHeight:"100dvh",color:"#eee",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"10px 12px",boxSizing:"border-box",overflow:"hidden"}}>
         <div style={{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",height:"100%",maxHeight:"100%"}}>
@@ -4904,7 +4937,7 @@ export default function App(){
           {/* 영웅 목록 */}
           <div style={{display:"flex",flexDirection:"column",gap:5,flex:1,minHeight:0}}>
             {HH.map(h=>{
-              const unlocked=clearCount>=h.unlockAt;
+              const unlocked=clearCount>=h.unlockAt||!!G.current?.multiRoomId;
               if(unlocked){
                 return(
                   <button key={h.id} onClick={()=>pickHidden(h)}
@@ -5077,11 +5110,13 @@ export default function App(){
             </button>
           )}
           <span style={{flex:1}}/>
-          {/* 배속 토글: 누를 때마다 1→2→3→4→1 */}
-          <button onClick={()=>changeSpeed(speed>=4?1:speed+1)}
-            style={{background:"#1d4ed8",border:"1px solid #3b82f6",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",flexShrink:0}}>
-            {speed}x
-          </button>
+          {/* 배속 토글: 멀티 게임 중엔 숨김 */}
+          {!G.current?.multiRoomId&&(
+            <button onClick={()=>changeSpeed(speed>=4?1:speed+1)}
+              style={{background:"#1d4ed8",border:"1px solid #3b82f6",color:"#fff",borderRadius:6,padding:"2px 10px",cursor:"pointer",fontSize:12,fontWeight:"bold",flexShrink:0}}>
+              {speed}x
+            </button>
+          )}
           <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
           {G.current?.multiRoomId&&<button onClick={()=>setShowMultiStatus(v=>!v)} style={{background:showMultiStatus?"#1e3a5f":"#1e293b",border:`1px solid ${showMultiStatus?"#3b82f6":"transparent"}`,color:showMultiStatus?"#93c5fd":"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>👥</button>}
           <button onClick={()=>{setComboFilter("고급");setComboSearch("");setShowCombo(true);}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
