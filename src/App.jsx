@@ -4134,7 +4134,7 @@ export default function App(){
 
         {/* 상단 이미지 배경 영역 */}
         <div style={{width:"100%",position:"relative",flexShrink:0,height:"52%"}}>
-          <img src="/title-bg.PNG" alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+          <img src="/title-bg.png" alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
           {/* 하단 페이드 */}
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:"50%",background:"linear-gradient(to bottom,rgba(10,12,20,0) 0%,rgba(10,12,20,1) 100%)"}}/>
           {/* 상단 정보 */}
