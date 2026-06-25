@@ -1956,7 +1956,9 @@ export default function App(){
   const [roomInfo,setRoomInfo]=useState(null);
   const [joinInput,setJoinInput]=useState('');
   const [multiEnemiesClear,setMultiEnemiesClear]=useState(false);
-  const [selectedRoom,setSelectedRoom]=useState(null); // 공개방 참가 확인 팝업용
+  const [selectedRoom,setSelectedRoom]=useState(null);
+  const [multiSpeed,setMultiSpeed]=useState(1);
+  const [showMultiStatus,setShowMultiStatus]=useState(false); // 멀티 현황판
   const [roomTypeSelect,setRoomTypeSelect]=useState('public');
   const [customRoomCode,setCustomRoomCode]=useState('');
   const [publicRooms,setPublicRooms]=useState([]);
@@ -3218,7 +3220,7 @@ export default function App(){
           body:JSON.stringify({skipped:false,enemies_clear:false}),
         });
       }catch(e){}
-      // 본인도 바로 다음 라운드
+      // 본인도 바로 다음 라운드 (폴링 중복 방지를 위해 round 미리 올림)
       doNextRound(g);
       setMultiEnemiesClear(false);
       return;
@@ -3899,6 +3901,7 @@ export default function App(){
   // 멀티 스킵 폴링: rooms.round 변경 감지 → 강제 다음 라운드
   const startMultiSkipPoll=(roomId)=>{
     stopMultiSkipPoll();
+    let lastSeenRound=-1;
     multiSkipPollRef.current=setInterval(async()=>{
       const g=G.current;
       if(!g||g.over)return;
@@ -3907,7 +3910,12 @@ export default function App(){
           headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
         });
         const data=await res.json();
-        if(data&&data[0]&&data[0].round>g.round){
+        if(!data||!data[0])return;
+        const serverRound=data[0].round;
+        // 이미 처리한 라운드는 무시 (중복 방지)
+        if(serverRound===lastSeenRound)return;
+        if(serverRound>g.round){
+          lastSeenRound=serverRound;
           doNextRound(g);
           setMultiEnemiesClear(false);
         }
@@ -4051,7 +4059,8 @@ export default function App(){
         // 게스트: 호스트가 게임 시작하면 자동 진입
         if(roomData&&roomData[0]&&roomData[0].status==='playing'&&!isHostRef.current){
           stopMultiPoll();
-          startMultiGame(roomData[0].difficulty||'easy',roomId);
+          const spd=roomData[0].speed||1;
+          startMultiGame(roomData[0].difficulty||'easy',roomId,spd);
         }
       }catch(e){}
     };
@@ -4066,15 +4075,15 @@ export default function App(){
       await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${myRoomId}`,{
         method:'PATCH',
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
-        body:JSON.stringify({status:'playing',round:1}),
+        body:JSON.stringify({status:'playing',round:1,difficulty,speed:multiSpeed}),
       });
       stopMultiPoll();
-      startMultiGame(difficulty,myRoomId);
+      startMultiGame(difficulty,myRoomId,multiSpeed);
     }catch(e){pushToast('게임 시작 실패','#ef4444');}
   };
 
   // 멀티 게임 진입 (호스트/게스트 공용)
-  const startMultiGame=(diff,roomId)=>{
+  const startMultiGame=(diff,roomId,spd=1)=>{
     const rid=roomId||myRoomId;
     setMultiPhase('playing');
     let mapKey;
@@ -4100,8 +4109,12 @@ export default function App(){
     setSummonAnim(null);dragR.current=null;spR.current=1;
     setMultiEnemiesClear(false);
     sync();
+    // 속도 적용
+    spR.current=spd;setSpeedState(spd);
     // 스킵 폴링 시작
     startMultiSkipPoll(rid);
+    // 현황판 폴링 시작 (3초마다)
+    startMultiPoll(rid);
     setPhase('hidden');
   };
   const hd=HH.find(h=>h.id===selH);
@@ -4121,7 +4134,7 @@ export default function App(){
       <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",height:"100dvh",maxHeight:"100dvh",color:"#eee",overflow:"hidden",boxSizing:"border-box",position:"relative"}}>
 
         {/* 전체 배경 이미지 */}
-        <img src="/title-bg.png" alt="" style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",zIndex:0,pointerEvents:"none"}}/>
+        <img src="/title-bg.png" alt="" style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center center",zIndex:0,pointerEvents:"none"}}/>
         {/* 전체 어둠 오버레이 - 하단으로 갈수록 진하게 */}
         <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.3) 45%,rgba(0,0,0,0.75) 65%,rgba(0,0,0,0.88) 100%)",zIndex:1,pointerEvents:"none"}}/>
 
@@ -4756,17 +4769,47 @@ export default function App(){
 
       {/* 멀티플레이 대기실 */}
       {multiPhase==='waiting'&&(
-        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.95)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16}}>
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.95)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:16,overflowY:"auto"}}>
           <div style={{background:"#161b22",borderRadius:16,border:"1px solid #30363d",width:"100%",maxWidth:380,padding:20}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
               <div style={{fontSize:16,fontWeight:"bold",color:"#4ade80"}}>🏠 대기실</div>
               <button onClick={leaveRoom} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
             </div>
-            <div style={{fontSize:11,color:"#888",marginBottom:16}}>
+            <div style={{fontSize:11,color:"#888",marginBottom:12}}>
               방 코드: <span style={{color:"#fcd34d",fontWeight:"bold",letterSpacing:4,fontSize:14}}>{myRoomId}</span>
               <span style={{color:"#555",marginLeft:8}}>· 친구에게 공유하세요</span>
             </div>
-            <div style={{marginBottom:16}}>
+
+            {/* 난이도 설정 - 방장만 */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚔️ 난이도 {!isHostRef.current&&<span style={{color:"#555"}}>(방장이 설정)</span>}</div>
+              <div style={{display:"flex",gap:6}}>
+                {[{key:'easy',label:'🌱 쉬움',color:'#4ade80'},{key:'normal',label:'⚔️ 보통',color:'#60a5fa'},{key:'hard',label:'💀 어려움',color:'#f87171'}].map(d=>(
+                  <button key={d.key}
+                    onClick={()=>{if(isHostRef.current)setDifficulty(d.key);}}
+                    style={{flex:1,background:difficulty===d.key?`${d.color}22`:"#0d1117",border:`2px solid ${difficulty===d.key?d.color:"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:isHostRef.current?"pointer":"default",textAlign:"center"}}>
+                    <div style={{fontSize:11,color:difficulty===d.key?d.color:"#555",fontWeight:"bold"}}>{d.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 게임 속도 설정 - 방장만 */}
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚡ 게임 속도 {!isHostRef.current&&<span style={{color:"#555"}}>(방장이 설정)</span>}</div>
+              <div style={{display:"flex",gap:6}}>
+                {[{s:1,label:'1x'},{s:2,label:'2x'},{s:3,label:'3x'}].map(sp=>(
+                  <button key={sp.s}
+                    onClick={()=>{if(isHostRef.current)setMultiSpeed(sp.s);}}
+                    style={{flex:1,background:multiSpeed===sp.s?"#1e3a5f":"#0d1117",border:`2px solid ${multiSpeed===sp.s?"#3b82f6":"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:isHostRef.current?"pointer":"default",textAlign:"center"}}>
+                    <div style={{fontSize:13,color:multiSpeed===sp.s?"#93c5fd":"#555",fontWeight:"bold"}}>{sp.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 참가자 목록 */}
+            <div style={{marginBottom:14}}>
               <div style={{fontSize:11,color:"#888",marginBottom:8}}>참가자 {roomPlayers.length}명</div>
               {roomPlayers.map(p=>(
                 <div key={p.nickname} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#0d1117",borderRadius:8,marginBottom:6,border:"1px solid #21262d"}}>
@@ -4777,6 +4820,7 @@ export default function App(){
                 </div>
               ))}
             </div>
+
             {isHostRef.current?(
               <button onClick={startMultiGameAsHost}
                 disabled={roomPlayers.length<2}
@@ -4895,6 +4939,7 @@ export default function App(){
   // ══════════════════════════════════════════
   return(
     <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#060d1a",height:"100dvh",maxHeight:"100dvh",color:"#e2e8f0",display:"flex",flexDirection:"column",alignItems:"center",padding:"0",overflow:"hidden",boxSizing:"border-box"}}>
+      <div style={{width:"100%",maxWidth:520,height:"100%",display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <SummonOverlay anim={summonAnim} onClose={()=>setSummonAnim(null)}/>
 
       {showChat&&(
@@ -4958,6 +5003,31 @@ export default function App(){
       )}
 
 
+      {/* 멀티 현황판 */}
+      {showMultiStatus&&G.current?.multiRoomId&&(
+        <div style={{position:"fixed",top:52,right:8,zIndex:500,background:"rgba(13,17,23,0.95)",border:"1px solid #30363d",borderRadius:12,padding:12,minWidth:200,maxWidth:260,backdropFilter:"blur(8px)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:"bold",color:"#4ade80"}}>👥 멀티 현황</div>
+            <button onClick={()=>setShowMultiStatus(false)} style={{background:"none",border:"none",color:"#555",fontSize:14,cursor:"pointer"}}>✕</button>
+          </div>
+          {roomPlayers.length===0?(
+            <div style={{fontSize:11,color:"#555",textAlign:"center",padding:"8px 0"}}>현황 로딩 중...</div>
+          ):roomPlayers.map(p=>(
+            <div key={p.nickname} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 8px",background:p.nickname===G.current?.multiNickname?"#0f2d4a":"#161b22",borderRadius:8,marginBottom:4,border:`1px solid ${p.nickname===G.current?.multiNickname?"#1d4ed8":"#21262d"}`}}>
+              <span style={{fontSize:12}}>{p.is_alive===false?"💀":p.enemies_clear?"✅":"⚔️"}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:11,color:"#eee",fontWeight:"bold",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {p.nickname}{p.nickname===G.current?.multiNickname&&" (나)"}
+                </div>
+                <div style={{fontSize:10,color:"#555",marginTop:1}}>
+                  R{p.round||1} · ❤️{p.life} · 💰{p.gold}G
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* 토스트 알림 (우측 상단, 3초 후 사라짐) */}
       <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}html,body{overflow:hidden;height:100%;margin:0;padding:0;}`}</style>
       <div style={{position:"fixed",top:60,right:8,zIndex:600,display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end",pointerEvents:"none"}}>
@@ -5013,6 +5083,7 @@ export default function App(){
             {speed}x
           </button>
           <button onClick={()=>{setShowChat(true);loadChatMessages();}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>💬</button>
+          {G.current?.multiRoomId&&<button onClick={()=>setShowMultiStatus(v=>!v)} style={{background:showMultiStatus?"#1e3a5f":"#1e293b",border:`1px solid ${showMultiStatus?"#3b82f6":"transparent"}`,color:showMultiStatus?"#93c5fd":"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>👥</button>}
           <button onClick={()=>{setComboFilter("고급");setComboSearch("");setShowCombo(true);}} style={{background:"#1e293b",border:"none",color:"#94a3b8",borderRadius:5,padding:"2px 8px",cursor:"pointer",fontSize:11,fontWeight:"bold",flexShrink:0}}>조합표</button>
         </div>
         {/* 보스 라운드 정보 줄 */}
@@ -5710,6 +5781,7 @@ export default function App(){
         </div>
         );
       })()}
+      </div>
     </div>
   );
 }
