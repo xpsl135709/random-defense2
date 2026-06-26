@@ -4110,6 +4110,11 @@ export default function App(){
         const [roomData,playersData]=await Promise.all([rRes.json(),pRes.json()]);
         if(roomData&&roomData[0])setRoomInfo(roomData[0]);
         if(Array.isArray(playersData))setRoomPlayers(playersData);
+        // 게스트: 방장 난이도/속도 실시간 반영
+        if(!isHostRef.current&&roomData&&roomData[0]){
+          if(roomData[0].difficulty)setDifficulty(roomData[0].difficulty);
+          if(roomData[0].speed)setMultiSpeed(roomData[0].speed);
+        }
         // 게스트: 호스트가 게임 시작하면 자동 진입 (대기실에서만)
         if(roomData&&roomData[0]&&roomData[0].status==='playing'&&!isHostRef.current&&multiPhaseRef.current==='waiting'){
           stopMultiPoll();
@@ -4842,7 +4847,10 @@ export default function App(){
                 <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚔️ 난이도</div>
                 <div style={{display:"flex",gap:6}}>
                   {[{key:'easy',label:'🌱 쉬움',color:'#4ade80'},{key:'normal',label:'⚔️ 보통',color:'#60a5fa'},{key:'hard',label:'💀 어려움',color:'#f87171'}].map(d=>(
-                    <button key={d.key} onClick={()=>setDifficulty(d.key)}
+                    <button key={d.key} onClick={async()=>{
+                      setDifficulty(d.key);
+                      if(myRoomId){try{await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${myRoomId}`,{method:'PATCH',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({difficulty:d.key})});}catch(e){}}
+                    }}
                       style={{flex:1,background:difficulty===d.key?`${d.color}22`:"#0d1117",border:`2px solid ${difficulty===d.key?d.color:"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
                       <div style={{fontSize:11,color:difficulty===d.key?d.color:"#555",fontWeight:"bold"}}>{d.label}</div>
                     </button>
@@ -4853,7 +4861,10 @@ export default function App(){
                 <div style={{fontSize:11,color:"#888",marginBottom:6}}>⚡ 게임 속도</div>
                 <div style={{display:"flex",gap:6}}>
                   {[{s:1,label:'1x'},{s:2,label:'2x'},{s:3,label:'3x'},{s:4,label:'4x'}].map(sp=>(
-                    <button key={sp.s} onClick={()=>setMultiSpeed(sp.s)}
+                    <button key={sp.s} onClick={async()=>{
+                      setMultiSpeed(sp.s);
+                      if(myRoomId){try{await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${myRoomId}`,{method:'PATCH',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({speed:sp.s})});}catch(e){}}
+                    }}
                       style={{flex:1,background:multiSpeed===sp.s?"#1e3a5f":"#0d1117",border:`2px solid ${multiSpeed===sp.s?"#3b82f6":"#21262d"}`,borderRadius:8,padding:"8px 4px",cursor:"pointer",textAlign:"center"}}>
                       <div style={{fontSize:13,color:multiSpeed===sp.s?"#93c5fd":"#555",fontWeight:"bold"}}>{sp.label}</div>
                     </button>
