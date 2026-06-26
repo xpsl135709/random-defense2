@@ -1957,7 +1957,7 @@ export default function App(){
   // ── 멀티플레이 state
   const [multiPhase,setMultiPhase]=useState(null);
   const multiPhaseRef=useRef(null);
-  const setMultiPhaseWithRef=(v)=>{multiPhaseRef.current=v;setMultiPhaseWithRef(v);};
+  const setMultiPhaseWithRef=(v)=>{multiPhaseRef.current=v;setMultiPhase(v);};
   const [myRoomId,setMyRoomId]=useState(null);
   const [roomPlayers,setRoomPlayers]=useState([]);
   const [roomInfo,setRoomInfo]=useState(null);
