@@ -3199,10 +3199,31 @@ export default function App(){
   useEffect(()=>{if(phase==='game')draw();},[selHero,drag]);
 
   // 카운트다운 스킵
-  const skipCountdown=()=>{
+  const skipCountdown=async()=>{
     if(countdownRef.current){clearInterval(countdownRef.current);countdownRef.current=null;}
     setCountdown(0);countdownValRef.current=0;
     if(!G.current.over) autoStart(G.current);
+    // 멀티 방장: 게스트에게 카운트다운 스킵 신호 전송
+    const g=G.current;
+    if(g?.multiRoomId&&isHostRef.current){
+      try{
+        await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${g.multiRoomId}`,{
+          method:'PATCH',
+          headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+          body:JSON.stringify({skip_countdown:true}),
+        });
+        // 1.5초 후 플래그 리셋 (게스트가 감지할 시간 확보)
+        setTimeout(async()=>{
+          try{
+            await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${g.multiRoomId}`,{
+              method:'PATCH',
+              headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+              body:JSON.stringify({skip_countdown:false}),
+            });
+          }catch(e){}
+        },2000);
+      }catch(e){}
+    }
   };
 
   // 다음 라운드 실제 처리 (싱글/멀티 공용)
@@ -4022,7 +4043,7 @@ export default function App(){
       const g=G.current;
       if(!g||g.over)return;
       try{
-        const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${roomId}&select=round,hidden_hero`,{
+        const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${roomId}&select=round,hidden_hero,skip_countdown`,{
           headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
         });
         const data=await res.json();
@@ -4038,6 +4059,14 @@ export default function App(){
         if(!isHostRef.current&&data[0].hidden_hero&&!g.hiddenHero){
           const heroData=HH.find(h=>h.id===data[0].hidden_hero);
           if(heroData)pickHidden(heroData);
+          return;
+        }
+        // 게스트: 방장이 카운트다운 스킵 → 게스트도 즉시 스킵
+        if(!isHostRef.current&&data[0].skip_countdown&&countdownValRef.current>0){
+          if(countdownRef.current){clearInterval(countdownRef.current);countdownRef.current=null;}
+          setCountdown(0);countdownValRef.current=0;
+          if(!g.over)autoStart(g);
+          // 플래그 리셋 (게스트가 처리 완료 후 서버 플래그 지울 필요 없음 - 방장이 다음에 지움)
           return;
         }
         // 이미 처리한 라운드는 무시 (중복 방지)
