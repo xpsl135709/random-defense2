@@ -1814,14 +1814,19 @@ export default function App(){
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
       });
       const data=await res.json();
-      if(data&&data[0]&&data[0].clear_count!=null){
-        const serverCount=parseInt(data[0].clear_count)||0;
-        // 로컬과 서버 중 더 큰 값 사용
-        const localCount=loadClearCount(nick);
-        const finalCount=Math.max(serverCount,localCount);
-        saveClearCount(nick,finalCount);
-        return finalCount;
+      const serverCount=data&&data[0]&&data[0].clear_count!=null?parseInt(data[0].clear_count)||0:0;
+      const localCount=loadClearCount(nick);
+      const finalCount=Math.max(serverCount,localCount);
+      saveClearCount(nick,finalCount);
+      // 로컬이 서버보다 높으면 서버도 업데이트
+      if(finalCount>serverCount&&data&&data[0]){
+        fetch(`${SUPABASE_URL}/rest/v1/rankings?name=eq.${encodeURIComponent(nick)}`,{
+          method:'PATCH',
+          headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+          body:JSON.stringify({clear_count:finalCount}),
+        }).catch(()=>{});
       }
+      return finalCount;
     }catch(e){console.error('loadClearCount server error',e);}
     return loadClearCount(nick);
   };
@@ -1951,6 +1956,8 @@ export default function App(){
 
   // ── 멀티플레이 state
   const [multiPhase,setMultiPhase]=useState(null);
+  const multiPhaseRef=useRef(null);
+  const setMultiPhaseWithRef=(v)=>{multiPhaseRef.current=v;setMultiPhaseWithRef(v);};
   const [myRoomId,setMyRoomId]=useState(null);
   const [roomPlayers,setRoomPlayers]=useState([]);
   const [roomInfo,setRoomInfo]=useState(null);
@@ -3692,6 +3699,26 @@ export default function App(){
   const saveRecord=async(isVictory)=>{
     if(savedThisGameRef.current)return; // 같은 게임에서 중복 저장 방지
     savedThisGameRef.current=true;
+    // 멀티: 게임 종료 시 방 정리
+    const mg=G.current;
+    if(mg?.multiRoomId){
+      const rid=mg.multiRoomId;
+      const mnick=mg.multiNickname;
+      stopMultiSkipPoll();
+      stopMultiPoll();
+      try{
+        await fetch(`${SUPABASE_URL}/rest/v1/room_players?room_id=eq.${rid}&nickname=eq.${encodeURIComponent(mnick)}`,{
+          method:'DELETE',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+        });
+        // 방장이면 방 삭제
+        if(isHostRef.current){
+          await fetch(`${SUPABASE_URL}/rest/v1/rooms?id=eq.${rid}`,{
+            method:'DELETE',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+          });
+        }
+      }catch(e){}
+      isHostRef.current=false;
+    }
     let newClearCount=clearCount;
     if(isVictory){
       newClearCount=isAdminMode?clearCount:clearCount+1;
@@ -3723,7 +3750,18 @@ export default function App(){
         ||(record.round>mine.round)
         ||(record.round===mine.round&&record.gold>mine.gold)
         ||(record.round===mine.round&&record.gold===mine.gold&&record.coins>mine.coins);
-      if(!isBetter)return; // 이전 기록이 더 좋으면 갱신 안함
+      
+      if(!isBetter){
+        // 기록은 안 갱신해도 클리어 수는 항상 최신으로 업데이트
+        if(isVictory&&mine){
+          await fetch(`${SUPABASE_URL}/rest/v1/rankings?name=eq.${encodeURIComponent(finalName)}`,{
+            method:'PATCH',
+            headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+            body:JSON.stringify({clear_count:newClearCount,updated_at:new Date().toISOString()}),
+          });
+        }
+        return;
+      }
       // upsert: 같은 이름 있으면 갱신, 없으면 삽입
       await fetch(`${SUPABASE_URL}/rest/v1/rankings?on_conflict=name`,{
         method:'POST',
@@ -3943,7 +3981,7 @@ export default function App(){
   const loadPublicRooms=async()=>{
     setPublicRoomsLoading(true);
     try{
-      const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?status=eq.waiting&host=not.is.null&order=created_at.desc&limit=20`,{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/rooms?status=eq.waiting&host=not.is.null&order=created_at.desc&limit=20&created_at=gte.${new Date(Date.now()-30*60*1000).toISOString()}`,{
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
       });
       const data=await res.json();
@@ -3998,7 +4036,7 @@ export default function App(){
       });
       isHostRef.current=true;
       setMyRoomId(roomId);
-      setMultiPhase('waiting');
+      setMultiPhaseWithRef('waiting');
       startMultiPoll(roomId);
     }catch(e){pushToast('방 생성 실패','#ef4444');console.error(e);}
   };
@@ -4029,7 +4067,7 @@ export default function App(){
       isHostRef.current=false;
       setMyRoomId(rid);
       setRoomInfo(rooms[0]);
-      setMultiPhase('waiting');
+      setMultiPhaseWithRef('waiting');
       startMultiPoll(rid);
     }catch(e){pushToast('방 참가 실패','#ef4444');console.error(e);}
   };
@@ -4056,7 +4094,7 @@ export default function App(){
     setMyRoomId(null);
     setRoomPlayers([]);
     setRoomInfo(null);
-    setMultiPhase(null);
+    setMultiPhaseWithRef(null);
     isHostRef.current=false;
   };
 
@@ -4072,8 +4110,8 @@ export default function App(){
         const [roomData,playersData]=await Promise.all([rRes.json(),pRes.json()]);
         if(roomData&&roomData[0])setRoomInfo(roomData[0]);
         if(Array.isArray(playersData))setRoomPlayers(playersData);
-        // 게스트: 호스트가 게임 시작하면 자동 진입
-        if(roomData&&roomData[0]&&roomData[0].status==='playing'&&!isHostRef.current){
+        // 게스트: 호스트가 게임 시작하면 자동 진입 (대기실에서만)
+        if(roomData&&roomData[0]&&roomData[0].status==='playing'&&!isHostRef.current&&multiPhaseRef.current==='waiting'){
           stopMultiPoll();
           const spd=roomData[0].speed||1;
           startMultiGame(roomData[0].difficulty||'easy',roomId,spd);
@@ -4081,7 +4119,7 @@ export default function App(){
       }catch(e){}
     };
     poll();
-    multiPollRef.current=setInterval(poll,2000);
+    multiPollRef.current=setInterval(poll,1500); // 1.5초로 단축
   };
 
   // 호스트 게임 시작
@@ -4101,7 +4139,7 @@ export default function App(){
   // 멀티 게임 진입 (호스트/게스트 공용)
   const startMultiGame=(diff,roomId,spd=1)=>{
     const rid=roomId||myRoomId;
-    setMultiPhase('playing');
+    setMultiPhaseWithRef('playing');
     let mapKey;
     if(mapMode==='pick')mapKey=selectedMap;
     else{const maps=['B','C','D','E','F'];mapKey=maps[Math.floor(Math.random()*maps.length)];}
@@ -4127,10 +4165,8 @@ export default function App(){
     sync();
     // 속도 적용
     spR.current=spd;setSpeedState(spd);
-    // 스킵 폴링 시작
+    // 스킵 폴링 시작 (hidden_hero 감지 포함)
     startMultiSkipPoll(rid);
-    // 현황판 폴링 시작 (3초마다)
-    startMultiPoll(rid);
     setPhase('hidden');
   };
   const hd=HH.find(h=>h.id===selH);
@@ -4233,7 +4269,7 @@ export default function App(){
                   style={{flex:1,background:"rgba(20,25,40,0.75)",border:"1px solid rgba(255,255,255,0.15)",color:"#cbd5e1",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600",backdropFilter:"blur(6px)"}}>
                   🔄 회전 모드
                 </button>
-                <button onClick={()=>{setMultiPhase('lobby');loadPublicRooms();}}
+                <button onClick={()=>{setMultiPhaseWithRef('lobby');loadPublicRooms();}}
                   style={{flex:1,background:"rgba(13,45,26,0.85)",border:"1px solid rgba(22,101,52,0.8)",color:"#4ade80",borderRadius:10,padding:"10px 0",cursor:"pointer",fontSize:13,fontWeight:"600",backdropFilter:"blur(6px)"}}>
                   👥 멀티플레이
                 </button>
@@ -4670,7 +4706,7 @@ export default function App(){
             {/* 헤더 */}
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <div style={{fontSize:16,fontWeight:"bold",color:"#4ade80"}}>👥 멀티플레이</div>
-              <button onClick={()=>{setMultiPhase(null);setRoomTypeSelect('public');setCustomRoomCode('');setJoinInput('');}} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
+              <button onClick={()=>{setMultiPhaseWithRef(null);setRoomTypeSelect('public');setCustomRoomCode('');setJoinInput('');}} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
             </div>
 
             {/* ── 방 만들기 섹션 ── */}
