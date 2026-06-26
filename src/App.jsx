@@ -4624,9 +4624,12 @@ export default function App(){
                   setTimeout(()=>{
                     setNickname(nick);
                     try{localStorage.setItem("nickname",nick);}catch{}
-                    let saved=loadClearCount(nick);
-                    if(nick==="경찰"&&saved<5){saved=5;saveClearCount(nick,5);}
-                    setClearCount(saved);
+                    loadClearCountFromServer(nick).then(cnt=>{
+                      let final=nick==="경찰"?Math.max(cnt,5):cnt;
+                      if(nick==="경찰"&&final>cnt)saveClearCount(nick,final);
+                      else saveClearCount(nick,final);
+                      setClearCount(final);
+                    });
                     setShowUserPwPrompt(false);setUserPwInput("");setUserPwMsg("");
                     setShowNicknamePrompt(false);
                     pushToast("환영합니다, "+nick+"!","#4ade80");
