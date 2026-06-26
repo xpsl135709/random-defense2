@@ -199,6 +199,24 @@ function buildMap(mapKey){
 // ══════════════════════════════════════════
 const PATCH_NOTES=[
   {
+    version:"v9.7",
+    date:"2025-06-26",
+    title:"멀티플레이 개선 & 버그 수정",
+    changes:[
+      "🗺️ 멀티플레이 맵 회전맵으로 고정",
+      "👥 현황판 실시간 갱신 (1.5초마다) + 적 유닛 수 표시",
+      "⚙️ 대기실 난이도/속도 방장만 표시, 게스트는 설정값만 표시",
+      "👑 히든영웅 방장이 선택하면 게스트 자동 적용",
+      "🔒 멀티 게임 중 배속 버튼 숨김 (방장 설정값 고정)",
+      "🐛 멀티플레이 버튼 클릭 무반응 버그 수정 (무한재귀 오류)",
+      "🐛 멀티 게임 시작 감지 안 되던 버그 수정 (phase ref 적용)",
+      "🐛 멀티 라운드 스킵 중복 진입 버그 수정",
+      "🐛 게임 종료 시 멀티방 자동 삭제",
+      "🐛 랭킹 clear_count 미저장 버그 수정",
+      "🐛 전설/신화/불멸 조합 개방 버그 수정",
+    ]
+  },
+  {
     version:"v9.6",
     date:"2025-06-25",
     title:"타이틀 리뉴얼 & 버그 수정",
@@ -1965,7 +1983,8 @@ export default function App(){
   const [multiEnemiesClear,setMultiEnemiesClear]=useState(false);
   const [selectedRoom,setSelectedRoom]=useState(null);
   const [multiSpeed,setMultiSpeed]=useState(1);
-  const [showMultiStatus,setShowMultiStatus]=useState(false); // 멀티 현황판
+  const [showMultiStatus,setShowMultiStatus]=useState(false);
+  const multiSyncRef=useRef(null); // 멀티 현황판
   const [roomTypeSelect,setRoomTypeSelect]=useState('public');
   const [customRoomCode,setCustomRoomCode]=useState('');
   const [publicRooms,setPublicRooms]=useState([]);
@@ -3310,9 +3329,10 @@ export default function App(){
   const pickHidden=async(h)=>{
     const g=G.current;
     g.hiddenHero={...h,id:h.id};
-    // 난이도 최종 반영
-    g.difficulty=difficulty;
-    g.diffMul=difficulty==='easy'?2.2:difficulty==='normal'?1.5:1.3;
+    // 난이도: 멀티 게스트면 g에 이미 설정된 값 유지, 아니면 로컬 state
+    const finalDiff=g.difficulty||difficulty;
+    g.difficulty=finalDiff;
+    g.diffMul=finalDiff==='easy'?2.2:finalDiff==='normal'?1.5:1.3;
     // 수호자: 시작 라이프 추가
     if(h.buff&&h.buff.extraLife){g.life+=h.buff.extraLife;sync();}
     // 멀티: 방장이 히든영웅 선택 시 rooms에 저장 → 게스트 자동 적용
@@ -3944,9 +3964,30 @@ export default function App(){
   };
   const stopMultiSkipPoll=()=>{
     if(multiSkipPollRef.current){clearInterval(multiSkipPollRef.current);multiSkipPollRef.current=null;}
+    if(multiSyncRef.current){clearInterval(multiSyncRef.current);multiSyncRef.current=null;}
   };
 
-  // 멀티 스킵 폴링: rooms.round 변경 감지 → 강제 다음 라운드
+  // 멀티: 내 상태 서버 동기화 (적 수 포함)
+  const syncMultiState=async()=>{
+    const g=G.current;
+    if(!g||!g.multiRoomId||!g.multiNickname)return;
+    const aliveEnemies=g.enemies?g.enemies.filter(e=>!e.remove&&e.hp>0).length:0;
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/room_players?room_id=eq.${g.multiRoomId}&nickname=eq.${encodeURIComponent(g.multiNickname)}`,{
+        method:'PATCH',
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          life:g.life,gold:g.gold,coins:g.coins,round:g.round,
+          enemies_clear:aliveEnemies===0&&g.spawnC>=g.maxSpawn,
+          is_alive:!g.over,
+          enemy_count:aliveEnemies,
+          last_update:new Date().toISOString(),
+        }),
+      });
+    }catch(e){}
+  };
+
+  // 멀티: 스킵 폴링: rooms.round 변경 감지 → 강제 다음 라운드
   const startMultiSkipPoll=(roomId)=>{
     stopMultiSkipPoll();
     let lastSeenRound=-1;
@@ -3959,6 +4000,12 @@ export default function App(){
         });
         const data=await res.json();
         if(!data||!data[0])return;
+        // 현황판 갱신
+        const pRes=await fetch(`${SUPABASE_URL}/rest/v1/room_players?room_id=eq.${roomId}&order=nickname.asc`,{
+          headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
+        });
+        const pData=await pRes.json();
+        if(Array.isArray(pData))setRoomPlayers(pData);
         const serverRound=data[0].round;
         // 게스트: hidden_hero 감지 → 자동 픽
         if(!isHostRef.current&&data[0].hidden_hero&&!g.hiddenHero){
@@ -4145,19 +4192,27 @@ export default function App(){
   const startMultiGame=(diff,roomId,spd=1)=>{
     const rid=roomId||myRoomId;
     setMultiPhaseWithRef('playing');
-    let mapKey;
-    if(mapMode==='pick')mapKey=selectedMap;
-    else{const maps=['B','C','D','E','F'];mapKey=maps[Math.floor(Math.random()*maps.length)];}
-    buildMap(mapKey);
-    setCurrentMapName(MAP_DEFS[mapKey]?.name||mapKey);
-    setRotMode(false);
+    // 멀티: 회전맵 고정
+    CURRENT_MAP='ROT';
+    SPAWN_TILE=[0,0];
+    GOAL_TILE=[0,0];
+    FORK_PATHS=null;
+    DUAL_PATHS=null;
+    TRACK=buildRotPath(1);
+    TS=new Set();
+    for(let c=0;c<COLS;c++){TS.add(`${c},0`);TS.add(`${c},${ROWS-1}`);}
+    for(let r=0;r<ROWS;r++){TS.add(`0,${r}`);TS.add(`${COLS-1},${r}`);}
+    CX=4;CY=6;
+    setCurrentMapName('회전(멀티)');
+    setRotMode(true);
     if(raf.current)cancelAnimationFrame(raf.current);
     hid=1;eid=1;
     const g=initGame(diff);
-    g.mapKey=mapKey;
+    g.mapKey='ROT';
+    g.rotMode=true;
     g.clearCount=clearCount;
-    g.unlockedEls=UNLOCK_ELEMENTS(99); // 멀티: 클리어 수 무관 전체 개방
-    g.unlockedGrades=UNLOCK_GRADES(99); // 멀티: 클리어 수 무관 전체 개방
+    g.unlockedEls=UNLOCK_ELEMENTS(99);
+    g.unlockedGrades=UNLOCK_GRADES(99);
     g.diffMul=diff==='easy'?2.2:diff==='normal'?1.5:1.3;
     g.multiRoomId=rid;
     g.multiNickname=nickname.trim();
@@ -4172,6 +4227,9 @@ export default function App(){
     spR.current=spd;setSpeedState(spd);
     // 스킵 폴링 시작 (hidden_hero 감지 포함)
     startMultiSkipPoll(rid);
+    // 내 상태 서버 동기화 (2초마다)
+    if(multiSyncRef.current)clearInterval(multiSyncRef.current);
+    multiSyncRef.current=setInterval(syncMultiState,2000);
     setPhase('hidden');
   };
   const hd=HH.find(h=>h.id===selH);
@@ -5102,12 +5160,14 @@ export default function App(){
                 <div style={{fontSize:11,color:"#eee",fontWeight:"bold",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                   {p.nickname}{p.nickname===G.current?.multiNickname&&" (나)"}
                 </div>
-                <div style={{fontSize:10,color:"#555",marginTop:1}}>
+                <div style={{fontSize:10,color:"#888",marginTop:1}}>
                   R{p.round||1} · ❤️{p.life} · 💰{p.gold}G
+                  {p.enemy_count!=null&&<span style={{color:p.enemy_count>0?"#f87171":"#4ade80",marginLeft:4}}>👾{p.enemy_count}</span>}
                 </div>
               </div>
             </div>
           ))}
+          <div style={{fontSize:9,color:"#333",textAlign:"right",marginTop:4}}>2초마다 갱신</div>
         </div>
       )}
 
