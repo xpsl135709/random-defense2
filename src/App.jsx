@@ -214,6 +214,8 @@ const PATCH_NOTES=[
       "🐛 게임 종료 시 멀티방 자동 삭제",
       "🐛 랭킹 clear_count 미저장 버그 수정",
       "🐛 전설/신화/불멸 조합 개방 버그 수정",
+      "👑 멀티 첫 라운드 카운트다운: 방장만 스킵 가능",
+      "🏆 랭킹 싱글/멀티 분리 탭 추가 + 익명 기록 제거",
     ]
   },
   {
@@ -1931,8 +1933,10 @@ export default function App(){
   };
   const [showRanking,setShowRanking]=useState(false);
   const [ranking,setRanking]=useState([]);
+  const [multiRanking,setMultiRanking]=useState([]);
   const [rankLoading,setRankLoading]=useState(false); // 첫 진입시 패치노트 표시 // easy/normal/hard
   const [rankPeriod,setRankPeriod]=useState('all'); // 'daily'|'weekly'|'all'
+  const [rankMode,setRankMode]=useState('single'); // 'single'|'multi'
   const [ui,setUi]=useState({life:20,gold:50,coins:0,round:1,total:0,over:false,victory:false});
   const [heroes,setHeroes]=useState([]);
   const [selH,setSelH]=useState(null);
@@ -3793,26 +3797,49 @@ export default function App(){
         },
         body:JSON.stringify(record),
       });
+      // 멀티 게임이면 multi_rankings에도 저장 (INSERT, 갱신 아님 - 판별 기록 누적)
+      if(g.multiRoomId){
+        await fetch(`${SUPABASE_URL}/rest/v1/multi_rankings`,{
+          method:'POST',
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:`Bearer ${SUPABASE_KEY}`,
+            'Content-Type':'application/json',
+            Prefer:'return=minimal',
+          },
+          body:JSON.stringify({...record,room_id:g.multiRoomId}),
+        });
+      }
     }catch(e){console.error('ranking save error',e);}
   };
 
   // ── 랭킹 불러오기 (일간/주간/누적)
-  const loadRanking=async(period)=>{
+  const loadRanking=async(period,mode)=>{
     setRankLoading(true);
     try{
-      let query=`${SUPABASE_URL}/rest/v1/rankings?select=*&order=round.desc,gold.desc&limit=50`;
       const p=period||rankPeriod;
-      if(p==='daily'){
-        const since=new Date();since.setHours(0,0,0,0);
-        query+=`&updated_at=gte.${since.toISOString()}`;
-      }else if(p==='weekly'){
-        const since=new Date();since.setDate(since.getDate()-7);
-        query+=`&updated_at=gte.${since.toISOString()}`;
+      const m=mode||rankMode;
+      let timeFilter='';
+      if(p==='daily'){const since=new Date();since.setHours(0,0,0,0);timeFilter=`&updated_at=gte.${since.toISOString()}`;}
+      else if(p==='weekly'){const since=new Date();since.setDate(since.getDate()-7);timeFilter=`&updated_at=gte.${since.toISOString()}`;}
+
+      if(m==='multi'){
+        // 멀티 랭킹: multi_rankings 테이블
+        let query=`${SUPABASE_URL}/rest/v1/multi_rankings?select=*&order=round.desc,gold.desc&limit=50${timeFilter}`;
+        const res=await fetch(query,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});
+        const data=await res.json();
+        // 익명 제거
+        const filtered=Array.isArray(data)?data.filter(r=>r.name&&!r.name.startsWith('익명')):[];
+        setMultiRanking(filtered);
+      }else{
+        // 싱글 랭킹: 기존 rankings 테이블, 익명 제거
+        let query=`${SUPABASE_URL}/rest/v1/rankings?select=*&order=round.desc,gold.desc&limit=50${timeFilter}`;
+        const res=await fetch(query,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});
+        const data=await res.json();
+        const filtered=Array.isArray(data)?data.filter(r=>r.name&&!r.name.startsWith('익명')):[];
+        setRanking(filtered);
       }
-      const res=await fetch(query,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});
-      const data=await res.json();
-      setRanking(Array.isArray(data)?data:[]);
-    }catch(e){setRanking([]);}
+    }catch(e){if((mode||rankMode)==='multi')setMultiRanking([]);else setRanking([]);}
     setRankLoading(false);
   };
 
@@ -4372,7 +4399,7 @@ export default function App(){
             <div style={{padding:"16px 20px 12px",borderBottom:"1px solid #21262d",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
               <div style={{fontSize:16,fontWeight:"bold"}}>🏆 랭킹</div>
               <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                <button onClick={()=>loadRanking()}
+                <button onClick={()=>loadRanking(rankPeriod,rankMode)}
                   disabled={rankLoading}
                   style={{background:"#1e293b",border:"1px solid #334155",color:rankLoading?"#475569":"#94a3b8",borderRadius:7,padding:"4px 10px",cursor:rankLoading?"not-allowed":"pointer",fontSize:12}}>
                   {rankLoading?"⏳":"🔄"} 새로고침
@@ -4380,18 +4407,29 @@ export default function App(){
                 <button onClick={()=>setShowRanking(false)} style={{background:"none",border:"none",color:"#555",fontSize:20,cursor:"pointer"}}>✕</button>
               </div>
             </div>
+            {/* 싱글/멀티 탭 */}
             <div style={{display:"flex",gap:6,padding:"10px 16px 0",flexShrink:0}}>
+              {[{key:'single',label:'⚔️ 싱글'},{key:'multi',label:'👥 멀티'}].map(m=>(
+                <button key={m.key} onClick={()=>{setRankMode(m.key);loadRanking(rankPeriod,m.key);}}
+                  style={{flex:1,background:rankMode===m.key?(m.key==='multi'?"#14532d":"#1d3a6e"):"#1e293b",border:`2px solid ${rankMode===m.key?(m.key==='multi'?"#22c55e":"#3b82f6"):"#334155"}`,color:rankMode===m.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:13,fontWeight:rankMode===m.key?"bold":"normal"}}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            {/* 기간 탭 */}
+            <div style={{display:"flex",gap:6,padding:"8px 16px 0",flexShrink:0}}>
               {[{key:'daily',label:'📅 일간'},{key:'weekly',label:'📆 주간'},{key:'all',label:'🏆 누적'}].map(p=>(
-                <button key={p.key} onClick={()=>{setRankPeriod(p.key);loadRanking(p.key);}}
-                  style={{flex:1,background:rankPeriod===p.key?"#1f6feb":"#1e293b",border:`1px solid ${rankPeriod===p.key?"#3b82f6":"#334155"}`,color:rankPeriod===p.key?"#fff":"#94a3b8",borderRadius:8,padding:"7px 0",cursor:"pointer",fontSize:12,fontWeight:rankPeriod===p.key?"bold":"normal"}}>
+                <button key={p.key} onClick={()=>{setRankPeriod(p.key);loadRanking(p.key,rankMode);}}
+                  style={{flex:1,background:rankPeriod===p.key?"#1f6feb":"#1e293b",border:`1px solid ${rankPeriod===p.key?"#3b82f6":"#334155"}`,color:rankPeriod===p.key?"#fff":"#94a3b8",borderRadius:8,padding:"6px 0",cursor:"pointer",fontSize:12,fontWeight:rankPeriod===p.key?"bold":"normal"}}>
                   {p.label}
                 </button>
               ))}
             </div>
             <div style={{overflowY:"auto",flex:1,padding:"12px 16px"}}>
               {rankLoading&&<div style={{textAlign:"center",color:"#555",padding:20}}>불러오는 중...</div>}
-              {!rankLoading&&ranking.length===0&&<div style={{textAlign:"center",color:"#555",padding:20}}>아직 기록이 없어요</div>}
-              {!rankLoading&&ranking.map((r,i)=>{
+              {!rankLoading&&rankMode==='single'&&ranking.length===0&&<div style={{textAlign:"center",color:"#555",padding:20}}>아직 기록이 없어요</div>}
+              {!rankLoading&&rankMode==='multi'&&multiRanking.length===0&&<div style={{textAlign:"center",color:"#555",padding:20}}>아직 멀티 기록이 없어요</div>}
+              {!rankLoading&&(rankMode==='single'?ranking:multiRanking).map((r,i)=>{
                 const diffColor=r.difficulty==='easy'?'#4f8':r.difficulty==='normal'?'#4af':'#f44';
                 const diffLabel=r.difficulty==='easy'?'쉬움':r.difficulty==='normal'?'보통':'어려움';
                 const isMe=r.name===nickname.trim();
@@ -4403,6 +4441,7 @@ export default function App(){
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                         <span style={{fontWeight:"bold",fontSize:13,color:isMe?"#4af":"#eee",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}</span>
+                        {rankMode==='multi'&&<span style={{fontSize:10,color:"#4ade80",background:"#052e16",borderRadius:4,padding:"1px 5px",flexShrink:0}}>멀티</span>}
                         {r.victory&&<span style={{fontSize:10,color:"#fd0",flexShrink:0}}>👑클리어</span>}
                         {isMe&&<span style={{fontSize:10,color:"#4af",flexShrink:0}}>← 나</span>}
                       </div>
@@ -4411,7 +4450,7 @@ export default function App(){
                         <span style={{color:"#4af"}}>R{r.round}/{r.difficulty==='easy'?50:r.difficulty==='normal'?70:100}</span>
                         <span style={{color:"#fd0"}}>💰{r.gold}G</span>
                         <span style={{color:"#a78bfa"}}>🪙{r.coins}</span>
-                        <span style={{color:"#a78bfa",fontWeight:"bold"}}>🏆{r.clear_count||0}클리어</span>
+                        {rankMode==='single'&&<span style={{color:"#a78bfa",fontWeight:"bold"}}>🏆{r.clear_count||0}클리어</span>}
                         <span style={{color:"#555"}}>{r.map}</span>
                       </div>
                     </div>
@@ -5207,10 +5246,16 @@ export default function App(){
           <span style={{background:"#1e293b",borderRadius:5,padding:"2px 5px",fontSize:10,color:G.current?.difficulty==='easy'?'#4ade80':G.current?.difficulty==='normal'?'#60a5fa':'#f87171',flexShrink:0}}>
             {G.current?.difficulty==='easy'?'쉬움':G.current?.difficulty==='normal'?'보통':'어려움'}
           </span>
-          {countdown>0&&(
+          {countdown>0&&!G.current?.multiRoomId&&(
             <button onClick={skipCountdown}
               style={{background:"#166534",border:"1px solid #22c55e",color:"#4ade80",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:10,fontWeight:"bold",flexShrink:0}}>
               ▶ 라운드스킵 {countdown}s
+            </button>
+          )}
+          {G.current?.multiRoomId&&countdown>0&&isHostRef.current&&(
+            <button onClick={skipCountdown}
+              style={{background:"#1e3a5f",border:"2px solid #60a5fa",color:"#93c5fd",borderRadius:5,padding:"2px 7px",cursor:"pointer",fontSize:10,fontWeight:"bold",flexShrink:0}}>
+              👑 방장스킵 {countdown}s
             </button>
           )}
           {G.current?.multiRoomId&&multiEnemiesClear&&countdown===0&&(
