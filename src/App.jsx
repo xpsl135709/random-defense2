@@ -216,6 +216,7 @@ const PATCH_NOTES=[
       "🐛 전설/신화/불멸 조합 개방 버그 수정",
       "👑 멀티 첫 라운드 카운트다운: 방장만 스킵 가능",
       "🏆 랭킹 싱글/멀티 분리 탭 추가 + 익명 기록 제거",
+      "🐛 폴른 세라핌/월식천사/황금정령 등 조합 안 되던 버그 수정 (getCombOptions 등급 로직 전면 수정)",
     ]
   },
   {
@@ -3453,13 +3454,14 @@ export default function App(){
     const myElsCntEx={};
     for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
     const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
-    // 등급별 조합 결과 등급 매핑: 내 등급 → 만들 수 있는 결과 등급
-    const GRADE_RESULT={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
-    const targetGrade=GRADE_RESULT[h.grade]; // 이 등급만 결과로 허용
+    const GRADE_ORDER=["노말","고급","영웅","전설","신화","불멸"];
+    const myGradeIdx=GRADE_ORDER.indexOf(h.grade);
 
-    // COMBO: 내 등급에서 만들 수 있는 등급만 필터
+    // COMBO: 내 등급+1 결과만 (기존 로직 유지)
+    const GRADE_RESULT={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
+    const targetGrade=GRADE_RESULT[h.grade];
     const comboOpts=COMBO.filter(r=>{
-      if(r.g!==targetGrade)return false; // 등급 불일치 제외
+      if(r.g!==targetGrade)return false;
       if(!unlockedG.includes(r.g))return false;
       const isSame=r.a===r.b;
       const match=isSame
@@ -3473,16 +3475,24 @@ export default function App(){
       return false;
     }).map(r=>({...r,isRecipe:false}));
 
-    // RECIPES: 영웅 이상 모두 포함 (canRecipe와 동일 로직으로 통일)
-    const recipeOpts=(!targetGrade||["영웅","전설","신화","불멸"].includes(targetGrade))?RECIPES.filter(recipe=>{
-      if(recipe.g!==targetGrade)return false;
+    // RECIPES: 내 유닛이 재료에 포함되고, 결과 등급이 내 등급보다 높고, 모든 재료 보유 시 표시
+    const cnt={};
+    for(const hero of g.heroes)cnt[hero.element]=(cnt[hero.element]||0)+1;
+    const recipeOpts=RECIPES.filter(recipe=>{
       if(!unlockedG.includes(recipe.g))return false;
-      const usesMe=recipe.parts.some(p=>p.u===h.element);
-      if(!usesMe)return false;
-      const cnt={};
-      for(const hero of g.heroes)cnt[hero.element]=(cnt[hero.element]||0)+1;
+      // 결과 등급이 내 등급보다 높아야 함 (황금정령은 전설→전설 예외)
+      const resultIdx=GRADE_ORDER.indexOf(recipe.g);
+      if(recipe.isGoldUnit){
+        // 황금정령: 전설 재료로 전설 만들기 → 재료 중 전설 있으면 허용
+        if(!recipe.parts.some(p=>p.u===h.element))return false;
+      } else {
+        if(resultIdx<=myGradeIdx)return false;
+        const usesMe=recipe.parts.some(p=>p.u===h.element);
+        if(!usesMe)return false;
+      }
+      // 모든 재료 보유 확인
       return recipe.parts.every(p=>(cnt[p.u]||0)>=p.n);
-    }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe})):[];
+    }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe}));
 
     return [...comboOpts,...recipeOpts];
   };
