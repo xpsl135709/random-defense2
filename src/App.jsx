@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 import { CS, COLS, ROWS, MAP_DEFS, buildMap, applyRotationMap, TRACK, CX, CY, TS, DUAL_PATHS, FORK_PATHS, SPAWN_TILE, GOAL_TILE, CURRENT_MAP } from './constants/mapData';
 import { PATCH_NOTES, BASE, UNLOCK_ELEMENTS, UNLOCK_GRADES, GC, NEXT_GRADE, SELL_PRICE, COMBO, RECIPES, getDexByGrade, HH, isBossWeak, SHOP_ITEMS, GAMBLE_GOLD, GAMBLE_COIN, SUPABASE_URL, SUPABASE_KEY, elBase, GRADE_FX, getElTrait, getWaveType, autoPlace, initGame, loadSprite, mkH, mkE, makeBoss, hr, EC, EE, EN, SPRITE_CACHE, resetIds } from './constants/gameData';
+import { getCombOptions as comboGetCombOptions, canRecipe as comboCanRecipe, doRecipe as comboDoRecipe, doCombine as comboDoCombine } from './game/combos';
 import SummonOverlay from './components/SummonOverlay';
 import Overlay from './components/Overlay';
 import Btn from './components/Btn';
@@ -1661,78 +1662,24 @@ export default function App(){
   };
 
   const getCombOptions=(heroId)=>{
-    const g=G.current,h=g.heroes.find(x=>x.id===heroId);
-    if(!h)return[];
-    const myEls=g.heroes.filter(x=>x.id!==heroId).map(x=>x.element);
-    const myCnt={};
-    for(const hero of g.heroes) myCnt[hero.element]=(myCnt[hero.element]||0)+1;
-    const myElsCntEx={};
-    for(const hero of g.heroes){if(hero.id!==heroId)myElsCntEx[hero.element]=(myElsCntEx[hero.element]||0)+1;}
+    const g=G.current;
     const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
-    const GRADE_ORDER=["노말","고급","영웅","전설","신화","불멸"];
-    const myGradeIdx=GRADE_ORDER.indexOf(h.grade);
-
-    // COMBO: 내 등급+1 결과만 (기존 로직 유지)
-    const GRADE_RESULT={노말:"고급",고급:"영웅",영웅:"전설",전설:"신화",신화:"불멸"};
-    const targetGrade=GRADE_RESULT[h.grade];
-    const comboOpts=COMBO.filter(r=>{
-      if(r.g!==targetGrade)return false;
-      if(!unlockedG.includes(r.g))return false;
-      const isSame=r.a===r.b;
-      const match=isSame
-        ?(h.element===r.a&&(myElsCntEx[r.a]||0)>=1)
-        :((r.a===h.element&&myEls.includes(r.b))||(r.b===h.element&&myEls.includes(r.a)));
-      if(match){
-        if(r.g==="신화"&&g.round<20)return false;
-        if(r.g==="불멸"&&g.round<50)return false;
-        return true;
-      }
-      return false;
-    }).map(r=>({...r,isRecipe:false}));
-
-    // RECIPES: 내 유닛이 재료에 포함되고, 결과 등급이 내 등급보다 높고, 모든 재료 보유 시 표시
-    const cnt={};
-    for(const hero of g.heroes)cnt[hero.element]=(cnt[hero.element]||0)+1;
-    const recipeOpts=RECIPES.filter(recipe=>{
-      if(!unlockedG.includes(recipe.g))return false;
-      // 결과 등급이 내 등급보다 높아야 함 (황금정령은 전설→전설 예외)
-      const resultIdx=GRADE_ORDER.indexOf(recipe.g);
-      if(recipe.isGoldUnit){
-        // 황금정령: 전설 재료로 전설 만들기 → 재료 중 전설 있으면 허용
-        if(!recipe.parts.some(p=>p.u===h.element))return false;
-      } else {
-        if(resultIdx<=myGradeIdx)return false;
-        const usesMe=recipe.parts.some(p=>p.u===h.element);
-        if(!usesMe)return false;
-      }
-      // 모든 재료 보유 확인
-      return recipe.parts.every(p=>(cnt[p.u]||0)>=p.n);
-    }).map(recipe=>({r:recipe.r,g:recipe.g,isRecipe:true,recipe}));
-
-    return [...comboOpts,...recipeOpts];
+    return comboGetCombOptions({heroes:g.heroes,round:g.round,unlockedGrades:unlockedG,heroId});
   };
 
   const doCombine=(heroId,opt)=>{
     const g=G.current;
     const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
-    if(!unlockedG.includes(opt.g)){pushToast(`${opt.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");setSelHero(null);return;}
-    if(opt.isRecipe){
-      // RECIPES 방식
-      doRecipe(opt.recipe);
+    const res=comboDoCombine({heroes:g.heroes,heroId,opt,unlockedGrades:unlockedG,gradeEnhLv:g.gradeEnhLv||{}});
+    if(res.silent)return;
+    if(res.error){pushToast(res.error,res.color);setSelHero(null);return;}
+    g.heroes=res.newHeroes;
+    if(res.result.via==="recipe"){
+      setModal(null);sync();safeDraw();triggerSummon(res.result.r,res.result.g);notifyResult("⚗️ 조합",res.result.r,res.result.g);
       setSelHero(null);
-      return;
+    }else{
+      setSelHero(null);setHeroListTab("waiting");sync();safeDraw();triggerSummon(res.result.r,res.result.g);notifyResult("⚗️ 조합",res.result.r,res.result.g);
     }
-    // COMBO 방식
-    const h1=g.heroes.find(x=>x.id===heroId);
-    const needEl=opt.a===h1.element?opt.b:opt.a;
-    const h2=g.heroes.find(x=>x.id!==heroId&&x.element===needEl);
-    if(!h1||!h2)return;
-    const pos={col:h1.col,row:h1.row};
-    const nh=mkH(opt.r,opt.g,g.gradeEnhLv||{});
-    nh.col=pos.col;nh.row=pos.row;
-    g.heroes=g.heroes.filter(x=>x.id!==h1.id&&x.id!==h2.id);
-    g.heroes.push(nh);
-    setSelHero(null);setHeroListTab("waiting");sync();safeDraw();triggerSummon(opt.r,opt.g);notifyResult("⚗️ 조합",opt.r,opt.g);
   };
 
   const GRADE_ENH_COST={노말:10,고급:15,영웅:25,전설:30,신화:40,불멸:50};
@@ -1815,24 +1762,16 @@ export default function App(){
 
   const canRecipe=(recipe)=>{
     const g=G.current;if(!g)return false;
-    const cnt={};
-    for(const h of g.heroes)cnt[h.element]=(cnt[h.element]||0)+1;
-    return recipe.parts.every(p=>(cnt[p.u]||0)>=p.n);
+    return comboCanRecipe({heroes:g.heroes,recipe});
   };
 
   const doRecipe=(recipe)=>{
-    const g=G.current;if(!canRecipe(recipe)){pushToast("재료 부족!","#ef4444");return;}
+    const g=G.current;
     const unlockedG=g.unlockedGrades||UNLOCK_GRADES(clearCount);
-    if(!unlockedG.includes(recipe.g)){pushToast(`${recipe.g} 등급은 아직 개방되지 않았습니다`,"#ef4444");return;}
-    // 황금정령은 1개만 보유 가능
-    if(recipe.r==="황금정령"&&g.heroes.some(h=>h.element==="황금정령")){
-      pushToast("황금정령은 1개만 보유할 수 있습니다","#f59e0b");return;
-    }
-    const remaining=[...g.heroes];
-    for(const part of recipe.parts){let removed=0;for(let i=remaining.length-1;i>=0&&removed<part.n;i--){if(remaining[i].element===part.u){remaining.splice(i,1);removed++;}}}
-    const h=mkH(recipe.r,recipe.g,g.gradeEnhLv||{});
+    const res=comboDoRecipe({heroes:g.heroes,recipe,unlockedGrades:unlockedG,gradeEnhLv:g.gradeEnhLv||{}});
+    if(res.error){pushToast(res.error,res.color);return;}
     // 조합 결과는 대기중으로
-    g.heroes=[...remaining,h];setModal(null);sync();safeDraw();triggerSummon(recipe.r,recipe.g);notifyResult("⚗️ 조합",recipe.r,recipe.g);
+    g.heroes=res.newHeroes;setModal(null);sync();safeDraw();triggerSummon(res.result.r,res.result.g);notifyResult("⚗️ 조합",res.result.r,res.result.g);
   };
 
   const stackCombine=(el)=>{
